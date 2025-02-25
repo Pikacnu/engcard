@@ -20,7 +20,7 @@ export enum PartOfSpeech {
 }
 
 export type Blocks = {
-	partOfSpeech: PartOfSpeech;
+	partOfSpeech?: PartOfSpeech;
 	definitions: Definition[];
 	phonetic?: string;
 };

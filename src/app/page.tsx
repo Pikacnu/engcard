@@ -1,205 +1,100 @@
-import { CardProps, PartOfSpeech } from '@/type';
+'use client';
+
+import { CardProps } from '@/type';
 import Questions from '@/components/questions';
+import { useCallback, useEffect, useState } from 'react';
+import Deck from '@/components/deck';
+
+enum CardType {
+	Questions = 'Questions',
+	Card = 'Card',
+}
+
+const alphabet = 'abcdefghijklmnopqrstuvwxyz'.split('');
 
 export default function Home() {
-	//generate about 10 cards with each card having 1-3 blocks
-	const cards: CardProps[] = [
-		{
-			word: 'Hello',
-			phonetic: 'hɛˈloʊ',
-			blocks: [
-				{
-					partOfSpeech: PartOfSpeech.Interjection,
-					definitions: [
-						{
-							definition: [
-								{
-									lang: 'en',
-									content: 'used as a greeting or to begin a conversation',
-								},
-							],
-							example: [
-								[
-									{
-										lang: 'en',
-										content: 'hello there, Katie!',
-									},
-								],
-							],
-						},
-					],
-				},
-			],
-		},
-		{
-			word: 'World',
-			phonetic: 'wɝːld',
-			blocks: [
-				{
-					partOfSpeech: PartOfSpeech.Noun,
-					definitions: [
-						{
-							definition: [
-								{
-									lang: 'en',
-									content: 'the earth and all people and things on it',
-								},
-							],
-							example: [
-								[
-									{
-										lang: 'en',
-										content: 'he was doing his bit to save the world',
-									},
-								],
-							],
-						},
-					],
-				},
-			],
-		},
-		{
-			word: 'Goodbye',
-			phonetic: 'ɡʊdˈbaɪ',
-			blocks: [
-				{
-					partOfSpeech: PartOfSpeech.Interjection,
-					definitions: [
-						{
-							definition: [
-								{
-									lang: 'en',
-									content:
-										'used to express good wishes when parting or at the end of a conversation',
-								},
-							],
-							example: [
-								[
-									{
-										lang: 'en',
-										content: 'goodbye, everyone!',
-									},
-								],
-							],
-						},
-					],
-				},
-			],
-		},
-		{
-			word: 'Love',
-			phonetic: 'lʌv',
-			blocks: [
-				{
-					partOfSpeech: PartOfSpeech.Noun,
-					definitions: [
-						{
-							definition: [
-								{
-									lang: 'en',
-									content: 'an intense feeling of deep affection',
-								},
-							],
-							example: [
-								[
-									{
-										lang: 'en',
-										content:
-											'babies fill parents with intense feelings of love',
-									},
-								],
-							],
-						},
-					],
-				},
-			],
-		},
-		{
-			word: 'Hate',
-			phonetic: 'heɪt',
-			blocks: [
-				{
-					partOfSpeech: PartOfSpeech.Noun,
-					definitions: [
-						{
-							definition: [
-								{
-									lang: 'en',
-									content: 'intense or passionate dislike',
-								},
-							],
-							example: [
-								[
-									{
-										lang: 'en',
-										content: 'feelings of hate and revenge',
-									},
-								],
-							],
-						},
-					],
-				},
-			],
-		},
-		{
-			word: 'Peace',
-			phonetic: 'pis',
-			blocks: [
-				{
-					partOfSpeech: PartOfSpeech.Noun,
-					definitions: [
-						{
-							definition: [
-								{
-									lang: 'en',
-									content: 'freedom from disturbance; quiet and tranquility',
-								},
-							],
-							example: [
-								[
-									{
-										lang: 'en',
-										content: 'the peace of a deep sleep',
-									},
-								],
-							],
-						},
-					],
-				},
-			],
-		},
-		{
-			word: 'War',
-			phonetic: 'wɔːr',
-			blocks: [
-				{
-					partOfSpeech: PartOfSpeech.Noun,
-					definitions: [
-						{
-							definition: [
-								{
-									lang: 'en',
-									content:
-										'a state of armed conflict between different countries or different groups within a country',
-								},
-							],
-							example: [
-								[
-									{
-										lang: 'en',
-										content: 'Japan declared war on Germany',
-									},
-								],
-							],
-						},
-					],
-				},
-			],
-		},
-	];
+	const [type, setType] = useState<CardType>(CardType.Card);
+	const [cards, setCards] = useState<CardProps[]>([]);
+	const [wordStartWith, setWordStartWith] = useState<string>('');
+
+	const fetchCards = useCallback((wordStartWith?: string) => {
+		wordStartWith = wordStartWith || '';
+		console.log(wordStartWith);
+		fetch(
+			`/api/cards?count=15&deck_id=13${
+				wordStartWith.trim().length !== 0
+					? `&range=${wordStartWith}-${wordStartWith}`
+					: ''
+			}`,
+		)
+			.then((res) => res.json())
+			.then((data) => {
+				console.log(data);
+				setCards(data);
+			});
+	}, []);
+
+	useEffect(() => {
+		fetchCards(wordStartWith);
+	}, [wordStartWith, fetchCards]);
+
 	return (
-		<div className='flex flex-col items-center justify-center min-h-screen py-2 bg-gray-700'>
-			<Questions cards={cards}></Questions>
+		<div className='flex flex-row items-center justify-center min-h-screen py-2 bg-gray-700'>
+			{type === CardType.Questions ? (
+				<Questions
+					cards={cards}
+					onFinishClick={() => {
+						fetchCards(wordStartWith);
+					}}
+				/>
+			) : (
+				<Deck
+					cards={cards}
+					onFinishClick={() => {
+						fetchCards(wordStartWith);
+					}}
+				/>
+			)}
+			<div className=' absolute flex flex-col left-0 h-full md:w-32 bg-gray-50 max-md:flex-row max-md:h-16 max-md:bottom-0 max-md:w-full'>
+				<button
+					className={`p-2 m-2 text-black bg-emerald-600 rounded-md ${
+						type === CardType.Card ? 'bg-opacity-40' : 'bg-opacity-10'
+					}`}
+					onClick={() => setType(CardType.Card)}
+				>
+					Card
+				</button>
+				<button
+					className={`p-2 m-2 text-black bg-emerald-600 rounded-md ${
+						type === CardType.Questions ? 'bg-opacity-40' : 'bg-opacity-10'
+					}`}
+					onClick={() => setType(CardType.Questions)}
+				>
+					Questions
+				</button>
+				<button
+					onClick={() => fetchCards(wordStartWith)}
+					className='p-2 m-2 text-black bg-sky-600 bg-opacity-10 rounded-md hover:bg-opacity-80 transition-all delay-100'
+				>
+					Refresh
+				</button>
+				<h4 className='text-md text-black self-center'>Word Start With:</h4>
+				<select
+					className=' text-black bg-sky-600 bg-opacity-10 rounded-md m-2'
+					onChange={(e) => setWordStartWith(e.target.value)}
+					value={wordStartWith}
+				>
+					<option value=''>All</option>
+					{alphabet.map((letter) => (
+						<option
+							key={letter}
+							value={letter}
+						>
+							{letter}
+						</option>
+					))}
+				</select>
+			</div>
 		</div>
 	);
 }

@@ -4,13 +4,15 @@ import { CardProps } from '@/type';
 import { useEffect, useState } from 'react';
 
 export default function Card({ card }: { card: CardProps }) {
-	const { word, phonetic, blocks } = card;
+	const [cardData, setcardData] = useState<CardProps>(card);
 	const [flipped, setFlipped] = useState(card.flipped || false);
 
 	useEffect(() => {
 		setFlipped(card.flipped || false);
+		setcardData(card);
 	}, [card]);
 
+	const { word, phonetic, blocks } = cardData;
 	return (
 		<div
 			className='flex flex-col w-[40vw] min-w-[20vw] shadow-lg p-4 m-4 rounded-lg select-none bg-blue-100 dark:bg-gray-800 overflow-hidden flex-grow'
@@ -35,9 +37,11 @@ export default function Card({ card }: { card: CardProps }) {
 							className='flex flex-col m-4'
 						>
 							<div className='inline-flex flex-row'>
-								<h2 className='text-xl p-1 bg-opacity-40 bg-blue-600 border-2 border-blue-700'>
-									{block.partOfSpeech}
-								</h2>
+								{block.partOfSpeech && (
+									<h2 className='text-xl p-1 bg-opacity-40 bg-blue-600 border-2 border-blue-700'>
+										{block.partOfSpeech}
+									</h2>
+								)}
 								{block.phonetic && (
 									<p className='p-4 bg-opacity-40 bg-blue-600 border-2 border-blue-700'>
 										{block.phonetic}
@@ -64,8 +68,8 @@ export default function Card({ card }: { card: CardProps }) {
 									{definition.example && (
 										<>
 											<hr className='p-2' />
+											<h3 className='ml-0'>Examples:</h3>
 											<div className='flex flex-col *:ml-4'>
-												<h3 className='ml-0'>Examples:</h3>
 												{definition.example.map((example, index) => (
 													<div
 														key={index}
