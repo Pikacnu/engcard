@@ -54,9 +54,10 @@ export default function Questions({
 	}, [index, cards]);
 
 	return (
-		<div className='flex flex-col h-full w-[40vw] min-w-[20vw]'>
+		<div className='flex flex-col h-full max-md:w-[80vw] w-[60vw] min-w-[20vw]'>
 			<Spell
 				card={cardData[index]}
+				className='pb-8 h-[60vh] md:h-[80vh]'
 				onAnsweredClick={() => {
 					setIndex((prev) => {
 						if (prev === cardData.length - 1) return prev;
@@ -65,6 +66,20 @@ export default function Questions({
 					if (index === cardData.length - 1) onFinishClick?.();
 				}}
 			></Spell>
+
+			<div className='w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700 select-none'>
+				<div
+					className='bg-blue-600 rounded-full duration-100 transition-all text-xs font-medium text-blue-100 text-end p-1 leading-none'
+					style={{
+						width: `${Math.min(100, ((index + 1) / cards.length) * 100)}%`,
+					}}
+				>
+					{`${Math.min(
+						100,
+						Number((((index + 1) / cards.length) * 100).toFixed(1)),
+					)}%`}
+				</div>
+			</div>
 		</div>
 	);
 }

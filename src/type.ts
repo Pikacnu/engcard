@@ -16,6 +16,9 @@ export enum PartOfSpeech {
 	Preposition = 'preposition',
 	Conjunction = 'conjunction',
 	Interjection = 'interjection',
+	Exclamation = 'exclamation',
+	Abbreviation = 'abbreviation',
+	Phrase = 'phrase',
 	Error = 'error',
 }
 
@@ -41,3 +44,8 @@ export type Example = {
 	lang: Lang;
 	content: string;
 };
+
+export enum LoginMethod {
+	Discord = 'discord',
+	Google = 'google',
+}

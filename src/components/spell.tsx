@@ -30,9 +30,11 @@ const Def = memo(function Def({
 export default function Spell({
 	card,
 	onAnsweredClick,
+	className,
 }: {
 	card: CardProps;
 	onAnsweredClick?: () => void;
+	className?: string;
 }) {
 	const [word, setWord] = useState(card.word.substring(0, 1) || '');
 	const [correct, setCorrect] = useState(false);
@@ -62,9 +64,11 @@ export default function Spell({
 		setWord(card.word.substring(0, 1));
 	}, [card]);
 	return (
-		<div className='items-center justify-center flex-grow min-w-[20vw] flex flex-row'>
+		<div
+			className={`items-center justify-center flex-grow min-w-[20vw] flex flex-row h-[70vh] ${className}`}
+		>
 			{!correct && (
-				<div className='flex flex-col items-center justify-center shadow-lg p-4 m-4 rounded-lg select-none bg-blue-100 dark:bg-gray-800 overflow-hidden flex-grow min-w-[20vw]'>
+				<div className='flex flex-col items-center justify-center shadow-lg p-4 m-4 rounded-lg select-none bg-blue-100 dark:bg-gray-800 overflow-hidden flex-grow min-w-[20vw] h-full'>
 					<div className='flex relative'>
 						<p className='p-2 border-2 opacity-0'>{card.word}</p>
 						<input
@@ -122,6 +126,7 @@ export default function Spell({
 					onClick={() => {
 						if (correct && onAnsweredClick) onAnsweredClick();
 					}}
+					className='w-full h-full flex items-center justify-center'
 				>
 					<Card card={Object.assign(card, { flipped: true })}></Card>
 				</div>

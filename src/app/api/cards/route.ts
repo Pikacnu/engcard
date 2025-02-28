@@ -1,6 +1,6 @@
 'use server';
 
-import { CardProps } from '@/type';
+import { CardProps, PartOfSpeech } from '@/type';
 import { readFile } from 'fs/promises';
 import { NextResponse } from 'next/server';
 import { shuffle } from '@/utils';
@@ -23,10 +23,14 @@ export async function GET(req: Request) {
 		});
 	}
 
-	let words: string[][];
+	let words: {
+		word: string;
+		meaning: string;
+		PartOfSpeech: string;
+	}[];
 	try {
-		const fileContent = await readFile('data_process/sch.json', 'utf-8');
-		words = JSON.parse(fileContent);
+		const fileContent = await readFile('data_process/sch_3.json', 'utf-8');
+		words = JSON.parse(fileContent).wordData;
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	} catch (e) {
 		return new Response('Error reading or parsing file', { status: 500 });
@@ -35,22 +39,33 @@ export async function GET(req: Request) {
 		words.filter((word) => {
 			if (!wordRange) return true;
 			if (wordRange[0] === wordRange[1])
-				return word[0].split('')[0] === wordRange[0];
-			return RegExp(`^([${wordRange[0]}-${wordRange[1]}]).*+`).test(word[0]);
+				return word.word.split('')[0] === wordRange[0];
+			return RegExp(`^([${wordRange[0]}-${wordRange[1]}]).*+`).test(word.word);
 		}),
 	)
 		.slice(0, count)
-		.map((word) => simpleWordToCard(word[0], word[1]));
+		.map((word) =>
+			simpleWordToCard(
+				word.word,
+				word.meaning,
+				word.PartOfSpeech as PartOfSpeech,
+			),
+		);
 
 	return NextResponse.json(result);
 }
 
-const simpleWordToCard = (word: string, mean: string): CardProps => {
+const simpleWordToCard = (
+	word: string,
+	mean: string,
+	partOfSpeech: PartOfSpeech,
+): CardProps => {
 	return {
 		word,
 		phonetic: '',
 		blocks: [
 			{
+				partOfSpeech: partOfSpeech,
 				definitions: [
 					{
 						definition: [

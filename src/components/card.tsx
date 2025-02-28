@@ -15,7 +15,7 @@ export default function Card({ card }: { card: CardProps }) {
 	const { word, phonetic, blocks } = cardData;
 	return (
 		<div
-			className='flex flex-col w-[40vw] min-w-[20vw] shadow-lg p-4 m-4 rounded-lg select-none bg-blue-100 dark:bg-gray-800 overflow-hidden flex-grow'
+			className='flex flex-col w-full h-full min-w-[20vw] shadow-lg p-4 m-4 rounded-lg select-none bg-blue-100 dark:bg-gray-800 overflow-hidden flex-grow'
 			onClick={() => setFlipped(!flipped || true)}
 		>
 			{!flipped && (
