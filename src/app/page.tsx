@@ -6,11 +6,14 @@ import { useCallback, useEffect, useState } from 'react';
 import Deck from '@/components/deck';
 import Image from 'next/image';
 import List from './../components/list';
+import Link from 'next/link';
+import QuestionWord from '@/components/question_word';
 
 enum CardType {
 	Questions = 'Questions',
 	Card = 'Card',
 	List = 'List',
+	Word = 'Word',
 }
 
 const alphabet = 'abcdefghijklmnopqrstuvwxyz'.split('');
@@ -42,7 +45,7 @@ export default function Home() {
 
 	useEffect(() => {
 		fetchCards(wordStartWith, count);
-	}, [wordStartWith, fetchCards, count]);
+	}, [wordStartWith, fetchCards, count, type]);
 
 	return (
 		<div className='flex flex-row items-center justify-center min-h-screen py-2 bg-gray-700'>
@@ -61,6 +64,12 @@ export default function Home() {
 						/>
 					),
 					[CardType.List]: <List cards={cards} />,
+					[CardType.Word]: (
+						<QuestionWord
+							cards={cards}
+							onFinishClick={() => fetchCards(wordStartWith, count)}
+						/>
+					),
 				}[type]
 			}
 			<div className=' absolute flex flex-col left-0 h-full bg-gray-50 max-md:flex-row max-md:h-16 max-md:bottom-0 max-md:w-full max-md:justify-center'>
@@ -90,7 +99,6 @@ export default function Home() {
 						alt='Questions'
 					/>
 				</button>
-
 				<button
 					className={`p-2 m-2 text-black bg-emerald-600 rounded-md ${
 						type === CardType.List ? 'bg-opacity-40' : 'bg-opacity-10'
@@ -102,6 +110,22 @@ export default function Home() {
 						width={24}
 						height={24}
 						alt='List'
+					/>
+				</button>
+				<button
+					className={`p-2 m-2 text-black bg-emerald-600 rounded-md ${
+						type === CardType.Word ? 'bg-opacity-40' : 'bg-opacity-10'
+					}`}
+					onClick={() => {
+						fetchCards(wordStartWith, count * 4);
+						setType(CardType.Word);
+					}}
+				>
+					<Image
+						src={`/icons/collection.svg`}
+						width={24}
+						height={24}
+						alt='Word Questions'
 					/>
 				</button>
 				<button
@@ -156,6 +180,17 @@ export default function Home() {
 							</option>
 						))}
 				</select>
+				<Link
+					href={'/auth/login'}
+					className='text-black self-center'
+				>
+					<Image
+						src={`/icons/box-arrow-in-left.svg`}
+						width={24}
+						height={24}
+						alt='Login'
+					/>
+				</Link>
 			</div>
 		</div>
 	);

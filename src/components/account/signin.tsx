@@ -13,7 +13,7 @@ export default function SignInButton({
 			action={async () => {
 				'use server';
 				await signIn(provider, {
-					redirectTo: '/',
+					redirectTo: '/dashboard',
 				});
 			}}
 		>
