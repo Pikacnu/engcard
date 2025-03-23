@@ -2,8 +2,14 @@
 import { CardProps } from '@/type';
 import { useCallback, useEffect, useState, useTransition } from 'react';
 import Card from '@/components/card';
+import { addCardFromDB } from '@/actions/deck';
 
-export default function Search() {
+type PageProps = {
+	deckid?: string;
+	onAdd?: () => void;
+};
+
+export default function Search({ deckid, onAdd }: PageProps) {
 	const [word, setWord] = useState<string>('');
 	const [card, setCard] = useState<CardProps | null>(null);
 	const [isPending, startTransition] = useTransition();
@@ -54,6 +60,22 @@ export default function Search() {
 				>
 					Search
 				</button>
+				{deckid && (
+					<button
+						className='p-2 m-2 rounded-md bg-green-600 text-white'
+						onClick={async () =>
+							addCardFromDB
+								.bind(null, deckid, word)()
+								.then(() => {
+									if (onAdd) {
+										onAdd();
+									}
+								})
+						}
+					>
+						Add
+					</button>
+				)}
 			</div>
 			{(isPending && (
 				<div className='flex items-center justify-center h-[80vh]'>

@@ -1,7 +1,7 @@
 'use client';
 import List from '@/components/list';
 import Add from './add';
-import Search from '@/app/dashboard/search/page';
+import Search from './search';
 import { use, useCallback, useEffect, useState } from 'react';
 import { DeckCollection } from '@/type';
 
@@ -41,10 +41,8 @@ export default function EditPage({
 			/>
 			<div className='max-w-1/5 w-2/5 overflow-clip'>
 				<Search
-					addInfo={{
-						deckid: id,
-						onAdd: refresh,
-					}}
+					deckid={id}
+					onAdd={refresh}
 				/>
 			</div>
 		</div>
