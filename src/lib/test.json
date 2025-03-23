@@ -1,0 +1,39 @@
+{
+	"type": "object",
+	"properties": {
+		"string": {
+			"type": "string"
+		},
+		"number": {
+			"type": "number"
+		},
+		"int": {
+			"type": "integer"
+		},
+		"boolean": {
+			"type": "boolean"
+		},
+		"enum": {
+			"type": "enum",
+			"enum": ["a", "b", "c"]
+		},
+		"array": {
+			"type": "array",
+			"items": {
+				"type": "string"
+			}
+		},
+		"object": {
+			"type": "object",
+			"properties": {
+				"string": {
+					"type": "string"
+				},
+				"number": {
+					"type": "number"
+				}
+			}
+		}
+	},
+	"required": ["array", "object"]
+}

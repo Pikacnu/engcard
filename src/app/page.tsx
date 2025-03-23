@@ -8,13 +8,7 @@ import Image from 'next/image';
 import List from './../components/list';
 import Link from 'next/link';
 import QuestionWord from '@/components/question_word';
-
-enum CardType {
-	Questions = 'Questions',
-	Card = 'Card',
-	List = 'List',
-	Word = 'Word',
-}
+import { CardType } from '@/type';
 
 const alphabet = 'abcdefghijklmnopqrstuvwxyz'.split('');
 
@@ -38,7 +32,6 @@ export default function Home() {
 		)
 			.then((res) => res.json())
 			.then((data) => {
-				console.log(data);
 				setCards(data);
 			});
 	}, []);

@@ -8,7 +8,7 @@ import { redirect } from 'next/navigation';
 export default async function Login() {
 	const session = await auth();
 	if (session) {
-		return redirect(new URL('/dashboard', 'http://localhost:3000').toString());
+		return redirect('/dashboard');
 	}
 	return (
 		<div className='w-full h-screen flex justify-center items-center '>

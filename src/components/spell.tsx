@@ -36,7 +36,7 @@ export default function Spell({
 	onAnsweredClick?: () => void;
 	className?: string;
 }) {
-	const [word, setWord] = useState(card.word.substring(0, 1) || '');
+	const [word, setWord] = useState('');
 	const [correct, setCorrect] = useState(false);
 	const [definitionIndex, setDefinitionIndex] = useState(0);
 	const definitions = useMemo<DefinitionWithPartOfSpeech[]>(
@@ -61,11 +61,10 @@ export default function Spell({
 	);
 	useEffect(() => {
 		setCorrect(false);
-		setWord(card.word.substring(0, 1));
 	}, [card]);
 	return (
 		<div
-			className={`items-center justify-center flex-grow min-w-[20vw] flex flex-row h-[70vh] ${className}`}
+			className={`flex flex-row items-center justify-center flex-grow min-w-[20vw] h-[70%] max-h-[70vh] ${className}`}
 		>
 			{!correct && (
 				<div className='flex flex-col items-center justify-center shadow-lg p-4 m-4 rounded-lg select-none bg-blue-100 dark:bg-gray-800 overflow-hidden flex-grow min-w-[20vw] h-full'>
@@ -75,6 +74,7 @@ export default function Spell({
 							type='text'
 							className=' text-black dark:text-white bg-transparent p-2 rounded-xl border-2 border-blue-500 absolute w-full'
 							value={word}
+							placeholder={card.word.substring(0, 1)}
 							onChange={(e) =>
 								setWord(() => {
 									const word = card.word;
@@ -86,7 +86,6 @@ export default function Spell({
 									if (ans.length === word.length) {
 										return card.word.substring(0, 1);
 									}
-									if (ans.length === 0) return card.word.substring(0, 1);
 									return ans;
 								})
 							}

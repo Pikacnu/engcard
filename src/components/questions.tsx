@@ -3,37 +3,7 @@
 import { CardProps } from '@/type';
 import { useEffect, useState } from 'react';
 import Spell from './spell';
-
-const blankCard: CardProps = {
-	word: 'No Data',
-	phonetic: 'No Data',
-	blocks: [
-		{
-			definitions: [
-				{
-					definition: [
-						{
-							lang: 'tw',
-							content: 'No Data',
-						},
-					],
-					example: [
-						[
-							{
-								lang: 'en',
-								content: 'Please Report to Developer',
-							},
-							{
-								lang: 'tw',
-								content: '請回報給開發者',
-							},
-						],
-					],
-				},
-			],
-		},
-	],
-};
+import { CardWhenEmpty } from '@/utils/blank_value';
 
 export default function Questions({
 	cards,
@@ -44,20 +14,21 @@ export default function Questions({
 }) {
 	const [index, setIndex] = useState(0);
 	const [cardData, setCard] = useState<CardProps[]>(
-		cards.length > 0 ? cards : [blankCard],
+		cards.length === 0 ? [CardWhenEmpty] : cards,
 	);
 	useEffect(() => {
-		if (!cards) {
-			setCard([blankCard]);
+		if (!cards || cards.length === 0) {
+			setCard([CardWhenEmpty]);
+			return;
 		}
 		setCard(cards);
 	}, [index, cards]);
 
 	return (
-		<div className='flex flex-col h-full max-md:w-[80vw] w-[60vw] min-w-[20vw]'>
+		<div className='flex flex-col h-full max-md:w-[80vw] w-[60vw] min-w-[20vw] justify-center'>
 			<Spell
 				card={cardData[index]}
-				className='pb-8 h-[60vh] md:h-[80vh]'
+				className='pb-8 h-3/5 md:h-4/5'
 				onAnsweredClick={() => {
 					setIndex((prev) => {
 						if (prev === cardData.length - 1) return prev;

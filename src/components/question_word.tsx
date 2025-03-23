@@ -2,6 +2,7 @@ import { CardProps, PartOfSpeech, PartOfSpeechShort } from '@/type';
 import { useState, useEffect, useMemo } from 'react';
 import Card from '@/components/card';
 import { shuffle } from '@/utils';
+import { CardWhenEmpty } from '@/utils/blank_value';
 
 type WithAnswer<T> = T & { answer: boolean };
 
@@ -13,7 +14,9 @@ export default function QuestionWord({
 	onFinishClick?: () => void;
 }) {
 	const [index, setIndex] = useState(0);
-	const [card, setCard] = useState<CardProps[]>(cards);
+	const [card, setCard] = useState<CardProps[]>(
+		cards.length === 0 ? [CardWhenEmpty] : cards,
+	);
 	const [isCorrect, setIsCorrect] = useState(false);
 	const currentCards: WithAnswer<CardProps>[] = useMemo(() => {
 		const answer = card[index];
@@ -27,6 +30,10 @@ export default function QuestionWord({
 	}, [card, index]);
 
 	useEffect(() => {
+		if (cards.length === 0) {
+			setCard([CardWhenEmpty]);
+			return;
+		}
 		setCard(cards);
 	}, [cards]);
 

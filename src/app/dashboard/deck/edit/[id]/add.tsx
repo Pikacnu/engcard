@@ -13,10 +13,15 @@ export default function Add({
 	defaultValue,
 	id,
 	className,
+	AddInfo,
 }: {
 	defaultValue?: CardProps;
 	id: string;
 	className?: string;
+	AddInfo?: {
+		deckid: string;
+		onAdd?: () => void;
+	};
 }) {
 	const [word, setWord] = useState('');
 	const [partOfSpeech, setPartOfSpeech] = useState<PartOfSpeech>(
@@ -31,6 +36,7 @@ export default function Add({
 		>
 			<h3>Word:</h3>
 			<input
+				className='p-1'
 				type='text'
 				value={word}
 				onChange={(e) => setWord(e.target.value)}
@@ -404,7 +410,16 @@ export default function Add({
 			</button>
 			<button
 				onClick={() =>
-					addCard.bind(null, id, word, definitions, partOfSpeech)()
+					addCard
+						.bind(null, id, word, definitions, partOfSpeech)()
+						.then(() => {
+							if (AddInfo?.onAdd) {
+								AddInfo.onAdd();
+							}
+							setWord('');
+							setDefinitions([]);
+							setPartOfSpeech(PartOfSpeech.Noun);
+						})
 				}
 			>
 				Add Card

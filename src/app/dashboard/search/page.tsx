@@ -2,8 +2,16 @@
 import { CardProps } from '@/type';
 import { useCallback, useEffect, useState, useTransition } from 'react';
 import Card from '@/components/card';
+import { addCardFromDB } from '@/actions/deck';
 
-export default function Search() {
+export default function Search({
+	addInfo,
+}: {
+	addInfo?: {
+		deckid: string;
+		onAdd?: () => void;
+	};
+}) {
 	const [word, setWord] = useState<string>('');
 	const [card, setCard] = useState<CardProps | null>(null);
 	const [isPending, startTransition] = useTransition();
@@ -15,6 +23,7 @@ export default function Search() {
 		startTransition(async () => {
 			'use client';
 			const res = await fetch(`/api/word?word=${word}`);
+			console.log(res);
 			const json = await res.json();
 			startTransition(() => {
 				if (!json || json.error) {
@@ -53,12 +62,25 @@ export default function Search() {
 				>
 					Search
 				</button>
+				{addInfo && (
+					<button
+						className='p-2 m-2 rounded-md bg-green-600 text-white'
+						onClick={async () =>
+							addCardFromDB
+								.bind(null, addInfo.deckid, word)()
+								.then(() => {
+									if (addInfo.onAdd) {
+										addInfo.onAdd();
+									}
+								})
+						}
+					>
+						Add
+					</button>
+				)}
 			</div>
 			{(isPending && (
-				<div
-					role='status'
-					className='flex items-center justify-center h-[80vh]'
-				>
+				<div className='flex items-center justify-center h-[80vh]'>
 					<svg
 						aria-hidden='true'
 						className='w-16 h-16 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600'
@@ -79,7 +101,7 @@ export default function Search() {
 				</div>
 			)) ||
 				(card && (
-					<div className='flex flex-col items-center justify-center h-[80vh] min-w-1/5 max-w-4/5 w-3/5 max-md:min-w-4/5'>
+					<div className='flex flex-col items-center justify-center h-[80vh] min-w-1/5 max-w-4/5 w-3/5 max-md:min-w-[90vw]'>
 						<Card card={card} />
 					</div>
 				))}

@@ -8,9 +8,9 @@ export default function AddDeck({ onSubmit }: { onSubmit?: () => void }) {
 
 	return (
 		<form
-			onSubmit={(e) => {
+			onSubmit={async (e) => {
 				e.preventDefault();
-				addDeck.bind(null, name, isPublic)();
+				await addDeck.bind(null, name, isPublic)();
 				if (onSubmit) {
 					onSubmit();
 				}

@@ -2,7 +2,15 @@
 import db from '@/lib/db';
 import { ObjectId } from 'mongodb';
 import { auth } from '@/utils/auth';
-import { CardProps, DeckCollection, Definition, PartOfSpeech } from '@/type';
+import {
+	CardProps,
+	Deck,
+	DeckCollection,
+	Definition,
+	PartOfSpeech,
+	ShareLink,
+	Word,
+} from '@/type';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function getDeck(id: string): Promise<any> {
@@ -90,4 +98,69 @@ export async function addCard(
 			},
 		},
 	);
+}
+
+export async function addCardFromDB(deckId: string, word: string) {
+	const session = await auth();
+	if (!session) {
+		return;
+	}
+	const card = await db.collection<Word>('words').findOne({ word });
+
+	if (!card) {
+		return;
+	}
+	const cardprops: CardProps = {
+		word: card.word,
+		phonetic: card.phonetic,
+		blocks: card.blocks,
+	};
+	await db.collection<DeckCollection>('deck').findOneAndUpdate(
+		{ _id: new ObjectId(deckId), userId: session.user?.id },
+		{
+			$push: {
+				cards: cardprops,
+			},
+		},
+	);
+	return;
+}
+
+export async function getShareDeck(deckId: string) {
+	const session = await auth();
+	if (!session) {
+		return;
+	}
+
+	const share = await db.collection<ShareLink>('share').findOne({
+		deckId,
+	});
+	if (share) {
+		return new URLSearchParams({ deck: deckId }).toString();
+	}
+
+	const deck = await db
+		.collection<DeckCollection>('deck')
+		.findOne({ _id: new ObjectId(deckId) });
+
+	if (!deck) {
+		return;
+	}
+	if (deck.userId !== session.user?.id) {
+		return;
+	}
+	if (!deck.isPublic) {
+		await db
+			.collection<Deck>('deck')
+			.findOneAndUpdate(
+				{ _id: new ObjectId(deckId) },
+				{ $set: { isPublic: true } },
+			);
+	}
+
+	await db.collection<ShareLink>('share').insertOne({
+		deckId,
+		isPublic: true,
+	});
+	return new URLSearchParams({ deck: deckId }).toString();
 }

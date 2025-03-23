@@ -110,3 +110,46 @@ export type DeckCollection = {
 	name: string;
 	isPublic: boolean;
 };
+
+export enum CardType {
+	Questions,
+	Card,
+	List,
+	Word,
+}
+
+export type Deck = {
+	name: string;
+	isPublic: boolean;
+	userId: string;
+	cards: CardProps[];
+};
+
+export type DeckResponse = {
+	_id: string;
+	card_length: number;
+	name: string;
+	isPublic: boolean;
+};
+
+export type DeckCardsResponse = Deck & { _id: string };
+
+export type ShareLink = {
+	deckId: string;
+	isPublic: boolean;
+	allows?: string[];
+};
+
+export type Word = {
+	word: string;
+	phonetic: string;
+	phonetics: Phonetic[];
+	blocks: Blocks[];
+};
+
+export type WordHistory = {
+	userId: string;
+	deckId: string;
+	words: string[];
+	date: Date;
+};
