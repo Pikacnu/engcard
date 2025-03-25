@@ -2,10 +2,18 @@
 import { CardProps } from '@/type';
 import { useCallback, useEffect, useState, useTransition } from 'react';
 import Card from '@/components/card';
+import List from '@/components/list';
+
+enum Type {
+	card,
+	cards,
+}
 
 export default function Search() {
 	const [word, setWord] = useState<string>('');
 	const [card, setCard] = useState<CardProps | null>(null);
+	const [cards, setCards] = useState<CardProps[]>([]);
+	const [type, setType] = useState<Type>(Type.card);
 	const [isPending, startTransition] = useTransition();
 
 	const getWord = useCallback(() => {
@@ -15,14 +23,21 @@ export default function Search() {
 		startTransition(async () => {
 			'use client';
 			const res = await fetch(`/api/word?word=${word}`);
-			console.log(res);
 			const json = await res.json();
 			startTransition(() => {
 				if (!json || json.error) {
 					setCard(null);
+					setCards([]);
 					return;
 				}
-				setCard(Object.assign(json, { flipped: true }));
+				const type = Array.isArray(json) ? Type.cards : Type.card;
+				setType(type);
+				if (type === Type.card) {
+					setCard(Object.assign(json, { flipped: true }));
+				} else {
+					console.log(json);
+					setCards(json);
+				}
 			});
 		});
 	}, [word]);
@@ -40,7 +55,7 @@ export default function Search() {
 	}, [word, getWord]);
 
 	return (
-		<div className='flex flex-col items-center justify-center h-screen bg-gray-700 w-full'>
+		<div className='flex flex-col items-center justify-center h-full bg-gray-700 w-full'>
 			<div className='flex flex-row'>
 				<input
 					className='p-2 m-2 rounded-md text-black'
@@ -76,10 +91,9 @@ export default function Search() {
 					<span className='sr-only'>Loading...</span>
 				</div>
 			)) ||
-				(card && (
-					<div className='flex flex-col items-center justify-center h-[80vh] min-w-1/5 max-w-4/5 w-3/5 max-md:min-w-[90vw]'>
-						<Card card={card} />
-					</div>
+				(type === Type.card && card && <Card card={card} />) ||
+				(type === Type.cards && cards && cards.length > 0 && (
+					<List cards={cards} />
 				))}
 		</div>
 	);

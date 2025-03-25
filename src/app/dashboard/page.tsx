@@ -16,7 +16,7 @@ export default async function DashBoard() {
 		.flat()
 		.sort((a, b) => b.count - a.count);
 	return (
-		<div className='min-h-screen p-4 flex flex-col '>
+		<div className='min-h-screen p-4 flex flex-col overflow-auto'>
 			<div className='w-full max-w-4xl *:[h-1/2] flex flex-col space-y-4 *:flex-grow *:overflow-auto'>
 				<div className='mb-6 bg-white p-6 rounded-lg shadow-lg'>
 					<h2 className='text-2xl font-semibold mb-4 text-gray-800'>

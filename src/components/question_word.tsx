@@ -1,7 +1,7 @@
 import { CardProps, PartOfSpeech, PartOfSpeechShort } from '@/type';
 import { useState, useEffect, useMemo } from 'react';
 import Card from '@/components/card';
-import { shuffle } from '@/utils';
+import { shuffle } from '@/utils/functions';
 import { CardWhenEmpty } from '@/utils/blank_value';
 
 type WithAnswer<T> = T & { answer: boolean };

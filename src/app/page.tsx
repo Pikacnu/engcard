@@ -56,7 +56,11 @@ export default function Home() {
 							onFinishClick={() => fetchCards(wordStartWith, count)}
 						/>
 					),
-					[CardType.List]: <List cards={cards} />,
+					[CardType.List]: (
+						<div className='flex-grow max-md:w-[80vw] md:max-[50vw]'>
+							<List cards={cards} />
+						</div>
+					),
 					[CardType.Word]: (
 						<QuestionWord
 							cards={cards}
@@ -175,7 +179,7 @@ export default function Home() {
 				</select>
 				<Link
 					href={'/auth/login'}
-					className='text-black self-center'
+					className='text-black self-center min-w-max'
 				>
 					<Image
 						src={`/icons/box-arrow-in-left.svg`}

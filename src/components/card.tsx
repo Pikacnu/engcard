@@ -1,6 +1,6 @@
 'use client';
 
-import { CardProps } from '@/type';
+import { CardProps, PartOfSpeechShort } from '@/type';
 import { useEffect, useState } from 'react';
 
 export default function Card({ card }: { card: CardProps }) {
@@ -40,7 +40,7 @@ export default function Card({ card }: { card: CardProps }) {
 							<div className='inline-flex flex-row-reverse sticky self-end top-2'>
 								{block.partOfSpeech && (
 									<h2 className='text-xl p-1 bg-opacity-40 bg-blue-600 border-2 border-blue-700'>
-										{block.partOfSpeech}
+										{PartOfSpeechShort[block.partOfSpeech]}
 									</h2>
 								)}
 								{block.phonetic && (

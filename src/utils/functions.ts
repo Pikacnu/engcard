@@ -6,3 +6,11 @@ export function shuffle<T>(array: T[]): T[] {
 	}
 	return result;
 }
+
+export function isChinese(str: string): boolean {
+	return /[\u4E00-\u9FA5\uF900-\uFA2D]/.test(str);
+}
+
+export function isHavingSpace(str: string): boolean {
+	return /\s/.test(str);
+}

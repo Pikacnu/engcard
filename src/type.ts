@@ -104,6 +104,18 @@ export type DictionaryAPIData = {
 	}>;
 };
 
+export type WordsAPIResponse = {
+	word: string;
+	results: Array<{
+		definition: string;
+		partOfSpeech: string;
+		synonyms: string[];
+		typeOf: string[];
+		hasTypes: string[];
+		examples?: string[];
+	}>;
+};
+
 export type DeckCollection = {
 	userId: string;
 	cards: CardProps[];
@@ -142,6 +154,7 @@ export type ShareLink = {
 
 export type Word = {
 	word: string;
+	zh: string[];
 	phonetic: string;
 	phonetics: Phonetic[];
 	blocks: Blocks[];
