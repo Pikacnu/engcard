@@ -58,7 +58,7 @@ export default function List({
 
 	return (
 		<div
-			className={`flex flex-col h-full max-md:w-full w-[50vw] min-w-[20vw] ${className} relative max-h-[60vh]`}
+			className={`flex flex-col h-full max-md:w-[90vw] w-[50vw] min-w-[20vw] ${className} relative max-h-[60vh] flex-grow`}
 		>
 			{isFoucs ? (
 				<div className='flex flex-grow w-full h-[60vh] relative'>

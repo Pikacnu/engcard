@@ -57,7 +57,7 @@ export default function Home() {
 						/>
 					),
 					[CardType.List]: (
-						<div className='flex-grow max-md:w-[80vw] md:max-[50vw]'>
+						<div className='max-md:w-[80vw] md:max-[50vw] flex items-center justify-center'>
 							<List cards={cards} />
 						</div>
 					),

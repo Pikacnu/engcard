@@ -91,7 +91,7 @@ export default function Spell({
 							}
 						/>
 					</div>
-					<div className='flex flex-row space-x-2 *:overflow-hidden [&>button]:text-2xl items-center'>
+					<div className='flex flex-row space-x-2 [&>button]:text-2xl items-center'>
 						<button
 							onClick={() =>
 								setDefinitionIndex((prev) => {

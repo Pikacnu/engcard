@@ -14,7 +14,8 @@ export default async function DashBoard() {
 			return [...words];
 		})
 		.flat()
-		.sort((a, b) => b.count - a.count);
+		.sort((a, b) => b.count - a.count)
+		.slice(0, 5);
 	return (
 		<div className='min-h-screen p-4 flex flex-col overflow-auto'>
 			<div className='w-full max-w-4xl *:[h-1/2] flex flex-col space-y-4 *:flex-grow *:overflow-auto'>

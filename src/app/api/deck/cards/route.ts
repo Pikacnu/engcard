@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
 		count: Number(params.get('count')) || null,
 		startWith: params.get('startWith') || null,
 	};
-	if (Object.values(optionalData).every((e) => e !== null)) {
+	if (Object.values(optionalData).some((w) => w !== null)) {
 		let cards: CardProps[] = [];
 		let originalCards = deck.cards;
 		if (optionalData.startWith && optionalData.startWith.trim().length !== 0) {
@@ -64,6 +64,7 @@ export async function GET(request: NextRequest) {
 	return NextResponse.json(
 		Object.assign(deck, {
 			_id: deck._id.toString(),
+			cards: shuffle(deck.cards),
 		}),
 		{
 			status: 200,

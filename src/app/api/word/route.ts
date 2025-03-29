@@ -75,6 +75,9 @@ async function newWord(word: string): Promise<CardProps | null> {
 	const processedData: CardProps = {
 		word: data.word,
 		phonetic: data.phonetic,
+		audio:
+			data.phonetics.find((phonetic) => phonetic.text === data.phonetic)
+				?.audio || '',
 		blocks: data.meanings.map((meaning) => ({
 			partOfSpeech: meaning.partOfSpeech as PartOfSpeech,
 			definitions: meaning.definitions.map((definition) => {
@@ -125,7 +128,8 @@ async function newWord(word: string): Promise<CardProps | null> {
 		});
 		const result: CardProps = AIResponse.choices[0].message
 			?.parsed as CardProps;
-		return result;
+		console.log('OpenAI SDK Success');
+		return CheckData(processedData, result);
 	} catch (error) {
 		console.error('OpenAI SDK Error :', error);
 		console.log('trying by google AI SDK');
@@ -139,10 +143,34 @@ async function newWord(word: string): Promise<CardProps | null> {
 				Please response with all the blocks
 				`);
 			const result: CardProps = JSON.parse(AIResponse.response.text());
-			return result;
+			console.log('Google AI SDK Success');
+			return CheckData(processedData, result);
 		} catch (error) {
 			console.error('Error parsing AI response:', error);
 		}
 	}
 	return processedData;
+}
+
+function CheckData(apidata: CardProps, aidata: CardProps) {
+	let result = aidata;
+	if (
+		aidata.phonetic === '' ||
+		aidata.phonetic === undefined ||
+		aidata.phonetic === 'string'
+	) {
+		result = Object.assign(result, {
+			phonetic: apidata.phonetic,
+		});
+	}
+	if (
+		aidata.audio === '' ||
+		aidata.audio === undefined ||
+		aidata.audio === 'string'
+	) {
+		result = Object.assign(result, {
+			audio: apidata.audio,
+		});
+	}
+	return result;
 }

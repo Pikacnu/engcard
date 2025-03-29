@@ -1,3 +1,6 @@
+import { Content } from '@google/generative-ai';
+import { ChatModelSchema } from './utils';
+
 export type Lang = 'en' | 'tw';
 export type LangEnum = { [key in Lang]: string };
 
@@ -6,6 +9,7 @@ export type CardProps = {
 	phonetic: string;
 	blocks: Blocks[];
 	flipped?: boolean;
+	audio?: string;
 };
 
 export type Phonetic = {
@@ -91,7 +95,7 @@ export type PopUp = {
 export type DictionaryAPIData = {
 	word: string;
 	phonetic: string;
-	phonetics: { text: string; audio?: string }[];
+	phonetics: { text: string; audio?: string; sourceUrl: string }[];
 	orign: string;
 	meanings: Array<{
 		partOfSpeech: string;
@@ -166,3 +170,35 @@ export type WordHistory = {
 	words: string[];
 	date: Date;
 };
+
+export type WithStringId<T> = T & { id: string };
+
+export type WithStringObjectId<T> = T & { _id: string };
+
+export type ChatSession = {
+	userId: string;
+	//history: WithStringId<Content>[];
+	history: Array<{
+		content: WithStringId<Content>;
+		action?: ChatModelSchema;
+	}>;
+	chatName: string;
+};
+
+export enum ChatAction {
+	AddDeck = 'AddDeck',
+	RemoveDeck = 'RemoveDeck',
+	EditDeck = 'EditDeck',
+	DoNothing = 'DoNothing',
+	ShowOuput = 'ShowOuput',
+	AddCard = 'AddCard',
+	//Questions = 'Questions',
+}
+
+export const ExtenstionTable = new Map([
+	['image/jpeg', 'jpg'],
+	['image/png', 'png'],
+	['image/webp', 'webp'],
+	['image/gif', 'gif'],
+	['image/svg+xml', 'svg'],
+]);

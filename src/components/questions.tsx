@@ -25,7 +25,7 @@ export default function Questions({
 	}, [index, cards]);
 
 	return (
-		<div className='flex flex-col h-full max-md:w-[80vw] w-[60vw] min-w-[20vw] justify-center'>
+		<div className='flex flex-col h-full max-md:w-[80vw] w-[60vw] min-w-[20vw] justify-center relative'>
 			<Spell
 				card={cardData[index]}
 				className='pb-8 h-3/5 md:h-4/5'

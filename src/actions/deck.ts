@@ -15,21 +15,36 @@ import {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function getDeck(id: string): Promise<any> {
 	const deckId = new ObjectId(id);
-	const deck = await db.collection('deck').findOne({ _id: deckId });
+	const deck = await db
+		.collection<DeckCollection>('deck')
+		.findOne({ _id: deckId });
 	if (!deck) {
 		return null;
 	}
-	if (deck.isPublic) {
-		return { ...deck, _id: deck._id.toString() };
+	if (!deck.isPublic) {
+		const session = await auth();
+		if (!session) {
+			return null;
+		}
+		if (deck.userId !== session.user?.id) {
+			return null;
+		}
 	}
-	const session = await auth();
-	if (!session) {
-		return null;
-	}
-	if (deck.userId !== session.user?.id) {
-		return null;
-	}
-	return { ...deck, _id: deck._id.toString() };
+	return {
+		...deck,
+		cards: deck.cards.map((card) => {
+			//@ts-expect-error Bug by Add Card Without Removed _id (Fixed)
+			if (card._id) {
+				return {
+					word: card.word,
+					blocks: card.blocks,
+					phonetic: card.phonetic,
+				};
+			}
+			return card;
+		}),
+		_id: deck._id.toString(),
+	};
 }
 
 export async function getDecks() {

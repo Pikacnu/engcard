@@ -30,12 +30,14 @@ export default function Deck() {
 	}, [updateDecks]);
 
 	return (
-		<>
+		<div className='flex flex-col w-full h-full flex-grow'>
 			{deckId && (
-				<DeckPreview
-					deckId={deckId.toString()}
-					onClose={() => setDeckId(null)}
-				/>
+				<div className='absolute w-full h-screen overflow-hidden bg-black bg-opacity-40 top-0 left-0 flex items-center justify-center'>
+					<DeckPreview
+						deckId={`${deckId.toString()}`}
+						onClose={() => setDeckId(null)}
+					/>
+				</div>
 			)}
 			{isOpenAddArea && (
 				<div
@@ -142,6 +144,6 @@ export default function Deck() {
 					</button>
 				</div>
 			)}
-		</>
+		</div>
 	);
 }

@@ -18,8 +18,12 @@ export default async function Login() {
 					provider={LoginMethod.Discord}
 					className='p-2 shadow-lg hover:bg-opacity-80 transition-all duration-100'
 				></SignInButton>
+				<SignInButton
+					provider={LoginMethod.Google}
+					className='p-2 shadow-lg hover:bg-opacity-80 transition-all duration-100'
+				></SignInButton>
 			</div>
-			<div className='flex flex-grow justify-center items-center bg-white bg-opacity-70 h-full w-full'></div>
+			<div className='flex flex-grow justify-center items-center bg-white bg-opacity-70 h-full w-full max-md:hidden'></div>
 		</div>
 	);
 }

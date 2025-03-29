@@ -1,10 +1,9 @@
 'use client';
 import { getDeck } from '@/actions/deck';
 import Deck from '@/components/deck';
-import { Document } from 'mongodb';
+import { DeckCollection } from '@/type';
+import { WithId } from 'mongodb';
 import { useEffect, useState } from 'react';
-
-type Deck = Document & { _id: string };
 
 export default function DeckPreview({
 	deckId,
@@ -13,12 +12,13 @@ export default function DeckPreview({
 	deckId: string;
 	onClose: () => void;
 }) {
-	const [deck, setDeck] = useState<Deck | null>(null);
+	const [deck, setDeck] = useState<DeckCollection | null>(null);
 	const [loaded, setLoaded] = useState(false);
+	console.log(deckId);
 	useEffect(() => {
 		getDeck
 			.bind(null, deckId)()
-			.then((deck) => {
+			.then((deck: WithId<DeckCollection>) => {
 				setLoaded(true);
 				if (!deck) {
 					return;

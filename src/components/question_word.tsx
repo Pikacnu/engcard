@@ -20,12 +20,12 @@ export default function QuestionWord({
 	const [isCorrect, setIsCorrect] = useState(false);
 	const currentCards: WithAnswer<CardProps>[] = useMemo(() => {
 		const answer = card[index];
-		const question = shuffle(
-			card.filter((_, i) => i !== index).slice(0, 3),
-		).map((card) => ({
-			...card,
-			answer: false,
-		}));
+		const question = shuffle(card.filter((_, i) => i !== index))
+			.slice(0, 3)
+			.map((card) => ({
+				...card,
+				answer: false,
+			}));
 		return shuffle([Object.assign(answer, { answer: true }), ...question]);
 	}, [card, index]);
 
@@ -38,7 +38,7 @@ export default function QuestionWord({
 	}, [cards]);
 
 	return (
-		<div className='flex flex-col items-center justify-center w-full md:max-w-[60vw] h-full m-4'>
+		<div className='flex flex-col items-center justify-center w-full md:max-w-[60vw] h-full md:m-4'>
 			<div className=' max-w-full w-full max-h-[80vh] pb-8'>
 				{!isCorrect ? (
 					<div className='flex flex-col '>
@@ -74,7 +74,7 @@ export default function QuestionWord({
 					</div>
 				) : (
 					<div
-						className='w-full max-h-[60vh] h-[70vh]'
+						className='w-full max-h-[60vh] h-[70vh] relative'
 						onClick={() => {
 							if (index === card.length - 1) {
 								setIsCorrect(false);

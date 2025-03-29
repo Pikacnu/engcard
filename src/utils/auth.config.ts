@@ -1,8 +1,9 @@
 import type { NextAuthConfig } from 'next-auth';
 import Discord from 'next-auth/providers/discord';
+import Google from 'next-auth/providers/google';
 
 export default {
-	providers: [Discord],
+	providers: [Discord, Google],
 	callbacks: {
 		authorized({ request, auth }) {
 			const url = new URL(request.url);

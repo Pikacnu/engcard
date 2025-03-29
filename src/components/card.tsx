@@ -2,25 +2,30 @@
 
 import { CardProps, PartOfSpeechShort } from '@/type';
 import { useEffect, useState } from 'react';
+import { useAudio } from '@/hooks/useAudio';
+import Image from 'next/image';
 
 export default function Card({ card }: { card: CardProps }) {
 	const [cardData, setcardData] = useState<CardProps>(card);
 	const [flipped, setFlipped] = useState(card.flipped || false);
+	const [isPlaying, toggle] = useAudio(cardData.audio || '');
 
 	useEffect(() => {
 		setFlipped(card.flipped || false);
 		setcardData(card);
 	}, [card]);
 
-	const { word, phonetic, blocks } = cardData;
+	const { word, phonetic, blocks, audio } = cardData;
 	return (
 		<div
-			className='flex flex-col w-full h-full min-w-[20vw] shadow-lg p-4 m-4 rounded-lg select-none bg-blue-100 dark:bg-gray-800 overflow-hidden flex-grow'
+			className='flex flex-col h-full min-w-[20vw] shadow-lg p-4 m-4 rounded-lg select-none bg-blue-100 dark:bg-gray-800 overflow-hidden flex-grow'
 			onClick={() => setFlipped(!flipped || true)}
 		>
 			{!flipped && (
-				<div className='flex flex-col items-center justify-center flex-grow relative'>
-					<h1 className='text-4xl'>{word}</h1>
+				<div className='flex flex-col items-center justify-center flex-grow relative overflow-hidden'>
+					<h1 className='text-4xl text-wrap whitespace-break-spaces '>
+						{word}
+					</h1>
 					<p className='text-xl'>{phonetic}</p>
 					<p className='absolute bottom-5 text-gray-500'>Click to Flip</p>
 				</div>
@@ -28,9 +33,31 @@ export default function Card({ card }: { card: CardProps }) {
 			{flipped && (
 				<div className='flex-grow w-full relative h-min overflow-auto bg-inherit'>
 					<div className='flex flex-row items-center *:p-2 sticky -top-1 bg-inherit'>
-						<h1 className=' text-4xl'>{word}</h1>
+						<h1 className=' text-4xl whitespace-pre-wrap text-wrap '>{word}</h1>
 						<p className='text-xl'>{phonetic}</p>
 					</div>
+
+					{audio && (
+						<div className='flex flex-row items-center justify-start'>
+							<button
+								className='bg-blue-500 text-white p-2 rounded-lg'
+								disabled={isPlaying as boolean}
+								onClick={() => {
+									if (typeof toggle === 'function') {
+										toggle();
+									}
+								}}
+							>
+								<Image
+									src='/icons/volume-up.svg'
+									alt='play'
+									width={12}
+									height={12}
+									className='object-cover'
+								></Image>
+							</button>
+						</div>
+					)}
 
 					{blocks.map((block, index) => (
 						<div

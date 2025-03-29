@@ -1,0 +1,118 @@
+{
+	"words": [
+		{
+			"definitions": ["enough for a specific purpose"],
+			"examples": [
+				"Nick's earnings are not sufficient to cover all of his living expenses."
+			],
+			"translations": ["充足的", "足夠的"],
+			"word": "sufficient",
+			"partOfSpeech": "adjective",
+			"phonetic": "[səˈfɪʃənt]"
+		},
+		{
+			"definitions": [
+				"the money that a person, a region, a country, etc. earns from work, from investment, from business, etc."
+			],
+			"examples": [
+				"Anne has several sources of income. She has two part-time jobs and a small online business."
+			],
+			"translations": ["收入", "收益"],
+			"word": "income",
+			"partOfSpeech": "noun",
+			"phonetic": "['ɪn,kʌm]"
+		},
+		{
+			"definitions": ["relating to money or the management of money"],
+			"examples": [
+				"Ben and his wife ran into financial difficulties when he lost his job shortly after they purchased a house."
+			],
+			"translations": ["財務的", "金融的"],
+			"word": "financial",
+			"partOfSpeech": "adjective",
+			"phonetic": "[faɪˈnænʃəl]"
+		},
+		{
+			"definitions": [
+				"the possibility that something bad might happen; a situation that could have a bad or dangerous result"
+			],
+			"examples": [
+				"People who are exposed to too much sun are at higher risk of getting skin cancer.",
+				"The firefighter risked his life to save a woman and her children from the burning building."
+			],
+			"translations": ["風險", "危險"],
+			"word": "risk",
+			"partOfSpeech": "noun",
+			"phonetic": "[risk]"
+		},
+		{
+			"definitions": [
+				"relating to the physical features of a place and its location"
+			],
+			"examples": [
+				"On this map, you can see the country's geographical features, including mountains, lakes, and rivers."
+			],
+			"translations": ["地理(學)的"],
+			"word": "geographical",
+			"partOfSpeech": "adjective",
+			"phonetic": "[,dʒiəˈgræfɪkl]"
+		},
+		{
+			"definitions": [
+				"the study of the physical features of the earth and its atmosphere, and of human activity as it affects and is affected by these"
+			],
+			"examples": [
+				"During geography class, we had to draw a map of the world and label as many countries as we could."
+			],
+			"translations": ["地理學"],
+			"word": "geography",
+			"partOfSpeech": "noun",
+			"phonetic": "[dʒiˈɒgrəfi]"
+		},
+		{
+			"definitions": [
+				"something between one thing or person and another that keeps them separate"
+			],
+			"examples": [
+				"Poverty is often a barrier to higher education since many people cannot afford to spend their time and money on college."
+			],
+			"translations": ["隔閡", "障礙"],
+			"word": "barrier",
+			"partOfSpeech": "noun",
+			"phonetic": "['bæriə]"
+		},
+		{
+			"definitions": ["certainly; truly"],
+			"examples": [
+				"As Tom suggested, having another employee to help out will indeed take some pressure off us."
+			],
+			"translations": ["的確", "確實"],
+			"word": "indeed",
+			"partOfSpeech": "adverb",
+			"phonetic": "[ɪnˈdiːd]"
+		},
+		{
+			"definitions": [
+				"a particular situation that makes it possible to do or achieve something"
+			],
+			"examples": [
+				"When Lisa makes a mistake, she always takes it as an opportunity for growth and learning.",
+				"You will have a lot of opportunity to use English if you travel in an English-speaking country."
+			],
+			"translations": ["機會", "時機"],
+			"word": "opportunity",
+			"partOfSpeech": "noun",
+			"phonetic": "[ˌɒpərˈtjuːnəti]"
+		},
+		{
+			"definitions": ["very bad or serious"],
+			"examples": [
+				"Nancy has a severe leg injury, and it could be months before she is able to walk again."
+			],
+			"translations": ["非常嚴重的"],
+			"word": "severe",
+			"partOfSpeech": "adjective",
+			"phonetic": "[səˈvɪər]"
+		}
+	]
+}

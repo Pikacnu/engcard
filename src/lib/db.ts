@@ -10,7 +10,7 @@ const db = client.db(dbName);
 export const words = db.collection<Word>('words');
 (async () => {
 	const exists = await words.indexExists('text');
-	if (!exists) {
+	if (exists) {
 		await words.createIndex({
 			title: 'text',
 			description: 'text',

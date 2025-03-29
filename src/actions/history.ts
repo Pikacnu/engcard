@@ -67,5 +67,6 @@ export async function getRecentHotWords(duraction: number) {
 			},
 		])
 		.toArray();
+
 	return data;
 }
