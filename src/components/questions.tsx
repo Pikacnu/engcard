@@ -1,16 +1,18 @@
 'use client';
 
 import { CardProps } from '@/type';
-import { useEffect, useState } from 'react';
+import { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import Spell from './spell';
 import { CardWhenEmpty } from '@/utils/blank_value';
 
 export default function Questions({
 	cards,
 	onFinishClick,
+	updateCurrentWord,
 }: {
 	cards: CardProps[];
 	onFinishClick?: () => void;
+	updateCurrentWord?: Dispatch<SetStateAction<CardProps | undefined>>;
 }) {
 	const [index, setIndex] = useState(0);
 	const [cardData, setCard] = useState<CardProps[]>(
@@ -22,7 +24,8 @@ export default function Questions({
 			return;
 		}
 		setCard(cards);
-	}, [index, cards]);
+		updateCurrentWord?.(cards[index]);
+	}, [index, cards, updateCurrentWord]);
 
 	return (
 		<div className='flex flex-col h-full max-md:w-[80vw] w-[60vw] min-w-[20vw] justify-center relative'>
@@ -34,9 +37,25 @@ export default function Questions({
 						if (prev === cardData.length - 1) return prev;
 						return prev + 1;
 					});
+					updateCurrentWord?.(cardData[index + 1]);
 					if (index === cardData.length - 1) onFinishClick?.();
 				}}
 			></Spell>
+
+			<button
+				className='bg-gray-500 text-white p-2 rounded-lg absolute bottom-0 right-0 m-4'
+				onClick={() => {
+					setIndex((prev) => {
+						if (prev === cardData.length - 1) return prev;
+						return prev + 1;
+					});
+					if (index < cardData.length - 1) return;
+					onFinishClick?.();
+					setIndex(0);
+				}}
+			>
+				{'Skip'}
+			</button>
 
 			<div className='w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700 select-none'>
 				<div

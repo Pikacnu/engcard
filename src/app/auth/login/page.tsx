@@ -12,7 +12,7 @@ export default async function Login() {
 	}
 	return (
 		<div className='w-full h-screen flex justify-center items-center '>
-			<div className='flex top-0 left-0 h-full bg-black bg-opacity-50 z-50 w-[30vw] items-center justify-center flex-col'>
+			<div className='flex top-0 left-0 h-full bg-black bg-opacity-50 z-50 w-[30vw] items-center justify-center flex-col max-md:w-full'>
 				<h2 className='text-white text-2xl pb-4'> Login</h2>
 				<SignInButton
 					provider={LoginMethod.Discord}

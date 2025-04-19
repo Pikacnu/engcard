@@ -8,6 +8,7 @@ import {
 	CardProps,
 } from '@/type';
 import { addCard } from '@/actions/deck';
+import { Langs } from '@/types/lang';
 
 export default function Add({
 	defaultValue,
@@ -101,7 +102,7 @@ export default function Add({
 												});
 											}}
 										>
-											{['en', 'tw'].map((lang) => (
+											{Langs.map((lang) => (
 												<option
 													key={lang}
 													value={lang}

@@ -5,5 +5,7 @@ import authConfig from './auth.config';
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
 	...authConfig,
-	adapter: MongoDBAdapter(client),
+	adapter: MongoDBAdapter(client, {
+		databaseName: process.env.NODE_ENV === 'development' ? 'test' : 'prod',
+	}),
 });

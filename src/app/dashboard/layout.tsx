@@ -65,6 +65,15 @@ export default async function DashBoardLayout({
 								className='cursor-pointer'
 							></Image>
 						</Link>
+						<Link href='/market'>
+							<Image
+								src='/icons/shop.svg'
+								alt='market'
+								width={24}
+								height={24}
+								className='cursor-pointer'
+							></Image>
+						</Link>
 					</div>
 					<SignOutButton />
 				</div>

@@ -4,6 +4,7 @@ import Add from './add';
 import Search from './search';
 import { use, useCallback, useEffect, useState, useTransition } from 'react';
 import { DeckCollection } from '@/type';
+import { FileToBase64 } from '@/utils/base64';
 
 export default function EditPage({
 	params,
@@ -91,7 +92,8 @@ export default function EditPage({
 							try {
 								startTransition(async () => {
 									let uploadingFile = file;
-									if (file.size > 7 * 1024 * 1024) {
+
+									if (file.size > 5 * 1024 * 1024) {
 										//compress image
 										const image = new Image();
 										image.src = URL.createObjectURL(file);
@@ -106,33 +108,67 @@ export default function EditPage({
 										canvas.width = image.width;
 										canvas.height = image.height;
 										ctx.drawImage(image, 0, 0);
-										const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+										const dataUrl = canvas.toDataURL(
+											'image/jpeg',
+											file.size > 10 * 1024 * 1024 ? 0.5 : 0.7,
+										);
 										const blob = await fetch(dataUrl).then((res) => res.blob());
-										uploadingFile = new File([blob], file.name, {
-											type: 'image/jpeg',
-										});
+										uploadingFile = new File(
+											[blob],
+											`${file.name.split('.')[0]}.jpg`,
+											{
+												type: 'image/jpeg',
+											},
+										);
 									}
 
-									const res = await fetch(`/api/ocr/deck?deckId=${id}`, {
-										method: 'POST',
-										headers: {
-											'Content-Type': uploadingFile.type,
-										},
-										body: new Blob([uploadingFile], {
-											type: uploadingFile.type,
-										}),
-									});
-									const json = await res.json();
-									if (!res.ok) {
-										alert(json.error);
-										return;
+									let res;
+									try {
+										res = await fetch(`/api/ocr/deck?deckId=${id}`, {
+											method: 'POST',
+											headers: {
+												'Content-Type': uploadingFile.type,
+												'Content-Length': `${uploadingFile.size}`,
+											},
+											body: new Blob([uploadingFile], {
+												type: uploadingFile.type,
+											}),
+										});
+									} catch (e) {
+										console.log(e);
+
+										const base64 = await FileToBase64(uploadingFile);
+
+										res = await fetch(`/api/ocr/deck?deckId=${id}`, {
+											method: 'POST',
+											headers: {
+												'Content-Type': 'base64',
+											},
+											body: JSON.stringify({
+												base64: base64,
+												filename: file.name,
+												mimeType: file.type,
+											}),
+										});
+									}
+									try {
+										const json = await res.json();
+										if (!res.ok) {
+											alert(json.error);
+											return;
+										}
+									} catch (e) {
+										console.log(e);
+										startTransition(() => {
+											alert('Error uploading image');
+										});
 									}
 									startTransition(() => {
 										refresh();
 									});
 								});
 							} catch (e) {
-								console.error(e);
+								console.log(e);
 							}
 						}}
 					/>

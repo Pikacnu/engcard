@@ -25,9 +25,11 @@ export default function RootLayout({
 	return (
 		<html lang='en'>
 			<body
-				className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+				className={`${geistSans.variable} ${geistMono.variable} antialiased w-full h-full`}
 			>
-				{children}
+				<div className='flex flex-col items-center justify-center min-h-screen bg-gray-700 w-full h-full'>
+					{children}
+				</div>
 			</body>
 		</html>
 	);

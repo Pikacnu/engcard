@@ -267,10 +267,10 @@ export const TextRecognizeModel = GenerativeAI.getGenerativeModel({
 const fileManager = new GoogleAIFileManager(apikey);
 
 export async function uploadFile(
-	blob: Blob,
+	binary: Uint8Array | Blob,
 	mimeType: string,
 ): Promise<UploadFileResponse> {
-	const NUM_BYTES = blob.size;
+	const NUM_BYTES = binary instanceof Uint8Array ? binary.length : binary.size;
 	const fileName = `image-${Date.now()}.${ExtenstionTable.get(mimeType)}`;
 	const startRes = await fetch(
 		`https://generativelanguage.googleapis.com/upload/v1beta/files?key=${apikey}`,
@@ -297,7 +297,7 @@ export async function uploadFile(
 			'X-Goog-Upload-Offset': '0',
 			'X-Goog-Upload-Command': 'upload, finalize',
 		},
-		body: blob,
+		body: binary,
 	});
 	const uploadData = await uploadRes.json();
 

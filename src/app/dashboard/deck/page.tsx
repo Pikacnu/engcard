@@ -12,6 +12,7 @@ type Deck = WithId<Document> & { name: string; public: boolean };
 
 export default function Deck() {
 	const [decks, setDecks] = useState<Deck[] | null>(null);
+	const [sharedDecks, setSharedDecks] = useState<Deck[] | null>(null);
 	const [deckId, setDeckId] = useState<ObjectId | null>(null);
 	const [isOpenAddArea, setIsOpenAddArea] = useState(false);
 
@@ -23,6 +24,14 @@ export default function Deck() {
 					return;
 				}
 				setDecks(data);
+			});
+		fetch('/api/deck/public?type=full')
+			.then((res) => res.json())
+			.then((data) => {
+				if (data.error) {
+					return;
+				}
+				setSharedDecks(data.decks);
 			});
 	}, []);
 	useEffect(() => {
@@ -135,6 +144,63 @@ export default function Deck() {
 							No Decks Found
 						</h1>
 					)}
+
+					{(sharedDecks &&
+						sharedDecks.map((deck) => (
+							<div
+								className=' grid grid-cols-2 items-center justify-center p-2 bg-gray-700 gap-4 *:*:m-2'
+								key={deck._id.toString()}
+							>
+								<div className='flex flex-col shadow-lg p-2 rounded-lg bg-blue-700 bg-opacity-70'>
+									<h1>
+										<p className=' border-2 inline p-1 m-1'>Name :</p>
+										{deck.name}
+									</h1>
+									<h1>
+										<p className=' border-2 inline p-1 m-1'>Public :</p>
+										Yes
+									</h1>
+									<Link
+										className='flex flex-col bg-black bg-opacity-40 p-2 rounded-lg'
+										href={`/share?deck=${deck._id.toString()}`}
+									>
+										Preview
+									</Link>
+								</div>
+								<div className='flex flex-col m-4 bg-green-600 bg-opacity-30 rounded-lg p-4 *:bg-opacity-80 *:rounded-md *:p-2'>
+									{/*<h2>Options :</h2>*/}
+									<button
+										className=' bg-red-700'
+										onClick={async () => {
+											const res = await fetch(
+												`/api/deck/${deck._id.toString()}`,
+												{
+													method: 'DELETE',
+												},
+											);
+											if (res.ok) {
+												updateDecks();
+											} else {
+												alert('Failed to delete deck');
+											}
+										}}
+									>
+										Delete
+									</button>
+									<button
+										className='bg-blue-700 bg-opacity-40'
+										onClick={async () => {
+											const searchparams = await getShareDeck(
+												deck._id.toString(),
+											);
+											redirect(`/share?${searchparams}`);
+										}}
+									>
+										Share
+									</button>
+								</div>
+							</div>
+						))) || <h1 className='col-span-4 row-span-4 text-center'></h1>}
 
 					<button
 						className='shadow p-4 rounded-lg'

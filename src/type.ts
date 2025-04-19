@@ -1,8 +1,8 @@
 import { Content } from '@google/generative-ai';
 import { ChatModelSchema } from './utils';
+import { Lang } from './types/lang';
 
-export type Lang = 'en' | 'tw';
-export type LangEnum = { [key in Lang]: string };
+export { type Lang, type LangEnum } from './types/lang';
 
 export type CardProps = {
 	word: string;
@@ -139,6 +139,7 @@ export type Deck = {
 	isPublic: boolean;
 	userId: string;
 	cards: CardProps[];
+	allows?: string[];
 };
 
 export type DeckResponse = {
@@ -202,3 +203,49 @@ export const ExtenstionTable = new Map([
 	['image/gif', 'gif'],
 	['image/svg+xml', 'svg'],
 ]);
+
+export const allowedImageExtension = [
+	'jpg',
+	'jpeg',
+	'png',
+	'webp',
+	'gif',
+	'svg',
+];
+
+export const ExtenstionToMimeType = new Map([
+	['jpg', 'image/jpeg'],
+	['jpeg', 'image/jpeg'],
+	['png', 'image/png'],
+	['webp', 'image/webp'],
+	['gif', 'image/gif'],
+	['svg', 'image/svg+xml'],
+]);
+
+export type MarkAsNeedReview = {
+	word: string;
+	count: number;
+	userId: string;
+};
+
+export type Account = {
+	access_token: string;
+	refresh_token: string;
+	expires_in: number;
+	scope: string;
+	token_type: string;
+	providerAccountId: string;
+	provider: string;
+	type: string;
+	userId: string;
+};
+
+export type MarkedWord = {
+	userId: string;
+	word: string[];
+};
+
+export type PublicDeckToUser = {
+	userId: string;
+	deckId: string[];
+};

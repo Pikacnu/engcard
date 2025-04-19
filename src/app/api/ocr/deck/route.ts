@@ -1,24 +1,32 @@
 import {
 	auth,
+	Base64ToFile,
 	TextRecognizeModel,
 	TextRecognizeSchema,
 	uploadFile,
 } from '@/utils';
 import { NextResponse } from 'next/server';
 import { GET } from '@/app/api/word/route';
-import { Deck, Word } from '@/type';
+import {
+	allowedImageExtension,
+	Deck,
+	ExtenstionTable,
+	ExtenstionToMimeType,
+	Word,
+} from '@/type';
 import db from '@/lib/db';
 import { ObjectId } from 'mongodb';
-import { ExtenstionTable } from '@/type';
 
 export async function POST(req: Request) {
 	const session = await auth();
 	if (!session) {
 		return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 	}
+
 	const url = new URL(req.url);
-	const searchParams = url.searchParams;
-	const deckId = searchParams.get('deckId')?.trim();
+	const params = url.searchParams;
+
+	const deckId = params.get('deckId') as string;
 
 	if (!deckId) {
 		return NextResponse.json({ error: 'DeckId is required' }, { status: 400 });
@@ -36,11 +44,40 @@ export async function POST(req: Request) {
 		return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 	}
 
-	const imageData = await req.blob();
-	const imageType = imageData.type || req.headers.get('content-type') || '';
+	let imageData;
+
+	if (req.headers.get('content-type')?.includes('base64')) {
+		const { base64, filename, mimeType } = await req.json();
+		if (!base64 || !filename || !mimeType) {
+			return NextResponse.json(
+				{ error: 'Need three arguments' },
+				{ status: 400 },
+			);
+		}
+		const imageData = Base64ToFile(base64, filename, mimeType);
+		if (!imageData) {
+			return NextResponse.json({ error: 'Image is required' }, { status: 400 });
+		}
+	} else {
+		imageData = (await req.blob()) as Blob;
+		console.log(imageData);
+		if (!imageData) {
+			return NextResponse.json({ error: 'Image is required' }, { status: 400 });
+		}
+	}
+
+	imageData = (await req.blob()) as Blob;
+	console.log(imageData);
+	if (!imageData) {
+		return NextResponse.json({ error: 'Image is required' }, { status: 400 });
+	}
+	const imageType =
+		(ExtenstionTable.get(imageData.type) as string) ||
+		(req.headers.get('content-type') as string);
 	//const fileext = ExtenstionTable.get(imageType);
 	//const filename = `ocr${Date.now()}.${fileext}`;
-	if (!ExtenstionTable.has(imageType)) {
+	console.log(imageType);
+	if (!allowedImageExtension.includes(imageType)) {
 		return NextResponse.json({ error: 'Invalid image type' }, { status: 400 });
 	}
 
@@ -51,7 +88,7 @@ export async function POST(req: Request) {
 			{ status: 400 },
 		);
 	}
-	console.log(imageType);
+	//console.log(imageType);
 	/*
 	await writeFile(
 		`./public/gemini-data/${filename}`,
@@ -71,7 +108,11 @@ export async function POST(req: Request) {
 			throw new Error('Failed to upload image');
 		}
 		*/
-		const fileData = await uploadFile(imageData, imageType);
+		const binaryData = new Uint8Array(await imageData.arrayBuffer());
+		const fileData = await uploadFile(
+			binaryData,
+			ExtenstionToMimeType.get(imageType) as string,
+		);
 		const response = await TextRecognizeModel.generateContent({
 			contents: [
 				{

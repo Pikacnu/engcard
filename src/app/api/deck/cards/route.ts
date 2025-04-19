@@ -6,10 +6,6 @@ import { CardProps, Deck, DeckCollection } from '@/type';
 import { shuffle } from '@/utils';
 
 export async function GET(request: NextRequest) {
-	const user = await auth();
-	if (!user) {
-		return NextResponse.json({ error: 'Not authorized' }, { status: 401 });
-	}
 	const url = new URL(request.url);
 	const params = url.searchParams;
 	const id = params.get('id');
@@ -26,7 +22,26 @@ export async function GET(request: NextRequest) {
 	const deck = (await db.collection<DeckCollection>('deck').findOne({
 		_id: new ObjectId(id),
 	})) as WithId<Deck>;
-	if (!deck.isPublic && user.user?.id !== deck.userId) {
+
+	if (!deck) {
+		return NextResponse.json({ error: 'Deck Not Found' }, { status: 404 });
+	}
+
+	if (deck.isPublic) {
+		return NextResponse.json(
+			Object.assign(deck, {
+				_id: deck._id.toString(),
+			}),
+			{ status: 200 },
+		);
+	}
+
+	const user = await auth();
+	if (!user) {
+		return NextResponse.json({ error: 'Not authorized' }, { status: 401 });
+	}
+
+	if (user.user?.id !== deck.userId) {
 		return NextResponse.json(
 			{
 				error: 'Not Public or Not Creator',
