@@ -54,13 +54,13 @@ export default function EditPage({
 					<span className='sr-only'>Loading...</span>
 				</div>
 			)}
-			<List
-				cards={deck ? deck.cards : []}
-				className='max-h-full md:max-w-[20vw] w-1/5 max-md:w-full overflow-hidden'
-			/>
 			<Add
 				className='max-w-2/5 w-2/5'
 				id={id}
+			/>
+			<List
+				cards={deck ? deck.cards : []}
+				className='max-h-full md:max-w-[20vw] w-1/5 max-md:w-full overflow-hidden'
 			/>
 			<div className='max-w-1/5 w-2/5 overflow-clip'>
 				<div className='flex flex-row items-center justify-center bg-slate-400 p-2 rounded-lg'>

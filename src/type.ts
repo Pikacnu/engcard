@@ -1,4 +1,4 @@
-import { Content } from '@google/generative-ai';
+import { Content, FunctionCall } from '@google/generative-ai';
 import { ChatModelSchema } from './utils';
 import { Lang } from './types/lang';
 
@@ -182,6 +182,7 @@ export type ChatSession = {
 	history: Array<{
 		content: WithStringId<Content>;
 		action?: ChatModelSchema;
+		functionCall?: FunctionCall | undefined;
 	}>;
 	chatName: string;
 };

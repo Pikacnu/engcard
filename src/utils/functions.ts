@@ -14,3 +14,11 @@ export function isChinese(str: string): boolean {
 export function isHavingSpace(str: string): boolean {
 	return /\s/.test(str);
 }
+
+export function isJapanese(str: string): boolean {
+	return /[ぁ-ゔゞァ-・ヽヾ゛゜ー]/.test(str);
+}
+
+export function isEnglish(str: string): boolean {
+	return /^[a-zA-Z]+$/.test(str);
+}

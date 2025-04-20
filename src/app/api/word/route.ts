@@ -1,6 +1,6 @@
 import DB from '@/lib/db';
 import { CardProps, PartOfSpeech, DictionaryAPIData, Lang } from '@/type';
-import { isChinese } from '@/utils';
+import { isChinese, isEnglish, isJapanese } from '@/utils';
 import {
 	aiClient,
 	GeminiHistory,
@@ -18,6 +18,11 @@ export async function GET(request: Request): Promise<Response> {
 	if (!word) {
 		return NextResponse.json({ error: 'Word is required' }, { status: 400 });
 	}
+
+	if (!(isChinese(word.trim()) || isEnglish(word.trim()))) {
+		return NextResponse.json({ error: 'Word is not valid' }, { status: 400 });
+	}
+
 	const db = DB.collection('words');
 	if (isChinese(word)) {
 		const result = await db.find({ zh: { $in: [word] } }).toArray();
@@ -53,7 +58,12 @@ export async function GET(request: Request): Promise<Response> {
 		}
 		return NextResponse.json(result, { status: 200 });
 	}
-	const data = await newWord(word);
+	let data;
+	if (isJapanese(word)) {
+		data = await getAIResponse(word);
+	} else {
+		data = await newWord(word);
+	}
 	if (!data) {
 		await db.insertOne({ word, avliable: false });
 		return NextResponse.json({ error: 'Word not found' }, { status: 404 });
@@ -107,49 +117,7 @@ async function newWord(word: string): Promise<CardProps | null> {
 			}),
 		})),
 	};
-	let AIResponse;
-	try {
-		AIResponse = await aiClient.beta.chat.completions.parse({
-			model: 'gemini-2.0-flash',
-			messages: [
-				{
-					role: 'system',
-					content: systemInstruction,
-				},
-				...OpenAIHistory,
-				{
-					role: 'user',
-					content: `data : ${JSON.stringify(processedData)}
-				it have ${processedData.blocks.length} blocks(part of speech)
-				Please response with all the blocks`,
-				},
-			],
-			response_format: zodResponseFormat(wordSchema, 'data'),
-		});
-		const result: CardProps = AIResponse.choices[0].message
-			?.parsed as CardProps;
-		console.log('OpenAI SDK Success');
-		return CheckData(processedData, result);
-	} catch (error) {
-		console.error('OpenAI SDK Error :', error);
-		console.log('trying by google AI SDK');
-		try {
-			const chat = WordModel.startChat({
-				history: GeminiHistory,
-			});
-			AIResponse = await chat.sendMessage(`
-				data : ${JSON.stringify(processedData)}
-				it have ${processedData.blocks.length} blocks(part of speech)
-				Please response with all the blocks
-				`);
-			const result: CardProps = JSON.parse(AIResponse.response.text());
-			console.log('Google AI SDK Success');
-			return CheckData(processedData, result);
-		} catch (error) {
-			console.error('Error parsing AI response:', error);
-		}
-	}
-	return processedData;
+	return await getAIResponse(processedData);
 }
 
 function CheckData(apidata: CardProps, aidata: CardProps) {
@@ -173,4 +141,62 @@ function CheckData(apidata: CardProps, aidata: CardProps) {
 		});
 	}
 	return result;
+}
+
+async function getAIResponse(
+	processedData: CardProps | string,
+): Promise<CardProps> {
+	let AIResponse;
+	let prompt;
+	const isProvidedData = typeof processedData === 'object';
+
+	if (isProvidedData) {
+		prompt = `data : ${JSON.stringify(processedData)}
+				it have ${processedData.blocks.length} blocks(part of speech)
+				Please response with all the blocks`;
+	} else {
+		prompt = `word : ${processedData} Please response with all the blocks`;
+	}
+
+	try {
+		AIResponse = await aiClient.beta.chat.completions.parse({
+			model: 'gpt-4.1-mini',
+			messages: [
+				{
+					role: 'system',
+					content: systemInstruction,
+				},
+				...OpenAIHistory,
+				{
+					role: 'user',
+					content: prompt,
+				},
+			],
+			response_format: zodResponseFormat(wordSchema, 'data'),
+		});
+		const result: CardProps = AIResponse.choices[0].message
+			?.parsed as CardProps;
+		console.log('OpenAI SDK Success');
+		if (isProvidedData) return CheckData(processedData, result);
+		return result;
+	} catch (error) {
+		console.error('OpenAI SDK Error :', error);
+		console.log('trying by google AI SDK');
+		try {
+			const chat = WordModel.startChat({
+				history: GeminiHistory,
+			});
+			AIResponse = await chat.sendMessage(prompt);
+			const result: CardProps = JSON.parse(AIResponse.response.text());
+			console.log('Google AI SDK Success');
+			if (isProvidedData) return CheckData(processedData, result);
+			return result;
+		} catch (error) {
+			console.error('Error parsing AI response:', error);
+		}
+	}
+	if (typeof processedData === 'string') {
+		console.log('Error: No data found');
+	}
+	return processedData as CardProps;
 }

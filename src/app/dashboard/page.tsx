@@ -1,5 +1,9 @@
 'use server';
 import { getRecentlyHistory, getRecentHotWords } from '@/actions/history';
+import QuickReview from './speedReview';
+import { Suspense } from 'react';
+
+const maxWords = 5;
 
 export default async function DashBoard() {
 	const recentHistory = await getRecentlyHistory();
@@ -16,8 +20,9 @@ export default async function DashBoard() {
 		.flat()
 		.sort((a, b) => b.count - a.count)
 		.slice(0, 5);
+
 	return (
-		<div className='min-h-screen p-4 flex flex-col overflow-auto'>
+		<div className='min-h-screen p-4 flex flex-row overflow-auto'>
 			<div className='w-full max-w-4xl *:[h-1/2] flex flex-col space-y-4 *:flex-grow *:overflow-auto'>
 				<div className='mb-6 bg-white p-6 rounded-lg shadow-lg'>
 					<h2 className='text-2xl font-semibold mb-4 text-gray-800'>
@@ -31,7 +36,7 @@ export default async function DashBoard() {
 									className='text-gray-700 flex-wrap flex items-center'
 								>
 									<span className='font-medium flex flex-wrap gap-2'>
-										{item.words.map((word, i2) => (
+										{item.words.slice(0, maxWords).map((word, i2) => (
 											<span
 												key={word + index.toString() + i2.toString()}
 												className='p-2 rounded-lg bg-blue-700 bg-opacity-40 mx-2'
@@ -39,6 +44,7 @@ export default async function DashBoard() {
 												{word}
 											</span>
 										))}
+										{item.words.length > maxWords && '...'}
 									</span>
 									<span className='text-gray-500'>
 										{' - '}
@@ -93,6 +99,11 @@ export default async function DashBoard() {
 						<div className='text-gray-500'>No hot words available.</div>
 					)}
 				</div>
+			</div>
+			<div className='w-[40vw] *:[h-1/2] flex flex-col space-y-4 *:flex-grow *:overflow-auto items-center'>
+				<Suspense>
+					<QuickReview></QuickReview>
+				</Suspense>
 			</div>
 		</div>
 	);

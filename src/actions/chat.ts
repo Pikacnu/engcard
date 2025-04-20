@@ -245,31 +245,6 @@ export async function sendMessage(chatId: string, message: string) {
 	);
 }
 
-async function addWords(words: string[], deckId: string, session: Session) {
-	words.map((word, index) => {
-		setTimeout(async () => {
-			await GET(new Request(`http://localhost:3000/api/word?word=${word}`));
-			const wordData = await db
-				.collection<Word>('words')
-				.findOne({ word: word });
-			if (wordData) {
-				await db.collection<Deck>('deck').findOneAndUpdate(
-					{ _id: new ObjectId(deckId), userId: session.user?.id },
-					{
-						$push: {
-							cards: {
-								word: wordData.word,
-								phonetic: wordData.phonetic,
-								blocks: wordData.blocks,
-							},
-						},
-					},
-				);
-			}
-		}, index * 2.5 * 1_000);
-	});
-}
-
 const chatActionFunctions: Record<
 	ChatAction,
 	(
@@ -344,6 +319,109 @@ const chatActionFunctions: Record<
 	},
 	[ChatAction.AddCard]: async () => {},
 };
+
+/*const chatActionFunctions: Record<
+	ChatAction,
+	(
+		session: Session,
+		...data: { [key: string]: string | string[] | number | boolean }[]
+	) => Promise<void | { error: string }> | void
+> = {
+	[ChatAction.DoNothing]: async () => {},
+	[ChatAction.ShowOuput]: async () => {},
+	[ChatAction.AddDeck]: async (userData, data) => {
+		const session = userData || (await auth());
+		if (!session) return { error: 'Not authenticated' };
+		if (!data.deckName || typeof data.deckName !== 'string')
+			return { error: 'No deck name provided' };
+		const deckId = (
+			await db.collection<DeckCollection>('deck').insertOne({
+				userId: session.user?.id || '',
+				name: data.deckName || '',
+				isPublic: false,
+				cards: [],
+			})
+		).insertedId.toString();
+		await addWords(data.words as string[], deckId, session);
+		return;
+	},
+	[ChatAction.RemoveDeck]: async (userData, data) => {
+		const session = userData || (await auth());
+		if (!session) return { error: 'Not authenticated' };
+		if (!data.deckId) return { error: 'No deck id provided' };
+		if (!ObjectId.isValid(data.deckId as string))
+			return { error: 'Invalid deck id' };
+		const deck = await db.collection<Deck>('deck').findOneAndDelete({
+			_id: new ObjectId(data.deckId as string),
+			userId: session.user?.id,
+		});
+		if (!deck) return { error: 'Deck not found' };
+		return;
+	},
+	[ChatAction.EditDeck]: async (userData, data) => {
+		const session = userData || (await auth());
+
+		const words = data.words as string[];
+		const deckId = data.deckId as string;
+		if (!session) return { error: 'Not authenticated' };
+		if (!deckId) return { error: 'No deck id provided' };
+		if (!ObjectId.isValid(deckId as string))
+			return { error: 'Invalid deck id' };
+
+		const currentDeckData = await db
+			.collection<Deck>('deck')
+			.findOne({ _id: new ObjectId(data.deckId as string) });
+		if (!currentDeckData) return { error: 'Deck not found' };
+
+		const originalDeckWords = currentDeckData.cards.map((card) => card.word);
+		const newWords = words.filter((word) => !originalDeckWords.includes(word));
+		const removedWords = originalDeckWords.filter(
+			(word) => !words.includes(word),
+		);
+
+		const deck = await db.collection<Deck>('deck').findOneAndUpdate(
+			{ _id: new ObjectId(deckId), userId: session.user?.id },
+			{
+				$set: {
+					name: (data.newDeckName as string) || '',
+					cards: currentDeckData.cards.filter((card) =>
+						removedWords.includes(card.word),
+					),
+				},
+			},
+		);
+		await addWords(newWords, deckId, session);
+
+		if (!deck) return { error: 'Deck not found' };
+		return;
+	},
+	[ChatAction.AddCard]: async () => {},
+}; */
+
+async function addWords(words: string[], deckId: string, session: Session) {
+	words.map((word, index) => {
+		setTimeout(async () => {
+			await GET(new Request(`http://localhost:3000/api/word?word=${word}`));
+			const wordData = await db
+				.collection<Word>('words')
+				.findOne({ word: word });
+			if (wordData) {
+				await db.collection<Deck>('deck').findOneAndUpdate(
+					{ _id: new ObjectId(deckId), userId: session.user?.id },
+					{
+						$push: {
+							cards: {
+								word: wordData.word,
+								phonetic: wordData.phonetic,
+								blocks: wordData.blocks,
+							},
+						},
+					},
+				);
+			}
+		}, index * 2.5 * 1_000);
+	});
+}
 
 export async function deleteChatSession(chatId: string) {
 	const session = await auth();

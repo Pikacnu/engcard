@@ -1,4 +1,10 @@
-import { Content, GoogleGenerativeAI } from '@google/generative-ai';
+import {
+	Content,
+	FunctionCall,
+	FunctionDeclaration,
+	GoogleGenerativeAI,
+	SchemaType,
+} from '@google/generative-ai';
 import OpenAI from 'openai';
 import z from 'zod';
 import { GObject, GString, GArray, GEnum } from './gemini-type';
@@ -16,11 +22,26 @@ import {
 import { ChatAction, DeckCollection, ExtenstionTable } from '@/type';
 import db from '@/lib/db';
 
-const apikey = process.env.GEMINI_API_KEY || '';
-export const aiClient = new OpenAI({
-	baseURL: 'https://generativelanguage.googleapis.com/v1beta/openai/',
-	apiKey: apikey,
-});
+enum Model {
+	Gemini,
+	OpenAI,
+}
+
+const modelOptions: Record<Model, { key: string; baseURL: string }> = {
+	[Model.Gemini]: {
+		key: process.env.GEMINI_API_KEY || '',
+		baseURL: 'https://generativelanguage.googleapis.com/v1beta/openai/',
+	},
+	[Model.OpenAI]: {
+		key: process.env.OPENAI_API || '',
+		baseURL: 'https://api.openai.com/v1/',
+	},
+};
+
+const model = Model.OpenAI;
+
+const googleAIKey = process.env.GEMINI_API_KEY || '';
+export const aiClient = new OpenAI(modelOptions[model]);
 
 export const wordSchema = z.object({
 	word: z.string(),
@@ -188,7 +209,7 @@ export const OpenAIHistoryTranscriber = (
 	const result = content.map((item) => {
 		const { role, parts } = item;
 		const text = parts.map((part) => part.text).join('\n');
-		return { role: roleWarpMap.get(role) || role, content: text, name: '' } as
+		return { role: roleWarpMap.get(role) || role, content: text } as
 			| ChatCompletionDeveloperMessageParam
 			| ChatCompletionSystemMessageParam
 			| ChatCompletionUserMessageParam
@@ -199,7 +220,7 @@ export const OpenAIHistoryTranscriber = (
 
 export const OpenAIHistory = OpenAIHistoryTranscriber(GeminiHistory);
 
-const GenerativeAI = new GoogleGenerativeAI(apikey);
+const GenerativeAI = new GoogleGenerativeAI(googleAIKey);
 export const TextModel = GenerativeAI.getGenerativeModel({
 	model: 'gemini-2.0-flash',
 });
@@ -264,7 +285,7 @@ export const TextRecognizeModel = GenerativeAI.getGenerativeModel({
 	systemInstruction: TextRecognizeModelInstruction,
 });
 
-const fileManager = new GoogleAIFileManager(apikey);
+const fileManager = new GoogleAIFileManager(googleAIKey);
 
 export async function uploadFile(
 	binary: Uint8Array | Blob,
@@ -273,7 +294,7 @@ export async function uploadFile(
 	const NUM_BYTES = binary instanceof Uint8Array ? binary.length : binary.size;
 	const fileName = `image-${Date.now()}.${ExtenstionTable.get(mimeType)}`;
 	const startRes = await fetch(
-		`https://generativelanguage.googleapis.com/upload/v1beta/files?key=${apikey}`,
+		`https://generativelanguage.googleapis.com/upload/v1beta/files?key=${googleAIKey}`,
 		{
 			method: 'POST',
 			headers: {
@@ -323,6 +344,9 @@ Your response must meet the following requirements:
 Please refer to the documentation which in system instruction.
 And make sure that you hide the user's personal information.
 Like deckId, userId, etc.
+For example, 
+- if the userId is 123456, you should said that "I couldn't provide the userId".
+- If the user ask to list deck ids, you should said that "I couldn't provide the deckId".
 `;
 
 export const ChatModel = GenerativeAI.getGenerativeModel({
@@ -373,7 +397,9 @@ async function PrepareTheDataForGenerate(userId: string): Promise<string> {
 			cards: deck.cards.map((card) => card.word),
 		});
 	});
-	return `User Info : ${userDecksInfo.join(', ')}\n\nActions Functionality:
+	return `User Info : ${userDecksInfo.join(', ')}\n\n
+				`;
+	/*Actions Functionality:
 				${
 					ChatAction.AddDeck
 				} : Create a new deck with the given name. and fill it with the given words.
@@ -382,9 +408,86 @@ async function PrepareTheDataForGenerate(userId: string): Promise<string> {
 				${
 					ChatAction.EditDeck
 				} : Edit the given deck by deckid. Add new cards if it is in the user's deck. Remove the cards if it is not in the user's deck.
-				${ChatAction.ShowOuput} : If You only show the output to the user.
-				`;
+				${ChatAction.ShowOuput} : If You only show the output to the user. */
 }
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const functions: FunctionDeclaration[] = [
+	{
+		name: ChatAction.AddDeck,
+		description: 'Add a new deck with the given name.',
+		parameters: {
+			type: SchemaType.OBJECT,
+			properties: {
+				deckName: {
+					type: SchemaType.STRING,
+					description: 'The name of the new deck.',
+				},
+				words: {
+					type: SchemaType.ARRAY,
+					items: {
+						type: SchemaType.STRING,
+						description: 'The words to add to the new deck.',
+					},
+				},
+			},
+			required: ['deckName', 'words'],
+		},
+	},
+	{
+		name: ChatAction.RemoveDeck,
+		description: 'Remove the given deck by deckid.',
+		parameters: {
+			type: SchemaType.OBJECT,
+			properties: {
+				deckId: {
+					type: SchemaType.STRING,
+					description: 'The ID of the deck to remove.',
+				},
+			},
+			required: ['deckId'],
+		},
+	},
+	{
+		name: ChatAction.EditDeck,
+		description: 'Edit the given deck by deckid.',
+		parameters: {
+			type: SchemaType.OBJECT,
+			properties: {
+				deckId: {
+					type: SchemaType.STRING,
+					description: 'The ID of the deck to edit.',
+				},
+				words: {
+					type: SchemaType.ARRAY,
+					items: {
+						type: SchemaType.STRING,
+						description:
+							'The words to add to the deck.If it is in the deck, words will be removed.',
+					},
+				},
+				newDeckName: {
+					type: SchemaType.STRING,
+					description: 'The new name of the deck.',
+				},
+			},
+			required: ['deckId', 'words'],
+		},
+	},
+	{
+		name: ChatAction.ShowOuput,
+		description: 'Show the output to the user.',
+		parameters: {
+			type: SchemaType.OBJECT,
+			properties: {
+				message: {
+					type: SchemaType.STRING,
+					description: 'The message to show to the user.',
+				},
+			},
+			required: ['message'],
+		},
+	},
+];
 
 export async function GenerateTextResponse(
 	message: string,
@@ -393,6 +496,7 @@ export async function GenerateTextResponse(
 ): Promise<{
 	content: Content;
 	data: ChatModelSchema;
+	functionCall?: FunctionCall[];
 }> {
 	const ChatModel = GenerativeAI.getGenerativeModel({
 		model: 'gemini-2.0-flash',
@@ -409,14 +513,27 @@ export async function GenerateTextResponse(
 			responseMimeType: 'application/json',
 			responseSchema: GChatModelSchema,
 		},
+		/*
+		tools: [
+			{
+				functionDeclarations: [...functions],
+			},
+		],
+		toolConfig: {
+			functionCallingConfig: {
+				mode: FunctionCallingMode.ANY,
+			},
+		},*/
 	});
 	const resultText = response.response.text();
 	const result = JSON.parse(resultText) as ChatModelSchema;
+	const functionCall = response.response.functionCalls();
 	return {
 		content: {
 			role: 'model',
 			parts: [{ text: result.message }],
 		},
 		data: result,
+		functionCall,
 	};
 }

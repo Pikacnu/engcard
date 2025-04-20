@@ -21,7 +21,7 @@ export default function Deck({
 	}, [cards, updateCurrentWord]);
 
 	return (
-		<div className='flex flex-col h-full max-md:w-[80vw] md:w-[60vw] pb-16'>
+		<div className='flex flex-col h-full max-md:w-[80vw] md:w-[60%] pb-16'>
 			<div
 				className='flex flex-grow w-full md:h-[80vh] h-[60vh] pb-8'
 				onClick={() => {
