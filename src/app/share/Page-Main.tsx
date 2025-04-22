@@ -42,14 +42,15 @@ export default function Home() {
 	);
 
 	useEffect(() => {
-		{
-			fetchCards(wordStartWith, count);
-			saveHistory(
-				cards.map((card) => card.word),
-				'',
-			);
-		}
-	}, [wordStartWith, fetchCards, count, type, cards]);
+		fetchCards(wordStartWith, count);
+	}, [fetchCards, wordStartWith, count]);
+
+	useEffect(() => {
+		saveHistory(
+			cards.map((card) => card.word),
+			'',
+		);
+	}, [cards]);
 
 	useEffect(() => {
 		const saved = markedWord.find(
@@ -63,7 +64,7 @@ export default function Home() {
 	}, [currentWord, markedWord]);
 
 	return (
-		<div className='flex flex-row items-center justify-center min-h-screen py-2 bg-gray-700'>
+		<div className='flex flex-row items-center justify-center min-h-screen py-2 bg-gray-700 w-full'>
 			{
 				{
 					[CardType.Card]: (
@@ -218,7 +219,7 @@ export default function Home() {
 					/>
 				</button>
 				<button
-					className={`p-2 m-2 text-black bg-emerald-600 rounded-md`}
+					className={`p-2 m-2 text-black bg-emerald-600 rounded-md max-md:absolute right-0 max-md:bottom-16 `}
 					onClick={() => {
 						fetch('/api/deck/public', {
 							method: 'POST',

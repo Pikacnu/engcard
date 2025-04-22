@@ -27,6 +27,28 @@ export function NavBar() {
 						alt='Info'
 					/>
 				</Link>
+				<Link
+					href={'/market'}
+					className='flex items-center justify-center p-2 m-2 text-white bg-white bg-opacity-0 hover:bg-opacity-20 transition-all duration-200 rounded-full'
+				>
+					<Image
+						src={`/icons/shop.svg`}
+						width={24}
+						height={24}
+						alt='Market'
+					/>
+				</Link>
+				<Link
+					href={'/download'}
+					className='flex items-center justify-center p-2 m-2 text-white bg-white bg-opacity-0 hover:bg-opacity-20 transition-all duration-200 rounded-full'
+				>
+					<Image
+						src={`/icons/download.svg`}
+						width={24}
+						height={24}
+						alt='Download'
+					/>
+				</Link>
 			</div>
 			<Link
 				href={'/auth/login'}

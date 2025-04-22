@@ -16,7 +16,7 @@ export async function Content() {
 		return deck.userId !== userId && deck.cards.length !== 0;
 	});
 	return (
-		<div className='grid grid-cols-4 grid-rows-4 gap-4 flex-grow h-svh w-[80%]'>
+		<div className='grid grid-cols-4 max-md:grid-cols-2 grid-rows-4 gap-4 flex-grow h-svh w-[80%]'>
 			{decks.length !== 0 ? (
 				decks.map((deck) => {
 					return (
