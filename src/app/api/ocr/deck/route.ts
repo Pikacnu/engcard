@@ -2,7 +2,7 @@ import {
 	auth,
 	Base64ToFile,
 	TextRecognizeModel,
-	TextRecognizeSchema,
+	textRecognizeSchema,
 	uploadFile,
 } from '@/utils';
 import { NextResponse } from 'next/server';
@@ -128,7 +128,7 @@ export async function POST(req: Request) {
 				},
 			],
 		});
-		const result = JSON.parse(response.response.text()) as TextRecognizeSchema;
+		const result = JSON.parse(response.response.text()) as textRecognizeSchema;
 
 		result.words.map((word, index) => {
 			setTimeout(async () => {

@@ -1,14 +1,18 @@
 import DB from '@/lib/db';
 import { CardProps, PartOfSpeech, DictionaryAPIData, Lang } from '@/type';
-import { isChinese, isEnglish, isJapanese } from '@/utils';
 import {
-	aiClient,
-	GeminiHistory,
-	OpenAIHistory,
-	systemInstruction,
+	isChinese,
+	isEnglish,
+	isJapanese,
+	OpenAIClient,
+	OpenAIHistoryTranscriber,
+} from '@/utils';
+import {
+	wordGeminiHistory,
+	wordSystemInstruction,
 	WordModel,
 	wordSchema,
-} from '@/utils/gemini';
+} from '@/utils';
 import { NextResponse } from 'next/server';
 import { zodResponseFormat } from 'openai/helpers/zod.mjs';
 
@@ -159,14 +163,14 @@ async function getAIResponse(
 	}
 
 	try {
-		AIResponse = await aiClient.beta.chat.completions.parse({
+		AIResponse = await OpenAIClient.beta.chat.completions.parse({
 			model: 'gpt-4.1-mini',
 			messages: [
 				{
 					role: 'system',
-					content: systemInstruction,
+					content: wordSystemInstruction,
 				},
-				...OpenAIHistory,
+				...OpenAIHistoryTranscriber(wordGeminiHistory),
 				{
 					role: 'user',
 					content: prompt,
@@ -184,7 +188,7 @@ async function getAIResponse(
 		console.log('trying by google AI SDK');
 		try {
 			const chat = WordModel.startChat({
-				history: GeminiHistory,
+				history: wordGeminiHistory,
 			});
 			AIResponse = await chat.sendMessage(prompt);
 			const result: CardProps = JSON.parse(AIResponse.response.text());
