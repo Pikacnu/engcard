@@ -3,6 +3,7 @@ import OpenAI from 'openai';
 export enum Model {
 	Gemini,
 	OpenAI,
+	xAI,
 }
 
 const modelOptions: Record<Model, { key: string; baseURL: string }> = {
@@ -13,6 +14,10 @@ const modelOptions: Record<Model, { key: string; baseURL: string }> = {
 	[Model.OpenAI]: {
 		key: process.env.OPENAI_API || '',
 		baseURL: 'https://api.openai.com/v1/',
+	},
+	[Model.xAI]: {
+		key: process.env.XAI_API_KEY || '',
+		baseURL: 'https://api.xai.com/v1',
 	},
 };
 

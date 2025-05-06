@@ -5,7 +5,7 @@ import { auth } from '@/utils';
 import { DeckCollection } from '@/type';
 import Link from 'next/link';
 
-export async function Content() {
+export default async function Content() {
 	const publicDecks = await db
 		.collection<DeckCollection>('deck')
 		.find({ isPublic: true })

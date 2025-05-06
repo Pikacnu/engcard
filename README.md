@@ -1,36 +1,70 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# English Card
 
-## Getting Started
+English Card is a multi-package project built with Turborepo, designed to help users learn English effectively through vocabulary cards, OCR recognition, and multilingual support.
 
-First, run the development server:
+> **Note**: This project is primarily designed for learning English with Traditional Chinese as the base language, so it does not have comprehensive support for other languages.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Features
+
+- **Vocabulary Card Management**: Create, edit, and delete vocabulary cards with ease.
+- **Multilingual Support**: Provides translations and examples in English and Traditional Chinese.
+- **Extensive Dataset**: Includes a rich dataset of vocabulary for quick reference and usage.
+- **Interactive Learning**: Engage with vocabulary through quizzes, examples, and definitions.
+
+## Project Structure
+
+```
+english-card/
+├── apps/
+│   ├── api/          # Backend API application
+│   ├── web/          # Frontend web application
+├── packages/
+│   ├── eslint-config/ # Shared ESLint configuration
+│   ├── typescript-config/ # Shared TypeScript configuration
+│   ├── ui/           # Shared UI component library
+├── [`turbo.json`](turbo.json )        # Turborepo configuration
+├── [`package.json`](package.json )      # Project dependencies and scripts
+└── [`README.md`](README.md )         # Project documentation
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Installation and Usage
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Prerequisites
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- [Bun](https://bun.sh) installed
+- Node.js version 18 or higher
 
-## Learn More
+### Installation
 
-To learn more about Next.js, take a look at the following resources:
+Run the following command to install dependencies:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+bun install
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Development
 
-## Deploy on Vercel
+Start the development server:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+bun run dev
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Build
+
+Build all applications and packages:
+
+```bash
+bun run build
+```
+
+## How to Use
+1. **Search for Words**: Utilize the search functionality to look up words. The application fetches data from a dictionary API and uses AI to organize and enrich the content with definitions, synonyms, antonyms, and example sentences.
+2. **Create Vocabulary Decks**: Organize your vocabulary into decks for better learning.
+3. **Add New Words**: Add custom words to your decks with definitions, examples, and translations.
+4. **Practice with Quizzes**: Test your knowledge with interactive quizzes and spelling challenges.
+5. **OCR Integration**: Upload images to extract text and generate vocabulary cards automatically.
+
+# Live Demo:
+
+[https://eng.pikacnu.com/](https://eng.pikacnu.com/)
