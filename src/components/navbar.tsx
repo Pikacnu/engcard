@@ -3,7 +3,7 @@ import Image from 'next/image';
 
 export function NavBar() {
 	return (
-		<div className='sickey top-0 z-10 flex items-center justify-between w-full bg-gray-800 bg-opacity-30 backdrop-blur-sm shadow-lg '>
+		<div className='sickey top-0 z-10 flex items-center justify-between w-full bg-white bg-opacity-30 backdrop-blur-sm shadow-lg '>
 			<div className='flex items-center justify-center'>
 				<Link
 					href={'/'}

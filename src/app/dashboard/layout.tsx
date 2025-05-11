@@ -74,6 +74,7 @@ export default async function DashBoardLayout({
 								className='cursor-pointer'
 							></Image>
 						</Link>
+						<Link href={'/tempwaord'}>7</Link>
 					</div>
 					<SignOutButton />
 				</div>
