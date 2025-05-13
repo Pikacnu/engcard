@@ -1,6 +1,6 @@
 'use client';
 
-import { CardProps } from '@/type';
+import { CardProps, DeckType, UserSettingsCollection } from '@/type';
 import Questions from '@/components/questions';
 import { useCallback, useEffect, useState } from 'react';
 import Deck from '@/components/deck';
@@ -21,6 +21,8 @@ export default function Home() {
 	const [isMarked, setIsMarked] = useState<boolean>(false);
 	const [markedWord, setMarkedWord] = useState<CardProps[]>([]);
 	const [currentWord, setWord] = useState<CardProps | undefined>(undefined);
+	const [userSettings, setUserSettings] =
+		useState<UserSettingsCollection | null>(null);
 
 	const fetchCards = useCallback((wordStartWith?: string, count = 15) => {
 		wordStartWith = wordStartWith || '';
@@ -36,6 +38,18 @@ export default function Home() {
 			.then((data) => {
 				setCards(data);
 			});
+	}, []);
+
+	useEffect(() => {
+		(async () => {
+			const response = await fetch('/api/settings');
+			if (response.ok) {
+				const data = await response.json();
+				setUserSettings(data);
+			} else {
+				console.error('Failed to fetch settings:', await response.json());
+			}
+		})();
 	}, []);
 
 	useEffect(() => {
@@ -62,6 +76,9 @@ export default function Home() {
 							cards={cards}
 							onFinishClick={() => fetchCards(wordStartWith, count)}
 							updateCurrentWord={setWord}
+							deckType={
+								userSettings?.deckActionType || DeckType.AutoChangeToNext
+							}
 						/>
 					),
 					[CardType.Questions]: (

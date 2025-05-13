@@ -1,17 +1,19 @@
 'use client';
 import { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import Card from './card';
-import { CardProps } from '@/type';
+import { CardProps, DeckType } from '@/type';
 import { CardWhenEmpty } from '@/utils/blank_value';
 
 export default function Deck({
 	cards,
 	onFinishClick,
 	updateCurrentWord,
+	deckType = DeckType.ChangeByButton,
 }: {
 	cards: CardProps[];
 	onFinishClick?: () => void;
 	updateCurrentWord?: Dispatch<SetStateAction<CardProps | undefined>>;
+	deckType?: DeckType;
 }) {
 	const [index, setIndex] = useState(0);
 
@@ -25,9 +27,13 @@ export default function Deck({
 			<div
 				className='flex flex-grow w-full md:h-[80vh] h-[60vh] pb-8'
 				onClick={() => {
-					updateCurrentWord?.(cards[Math.floor(index + 0.5)]);
-					if (index <= cards.length - 1) return setIndex(index + 0.5);
-					if (index === cards.length - 0.5) return onFinishClick?.();
+					if (deckType === DeckType.AutoChangeToNext) {
+						updateCurrentWord?.(cards[Math.floor(index + 0.5)]);
+						if (index <= cards.length - 1) return setIndex(index + 0.5);
+						if (index === cards.length - 0.5) return onFinishClick?.();
+						return;
+					}
+					return;
 				}}
 			>
 				{(cards[Math.floor(index)] && (
@@ -47,6 +53,34 @@ export default function Deck({
 					)}%`}
 				</div>
 			</div>
+			{deckType === DeckType.ChangeByButton && (
+				<div className='flex flex-row items-center justify-between w-full mt-2'>
+					<button
+						className='bg-blue-500 text-white p-2 rounded-lg'
+						onClick={() => {
+							if (index > 0) {
+								setIndex(index - 1);
+								updateCurrentWord?.(cards[Math.floor(index - 1)]);
+							}
+						}}
+					>
+						Previous
+					</button>
+					<button
+						className='bg-blue-500 text-white p-2 rounded-lg'
+						onClick={() => {
+							if (index < cards.length - 1) {
+								setIndex(index + 1);
+								updateCurrentWord?.(cards[Math.floor(index + 1)]);
+							} else {
+								onFinishClick?.();
+							}
+						}}
+					>
+						Next
+					</button>
+				</div>
+			)}
 		</div>
 	);
 }

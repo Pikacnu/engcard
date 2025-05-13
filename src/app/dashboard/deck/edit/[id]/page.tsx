@@ -34,7 +34,7 @@ export default function EditPage({
 	return (
 		<div className='flex flex-row h-full gap-2 max-md:flex-col *:max-md:w-full *:max-md:min-h-full'>
 			{isPending && (
-				<div className=' absolute z-10 inset-0 flex items-center justify-center bg-black bg-opacity-50 h-full w-full top-0 left-0'>
+				<div className=' sticky z-10 inset-0 flex items-center justify-center bg-black bg-opacity-50 h-full w-full top-0 left-0'>
 					<svg
 						aria-hidden='true'
 						className='w-16 h-16 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600'

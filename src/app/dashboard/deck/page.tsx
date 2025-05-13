@@ -200,7 +200,8 @@ export default function Deck() {
 									</button>
 								</div>
 							</div>
-						))) || <h1 className='col-span-4 row-span-4 text-center'></h1>}
+						))) ||
+						null}
 
 					<button
 						className='shadow p-4 rounded-lg'

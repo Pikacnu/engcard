@@ -66,11 +66,10 @@ export async function POST(req: Request) {
 		}
 	}
 
-	imageData = (await req.blob()) as Blob;
-	console.log(imageData);
 	if (!imageData) {
 		return NextResponse.json({ error: 'Image is required' }, { status: 400 });
 	}
+
 	const imageType =
 		(ExtenstionTable.get(imageData.type) as string) ||
 		(req.headers.get('content-type') as string);

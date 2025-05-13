@@ -4,6 +4,8 @@ import {
 	CardProps,
 	CardType,
 	DeckCardsResponse,
+	DeckType,
+	UserSettingsCollection,
 	type DeckResponse,
 } from '@/type';
 import Deck from '@/components/deck';
@@ -30,6 +32,8 @@ export default function Preview() {
 	const searchParams = useSearchParams();
 	const deckid = searchParams.get('id');
 	const [selectedDeck, setSelectedDeck] = useState(deckid || '');
+	const [userSettings, setUserSettings] =
+		useState<UserSettingsCollection | null>(null);
 
 	const fetchCards = useCallback(
 		async (wordStartWith?: string, count = 15, deckid?: string) => {
@@ -47,6 +51,18 @@ export default function Preview() {
 		},
 		[selectedDeck],
 	);
+
+	useEffect(() => {
+		(async () => {
+			const response = await fetch('/api/settings');
+			if (response.ok) {
+				const data = await response.json();
+				setUserSettings(data);
+			} else {
+				console.error('Failed to fetch settings:', await response.json());
+			}
+		})();
+	}, []);
 
 	useEffect(() => {
 		const saved = markedWord.find(
@@ -111,6 +127,9 @@ export default function Preview() {
 									);
 								}}
 								updateCurrentWord={setWord}
+								deckType={
+									userSettings?.deckActionType || DeckType.AutoChangeToNext
+								}
 							/>
 						),
 						[CardType.Questions]: (

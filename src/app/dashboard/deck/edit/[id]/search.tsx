@@ -47,7 +47,7 @@ export default function Search({ deckid, onAdd }: PageProps) {
 
 	return (
 		<div className='flex flex-col items-center justify-center h-screen bg-gray-700 w-full'>
-			<div className='flex flex-row'>
+			<div className='flex flex-row max-md:text-md'>
 				<input
 					className='p-2 m-2 rounded-md text-black'
 					type='text'
@@ -63,15 +63,13 @@ export default function Search({ deckid, onAdd }: PageProps) {
 				{deckid && (
 					<button
 						className='p-2 m-2 rounded-md bg-green-600 text-white'
-						onClick={async () =>
-							addCardFromDB
-								.bind(null, deckid, word)()
-								.then(() => {
-									if (onAdd) {
-										onAdd();
-									}
-								})
-						}
+						onClick={async () => {
+							await addCardFromDB.bind(null, deckid, word)();
+
+							if (onAdd) {
+								onAdd();
+							}
+						}}
 					>
 						Add
 					</button>

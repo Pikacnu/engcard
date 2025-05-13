@@ -250,3 +250,13 @@ export type PublicDeckToUser = {
 	userId: string;
 	deckId: string[];
 };
+
+export enum DeckType {
+	AutoChangeToNext,
+	ChangeByButton,
+}
+
+export type UserSettingsCollection = {
+	userId: string;
+	deckActionType: DeckType;
+};

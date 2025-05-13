@@ -10,6 +10,7 @@ import {
 } from '@/type';
 import { addCard } from '@/actions/deck';
 import { Langs } from '@/types/lang';
+import { useDebounce } from './../../../../../hooks/usedebounce';
 
 export default function Add({
 	defaultValue,
@@ -118,6 +119,8 @@ export default function Add({
 		});
 	};
 
+	const debounceFunction = useDebounce();
+
 	useEffect(() => {
 		const getWord = async () => {
 			const res = await fetch(`/api/word?word=${word}`);
@@ -126,13 +129,14 @@ export default function Add({
 				console.log(data.error);
 				return;
 			}
+			console.log(data.blocks.map((d: Blocks) => d.definitions).flat());
 			setDefinitionHint(data.blocks.map((d: Blocks) => d.definitions).flat());
 		};
-		if (word) {
-			getWord();
-		}
-	}, [word]);
 
+		if (word) {
+			debounceFunction(() => getWord());
+		}
+	}, [word, debounceFunction]);
 	return (
 		<div
 			className={`flex flex-col bg-white p-4 rounded-lg shadow-lg text-black *:outline-none *:m-2 [&>*:not(h3)]:border-2 *:border-black *:rounded-lg overflow-auto ${className}`}
@@ -149,6 +153,7 @@ export default function Add({
 			<select
 				value={partOfSpeech}
 				onChange={(e) => setPartOfSpeech(e.target.value as PartOfSpeech)}
+				className='p-2'
 			>
 				{Object.values(PartOfSpeechShort).map((pos) => (
 					<option
@@ -164,7 +169,7 @@ export default function Add({
 			{definitions.map((definition, index) => (
 				<div
 					key={index}
-					className='border-2 p-2 m-2 rounded-lg flex justify-center flex-col'
+					className='border-2 p-2 m-2 rounded-lg flex justify-center flex-col *:p-1'
 				>
 					{/* Definitions */}
 					{definition.definition.map((def, defIndex) => (
@@ -297,10 +302,18 @@ export default function Add({
 					<button onClick={() => addNestedItem(index, 'antonyms', '')}>
 						Add Antonym
 					</button>
+					<button
+						onClick={() =>
+							setDefinitions((prev) => prev.filter((_, i) => i !== index))
+						}
+						className='bg-red-500 text-white px-2 my-1 rounded-lg'
+					>
+						remove definition
+					</button>
 				</div>
 			))}
 
-			<div className='flex *:flex-grow p-1'>
+			<div className='flex *:flex-grow p-1 *:p-1 items-center'>
 				<select
 					className='w-1/2'
 					value={'-1'}
@@ -324,13 +337,20 @@ export default function Add({
 							key={index}
 							value={hint.definition[0].content}
 						>
-							{hint.definition[1].content}
+							{hint.definition[1]
+								? hint.definition[1].content
+								: hint.definition[0].content}
 						</option>
 					))}
 				</select>
 				<button onClick={addDefinition}>Add Definition</button>
 			</div>
-			<button onClick={handleAddCard}>Add Card</button>
+			<button
+				className=' max-w-1/5 w-2/5 self-center p-1'
+				onClick={handleAddCard}
+			>
+				Add Card
+			</button>
 		</div>
 	);
 }

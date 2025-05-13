@@ -3,7 +3,7 @@ import { NavBar } from './../components/navbar';
 
 export default function Home() {
 	return (
-		<div className='flex flex-col items-center justify-center min-h-max flex-grow p-0 bg-gray-700 w-full h-full'>
+		<div className='flex flex-col items-center justify-center flex-grow p-0 bg-gray-700 w-full h-full'>
 			<NavBar />
 			<div className='flex-grow flex items-center justify-center flex-col'>
 				<h1 className='flex items-center justify-center'>
