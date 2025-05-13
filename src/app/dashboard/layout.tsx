@@ -17,7 +17,12 @@ export default function DashBoardLayout({
 				<div className='flex flex-col max-md:flex-row h-full bg-gray-50 md:left-0 md:top-0 max-md:h-16 max-md:bottom-0 max-md:w-full justify-between text-black items-center'>
 					{isBiMenuOpen ? (
 						<div className='*:bg-emerald-600 *:bg-opacity-40 *:p-2 *:m-2 *:hover:bg-opacity-40 *:rounded-md *:text-center flex flex-col max-md:flex-row'>
-							<Link href={'/tempword'}>7000單</Link>
+							<Link
+								href={'/tempword'}
+								className='w-5'
+							>
+								7000單
+							</Link>
 							<Link href={'/auth/logout'}>
 								<Image
 									src='/icons/box-arrow-in-left.svg'
