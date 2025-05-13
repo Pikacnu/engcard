@@ -19,7 +19,7 @@ export default function DashBoardLayout({
 						<div className='*:bg-emerald-600 *:bg-opacity-40 *:p-2 *:m-2 *:hover:bg-opacity-40 *:rounded-md *:text-center flex flex-col max-md:flex-row'>
 							<Link
 								href={'/tempword'}
-								className='w-10 break-words'
+								className='w-10 break-words max-md:w-auto max-md:h-10'
 							>
 								7000單
 							</Link>
