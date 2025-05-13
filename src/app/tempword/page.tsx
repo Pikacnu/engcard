@@ -72,14 +72,16 @@ export default function Home() {
 			{
 				{
 					[CardType.Card]: (
-						<Deck
-							cards={cards}
-							onFinishClick={() => fetchCards(wordStartWith, count)}
-							updateCurrentWord={setWord}
-							deckType={
-								userSettings?.deckActionType || DeckType.AutoChangeToNext
-							}
-						/>
+						<div>
+							<Deck
+								cards={cards}
+								onFinishClick={() => fetchCards(wordStartWith, count)}
+								updateCurrentWord={setWord}
+								deckType={
+									userSettings?.deckActionType || DeckType.AutoChangeToNext
+								}
+							/>
+						</div>
 					),
 					[CardType.Questions]: (
 						<Questions
