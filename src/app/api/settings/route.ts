@@ -11,6 +11,8 @@ export async function GET(req: Request) {
 
 	const session = await auth();
 
+	console.log('session', session);
+
 	if (!session) {
 		return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 	}
@@ -26,10 +28,23 @@ export async function GET(req: Request) {
 			userId: session.user?.id || '',
 			deckActionType: DeckType.AutoChangeToNext,
 		};
-		await db
+		const result = await db
 			.collection<UserSettingsCollection>('settings')
 			.insertOne(newSettings);
-		return NextResponse.json(Object.assign(newSettings));
+		if (!result) {
+			return NextResponse.json(
+				{ error: 'Failed to create settings' },
+				{ status: 500 },
+			);
+		}
+		if (!name) {
+			return NextResponse.json(
+				Object.assign(newSettings, {
+					_id: result.insertedId.toString(),
+				}),
+			);
+		}
+		return NextResponse.json({ [name]: newSettings[name] });
 	}
 
 	if (!name) {

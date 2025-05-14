@@ -3,6 +3,7 @@ import { SessionProvider } from 'next-auth/react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useState } from 'react';
+import { redirect } from 'next/navigation';
 
 export default function DashBoardLayout({
 	children,
@@ -23,7 +24,7 @@ export default function DashBoardLayout({
 							>
 								7000單
 							</Link>
-							<Link href={'/auth/logout'}>
+							<button onClick={() => redirect('/auth/logout')}>
 								<Image
 									src='/icons/box-arrow-in-left.svg'
 									alt='logout'
@@ -31,7 +32,7 @@ export default function DashBoardLayout({
 									height={24}
 									className='cursor-pointer'
 								></Image>
-							</Link>
+							</button>
 							<Link href={'/dashboard/settings'}>
 								<Image
 									src='/icons/gear.svg'

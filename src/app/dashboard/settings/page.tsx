@@ -7,21 +7,19 @@ export default function Settings() {
 	const [isLoading, setIsLoading] = useState(true);
 	const [settings, setSettings] = useState<UserSettingsCollection | null>(null);
 
-	const fetchSettings = useCallback(async () => {
-		setIsLoading(true);
-		const res = await fetch('/api/settings');
-		setIsLoading(false);
-		if (res.ok) {
-			const data = await res.json();
-			setSettings(data);
-		} else {
-			console.error('Failed to fetch settings:', await res.json());
-		}
-	}, []);
-
 	useEffect(() => {
-		fetchSettings();
-	}, [fetchSettings]);
+		(async () => {
+			setIsLoading(true);
+			const res = await fetch('/api/settings');
+			setIsLoading(false);
+			if (res.ok) {
+				const data = await res.json();
+				setSettings(data);
+			} else {
+				alert(`Failed to load settings: ${res.status} ${res.statusText}`);
+			}
+		})();
+	}, []);
 
 	const updateSettings = useCallback(
 		async (
