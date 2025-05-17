@@ -112,7 +112,7 @@ export default function Content() {
 	}, [selectedDeck, fetchCards]);
 
 	return (
-		<div className='flex flex-row-reverse max-md:flex-col items-center justify-center h-full w-full bg-gray-700'>
+		<div className='flex flex-row-reverse max-md:flex-col items-center justify-center h-full w-full bg-gray-700 '>
 			<div className='flex-grow flex items-center justify-center w-full'>
 				{
 					{
@@ -186,7 +186,7 @@ export default function Content() {
 					alt='Marked'
 				></Image>
 			</button>
-			<div className='flex flex-col h-full bg-gray-200 max-md:flex-row max-md:h-16 max-md:bottom-0 max-md:w-full max-md:justify-center'>
+			<div className='flex flex-col h-full bg-gray-200 max-md:flex-row max-md:h-16 max-md:bottom-0 max-md:w-full max-md:justify-center keyboard:hidden'>
 				<button
 					className={`p-2 m-2 text-black bg-emerald-600 rounded-md ${
 						type === CardType.Card ? 'bg-opacity-40' : 'bg-opacity-10'
@@ -295,7 +295,7 @@ export default function Content() {
 						))}
 				</select>
 			</div>
-			<div className='flex flex-col h-full bg-gray-200 max-md:flex-row max-md:h-8 max-md:bottom-0 max-md:w-full max-md:justify-center px-2'>
+			<div className='flex flex-col h-full bg-gray-200 max-md:flex-row max-md:h-8 max-md:bottom-0 max-md:w-full max-md:justify-center px-2 keyboard:hidden'>
 				<div className='flex flex-row items-center justify-center flex-grow md:hidden'>
 					{/*for mobile*/}
 					<p className='text-black self-center'>Selected Deck :</p>

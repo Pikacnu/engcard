@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { GArray, GEnum, GObject, GString } from './gemini/type';
-import { ChatAction } from '@/type';
+import { ChatAction, PartOfSpeech } from '@/type';
 
 export const textRecognizeSchema = z.object({
 	words: z.array(
@@ -9,6 +9,10 @@ export const textRecognizeSchema = z.object({
 			translations: z.array(z.string()),
 			definitions: z.array(z.string()),
 			examples: z.array(z.string()),
+			phonetic: z.string().optional(),
+			partOfSpeech: z
+				.enum(Object.values(PartOfSpeech) as [string, ...string[]])
+				.optional(),
 		}),
 	),
 });
@@ -25,7 +29,7 @@ export const GTextRecognizeSchema = new GObject('textRecognizeSchema', false, {
 					new GArray('definitions', true, new GString('definition', true)),
 					new GArray('examples', true, new GString('example', true)),
 					new GString('phonetic', false),
-					new GString('partOfSpeech', false),
+					new GEnum('partOfSpeech', Object.values(PartOfSpeech), false),
 				],
 			}),
 		),

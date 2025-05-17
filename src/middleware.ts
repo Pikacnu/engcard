@@ -1,30 +1,20 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse, type NextRequest } from 'next/server';
 
-export function middleware(request: NextRequest) {
-	const { pathname } = request.nextUrl;
-
-	if (pathname.startsWith('/dashboard')) {
-		const session = request.headers
-			.get('cookie')
-			?.includes('authjs.session-token');
-		if (!session) {
-			return NextResponse.redirect(new URL('/auth/login', request.url));
-		}
+export async function middleware(request: NextRequest) {
+	if (!request.headers.get('cookie')?.includes('authjs.session-token')) {
+		return NextResponse.redirect(new URL('/auth/login', request.url));
 	}
-	return NextResponse.next();
 }
 
+// See "Matching Paths" below to learn more
 export const config = {
 	matcher: [
-		'/dashboard/:path*',
 		'/dashboard',
-		'/tempword/:path*',
-		'/auth/logout',
-		'/api/card',
-		'/api/chat',
-		'/api/history',
-		'/api/ocr',
+		'/dashboard/:path*',
+		'/api/deck/:path*',
+		'/api/word/:path*',
 		'/api/ocr/:path*',
-		'/api/settings',
+		'/api/chat/:path*',
+		'/api/settings/:path*',
 	],
 };

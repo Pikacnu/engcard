@@ -1,5 +1,5 @@
 import DB from '@/lib/db';
-import { CardProps, PartOfSpeech, DictionaryAPIData, Lang } from '@/type';
+import { CardProps } from '@/type';
 import {
 	isChinese,
 	isEnglish,
@@ -13,6 +13,10 @@ import {
 	WordModel,
 	wordSchema,
 } from '@/utils';
+import {
+	getWordFromDictionaryAPI,
+	getWordFromEnWordNetAPU,
+} from '@/utils/dict/functions';
 import { NextResponse } from 'next/server';
 import { zodResponseFormat } from 'openai/helpers/zod.mjs';
 
@@ -69,7 +73,7 @@ export async function GET(request: Request): Promise<Response> {
 		data = await newWord(word);
 	}
 	if (!data) {
-		await db.insertOne({ word, avliable: false });
+		await db.insertOne({ word, available: false });
 		return NextResponse.json({ error: 'Word not found' }, { status: 404 });
 	}
 
@@ -78,50 +82,17 @@ export async function GET(request: Request): Promise<Response> {
 }
 
 async function newWord(word: string): Promise<CardProps | null> {
-	const response = await fetch(
-		`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`,
-	);
-	if (!response.ok) {
-		return null;
+	const sourceDataPromiseList = [
+		getWordFromDictionaryAPI(word),
+		getWordFromEnWordNetAPU(word),
+	];
+	const sourceDataList = (await Promise.all(sourceDataPromiseList)).filter(
+		(data) => data !== null,
+	) as CardProps[];
+	if (sourceDataList.length < 1) {
+		return await getAIResponse(word);
 	}
-	const dataList = (await response.json()) as DictionaryAPIData[];
-	const data = dataList[0];
-	const processedData: CardProps = {
-		word: data.word,
-		phonetic: data.phonetic,
-		audio:
-			data.phonetics.find((phonetic) => phonetic.text === data.phonetic)
-				?.audio || '',
-		blocks: data.meanings.map((meaning) => ({
-			partOfSpeech: meaning.partOfSpeech as PartOfSpeech,
-			definitions: meaning.definitions.map((definition) => {
-				const data = {
-					definition: [
-						{
-							lang: 'en' as Lang,
-							content: definition.definition,
-						},
-					],
-					synonyms: definition.synonyms || [],
-					antonyms: definition.antonyms || [],
-				};
-				if (definition.example) {
-					return Object.assign(data, {
-						example: [
-							[
-								{
-									lang: 'en',
-									content: definition.example,
-								},
-							],
-						],
-					});
-				}
-				return data;
-			}),
-		})),
-	};
-	return await getAIResponse(processedData);
+	return await getAIResponse(sourceDataList);
 }
 
 function CheckData(apidata: CardProps, aidata: CardProps) {
@@ -148,16 +119,29 @@ function CheckData(apidata: CardProps, aidata: CardProps) {
 }
 
 async function getAIResponse(
-	processedData: CardProps | string,
+	processedData: CardProps | CardProps[] | string,
 ): Promise<CardProps> {
 	let AIResponse;
 	let prompt;
-	const isProvidedData = typeof processedData === 'object';
+	const isProvidedData =
+		typeof processedData === 'object' || Array.isArray(processedData);
 
 	if (isProvidedData) {
-		prompt = `data : ${JSON.stringify(processedData)}
+		if (Array.isArray(processedData)) {
+			prompt = `data : ${JSON.stringify(processedData).replaceAll('"', '')}
+				it have ${processedData.length} data sources
+				and total ${processedData.reduce(
+					(acc, data) => acc + data.blocks.length,
+					0,
+				)} blocks(part of speech)
+				Please response with all the blocks
+				And combine all the data into one data (from all the data sources)`;
+		} else {
+			processedData = processedData as CardProps;
+			prompt = `data : ${JSON.stringify(processedData)}
 				it have ${processedData.blocks.length} blocks(part of speech)
 				Please response with all the blocks`;
+		}
 	} else {
 		prompt = `word : ${processedData} Please response with all the blocks`;
 	}
@@ -178,10 +162,17 @@ async function getAIResponse(
 			],
 			response_format: zodResponseFormat(wordSchema, 'data'),
 		});
+		console.log(AIResponse.usage);
 		const result: CardProps = AIResponse.choices[0].message
 			?.parsed as CardProps;
 		console.log('OpenAI SDK Success');
-		if (isProvidedData) return CheckData(processedData, result);
+		if (isProvidedData) {
+			if (Array.isArray(processedData)) {
+				return CheckData(processedData[0], result);
+			}
+			processedData = processedData as CardProps;
+			return CheckData(processedData, result);
+		}
 		return result;
 	} catch (error) {
 		console.error('OpenAI SDK Error :', error);
@@ -193,7 +184,13 @@ async function getAIResponse(
 			AIResponse = await chat.sendMessage(prompt);
 			const result: CardProps = JSON.parse(AIResponse.response.text());
 			console.log('Google AI SDK Success');
-			if (isProvidedData) return CheckData(processedData, result);
+			if (isProvidedData) {
+				if (Array.isArray(processedData)) {
+					return CheckData(processedData[0], result);
+				}
+				processedData = processedData as CardProps;
+				return CheckData(processedData, result);
+			}
 			return result;
 		} catch (error) {
 			console.error('Error parsing AI response:', error);

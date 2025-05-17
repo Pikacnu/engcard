@@ -68,7 +68,7 @@ export default function Home() {
 	}, [currentWord, markedWord]);
 
 	return (
-		<div className='flex flex-row items-center justify-center min-h-screen py-2 bg-gray-700'>
+		<div className='flex flex-row items-center justify-center py-2 bg-gray-700'>
 			{
 				{
 					[CardType.Card]: (
@@ -125,7 +125,7 @@ export default function Home() {
 					alt='Marked'
 				></Image>
 			</button>
-			<div className=' absolute flex flex-col left-0 h-full bg-gray-50 max-md:flex-row max-md:h-16 max-md:bottom-0 max-md:w-full max-md:justify-center'>
+			<div className=' absolute flex flex-col left-0 h-full bg-gray-50 max-md:flex-row max-md:h-16 max-md:bottom-0 max-md:w-full max-md:justify-center keyboard:hidden'>
 				<button
 					className={`p-2 m-2 text-black bg-emerald-600 rounded-md ${
 						type === CardType.Card ? 'bg-opacity-40' : 'bg-opacity-10'

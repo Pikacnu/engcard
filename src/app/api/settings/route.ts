@@ -1,5 +1,5 @@
 import db from '@/lib/db';
-import { DeckType, UserSettingsCollection } from '@/type';
+import { DeckType, OCRProcessType, UserSettingsCollection } from '@/type';
 import { auth } from '@/utils';
 import { NextResponse } from 'next/server';
 
@@ -10,8 +10,6 @@ export async function GET(req: Request) {
 	const name = params.get('name') as keyof UserSettingsCollection;
 
 	const session = await auth();
-
-	console.log('session', session);
 
 	if (!session) {
 		return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -24,9 +22,10 @@ export async function GET(req: Request) {
 		});
 
 	if (!result) {
-		const newSettings = {
+		const newSettings: UserSettingsCollection = {
 			userId: session.user?.id || '',
 			deckActionType: DeckType.AutoChangeToNext,
+			ocrProcessType: OCRProcessType.FromSource,
 		};
 		const result = await db
 			.collection<UserSettingsCollection>('settings')

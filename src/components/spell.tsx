@@ -64,7 +64,7 @@ export default function Spell({
 	}, [card]);
 	return (
 		<div
-			className={`flex flex-row items-center justify-center flex-grow min-w-[20vw] h-[70%] max-h-[70vh] ${className}`}
+			className={`flex flex-row items-center justify-center flex-grow min-w-[20vw] h-[70%] max-h-[70vh] ${className} relative`}
 		>
 			{!correct && (
 				<div className='flex flex-col items-center justify-center shadow-lg p-4 m-4 rounded-lg select-none bg-blue-100 dark:bg-gray-800 overflow-hidden flex-grow min-w-[20vw] h-full'>
@@ -81,6 +81,7 @@ export default function Spell({
 									const ans = e.target.value || '';
 									if (ans.toLocaleLowerCase() === word.toLocaleLowerCase()) {
 										setCorrect(true);
+										setWord('');
 										return ans;
 									}
 									if (ans.length === word.length) {

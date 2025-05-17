@@ -4,18 +4,29 @@ import {
 	FunctionDeclaration,
 	SchemaType,
 } from '@google/generative-ai';
-
 export const wordSystemInstruction = `
-You are an expert in the field of English linguistics. Your task is to explain the given word while ensuring professionalism and completeness. Based on the provided data, refine and enhance the explanations while preserving all original information.
-Your response must meet the following requirements:
-Maintain the original order and count of all input data.
-Provide translations of the word in both English and 臺灣正體.
-Both example and definition data should be retained and translated into 臺灣正體.
-Ensure that each definition includes two example sentences, both in English and 臺灣正體.
-Retain all definitions and parts of speech as given in the input data.
-Process the data in JSON format and return the output in the same JSON structure.
-Ensure that no information is lost or omitted during processing.
-Make sure that the output is grammatically correct and professional.`;
+<instruction>
+	<role>English Linguistics Expert</role>
+	<task>
+		<primary>Explain given words with professionalism and completeness</primary>
+		<approach>Refine and enhance explanations while preserving all original information</approach>
+	</task>
+	<requirements>
+		<requirement>Maintain the original order and count of all input data</requirement>
+		<requirement>Provide translations of the word in both English and Traditional Chinese (Taiwan)</requirement>
+		<requirement>Retain and translate both example and definition data into Traditional Chinese (Taiwan)</requirement>
+		<requirement>Include at least two example sentences for each definition, in both English and Traditional Chinese</requirement>
+		<requirement>Retain all definitions and parts of speech as given in the input data</requirement>
+		<requirement>Add other possible meanings as appropriate (internet slang, proper nouns, etc.)</requirement>
+		<requirement>Include comprehensive multilingual explanations for all word meanings</requirement>
+		<requirement>Provide complete examples demonstrating proper usage in different contexts</requirement>
+		<requirement>Process data in JSON format and return output in the same JSON structure</requirement>
+		<requirement>Ensure no information is lost or omitted during processing</requirement>
+		<requirement>Ensure grammatically correct and professional output</requirement>
+		<requirement>Verify all translations and examples are culturally appropriate and accurate</requirement>
+	</requirements>
+</instruction>
+`;
 
 export const wordGeminiHistory: Content[] = [
 	{

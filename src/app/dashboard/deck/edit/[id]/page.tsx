@@ -34,7 +34,7 @@ export default function EditPage({
 	return (
 		<div className='flex flex-row h-full gap-2 max-md:flex-col *:max-md:w-full *:max-md:min-h-full'>
 			{isPending && (
-				<div className=' sticky z-10 inset-0 flex items-center justify-center bg-black bg-opacity-50 h-full w-full top-0 left-0'>
+				<div className=' fixed z-10 inset-0 flex items-center justify-center bg-black bg-opacity-50 h-full w-full top-0 left-0'>
 					<svg
 						aria-hidden='true'
 						className='w-16 h-16 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600'
@@ -84,8 +84,9 @@ export default function EditPage({
 						hidden
 						type='file'
 						accept='image/*'
-						onChange={async (e) => {
-							const file = e.target.files?.[0];
+						onInput={async (e) => {
+							const target = e.target as HTMLInputElement;
+							const file = target.files?.[0];
 							if (!file) {
 								return;
 							}

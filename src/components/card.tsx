@@ -19,7 +19,11 @@ export default function Card({ card }: { card: CardProps }) {
 	return (
 		<div
 			className='flex flex-col h-full min-w-[20vw] shadow-lg p-4 m-4 rounded-lg select-none bg-blue-100 dark:bg-gray-800 overflow-hidden flex-grow'
-			onClick={() => setFlipped((prev) => !prev)}
+			onClick={() => {
+				if (card.flipped === undefined) {
+					setFlipped((prev) => !prev);
+				}
+			}}
 		>
 			{!flipped && (
 				<div className='flex flex-col items-center justify-center flex-grow relative overflow-hidden'>

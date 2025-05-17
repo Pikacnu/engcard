@@ -48,9 +48,10 @@ export default function Home() {
 	useEffect(() => {
 		saveHistory(
 			cards.map((card) => card.word),
+			deckid || '',
 			'',
 		);
-	}, [cards]);
+	}, [cards, deckid]);
 
 	useEffect(() => {
 		const saved = markedWord.find(

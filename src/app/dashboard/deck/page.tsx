@@ -7,6 +7,7 @@ import AddDeck from '@/components/server/adddeck';
 import { deleteDeck, getShareDeck } from '@/actions/deck';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import { useCopyToClipboard } from '@/components/client/copy';
 
 type Deck = WithId<Document> & { name: string; public: boolean };
 
@@ -37,6 +38,8 @@ export default function Deck() {
 	useEffect(() => {
 		updateDecks();
 	}, [updateDecks]);
+
+	const { copyToClipboard } = useCopyToClipboard();
 
 	return (
 		<div className='flex flex-col w-full h-full flex-grow'>
@@ -86,7 +89,7 @@ export default function Deck() {
 					<span className='sr-only'>Loading...</span>
 				</div>
 			) : (
-				<div className=' p-4 flex-grow grid grid-cols-4 max-sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 lg:grid-rows-3 lg:gap-6 max-lg:grid-cols-2 max-lg:grid-rows-3 max-lg:gap-3 *:rounded-lg *:shadow-lg *:bg-black *:bg-opacity-25 '>
+				<div className=' p-4 flex-grow grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 lg:grid-rows-3 lg:gap-6 max-lg:grid-rows-3 max-lg:gap-3 *:rounded-lg *:shadow-lg *:bg-black *:bg-opacity-25 '>
 					{(decks &&
 						decks.map((deck) => (
 							<div
@@ -132,6 +135,7 @@ export default function Deck() {
 											const searchparams = await getShareDeck(
 												deck._id.toString(),
 											);
+
 											redirect(`/share?${searchparams}`);
 										}}
 									>
@@ -192,6 +196,9 @@ export default function Deck() {
 										onClick={async () => {
 											const searchparams = await getShareDeck(
 												deck._id.toString(),
+											);
+											copyToClipboard(
+												`${window.location.origin}/share?${searchparams}`,
 											);
 											redirect(`/share?${searchparams}`);
 										}}

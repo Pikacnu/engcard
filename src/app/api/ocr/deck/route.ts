@@ -12,10 +12,17 @@ import {
 	Deck,
 	ExtenstionTable,
 	ExtenstionToMimeType,
+	OCRProcessType,
+	UserSettingsCollection,
+	WithAvliable,
 	Word,
 } from '@/type';
 import db from '@/lib/db';
 import { ObjectId } from 'mongodb';
+import {
+	getDefiniationFromRecognizedResultAndCardProps,
+	transfromToCardPropsFromRecognizedResult,
+} from '@/utils/dict/functions';
 
 export async function POST(req: Request) {
 	const session = await auth();
@@ -73,8 +80,7 @@ export async function POST(req: Request) {
 	const imageType =
 		(ExtenstionTable.get(imageData.type) as string) ||
 		(req.headers.get('content-type') as string);
-	//const fileext = ExtenstionTable.get(imageType);
-	//const filename = `ocr${Date.now()}.${fileext}`;
+
 	console.log(imageType);
 	if (!allowedImageExtension.includes(imageType)) {
 		return NextResponse.json({ error: 'Invalid image type' }, { status: 400 });
@@ -87,26 +93,18 @@ export async function POST(req: Request) {
 			{ status: 400 },
 		);
 	}
-	//console.log(imageType);
-	/*
-	await writeFile(
-		`./public/gemini-data/${filename}`,
-		Buffer.from(await imageData.arrayBuffer()),
-	);*/
+
+	const settings = await db
+		.collection<UserSettingsCollection>('settings')
+		.findOne({
+			userId: session.user?.id,
+		});
+	let processType = settings?.ocrProcessType;
+	if (!processType) {
+		processType = OCRProcessType.FromSource;
+	}
 
 	try {
-		/*
-		const res = await fetch('http://192.168.0.226:8787/api/ocr', {
-			method: 'POST',
-			headers: {
-				'Content-Type': imageData.type,
-			},
-			body: new Blob([imageData], { type: imageData.type }),
-		});
-		if (!res.ok) {
-			throw new Error('Failed to upload image');
-		}
-		*/
 		const binaryData = new Uint8Array(await imageData.arrayBuffer());
 		const fileData = await uploadFile(
 			binaryData,
@@ -128,16 +126,40 @@ export async function POST(req: Request) {
 			],
 		});
 		const result = JSON.parse(response.response.text()) as textRecognizeSchema;
-
+		if (processType === OCRProcessType.FromSource) {
+			const words = transfromToCardPropsFromRecognizedResult(result);
+			await db.collection<Deck>('deck').findOneAndUpdate(
+				{ _id: new ObjectId(deckId), userId: session.user?.id },
+				{
+					$push: {
+						cards: {
+							$each: words.map((word) => ({
+								word: word.word,
+								phonetic: word.phonetic,
+								blocks: word.blocks,
+							})),
+						},
+					},
+				},
+				{ upsert: true },
+			);
+			return NextResponse.json(
+				{
+					message: 'Image uploaded successfully',
+				},
+				{ status: 200 },
+			);
+		}
 		result.words.map((word, index) => {
 			setTimeout(async () => {
 				await GET(
 					new Request(`http://localhost:3000/api/word?word=${word.word}`),
 				);
 				const wordData = await db
-					.collection<Word>('words')
+					.collection<WithAvliable<Word>>('words')
 					.findOne({ word: word.word });
-				if (wordData) {
+				if (!wordData || wordData.available === false) return;
+				if (settings?.ocrProcessType === OCRProcessType.FromSource) {
 					await db.collection<Deck>('deck').findOneAndUpdate(
 						{ _id: new ObjectId(deckId), userId: session.user?.id },
 						{
@@ -150,12 +172,38 @@ export async function POST(req: Request) {
 							},
 						},
 					);
+					return;
+				}
+				if (
+					settings?.ocrProcessType ===
+					OCRProcessType.FromSourceButOnlyDefinitionFromImage
+				) {
+					const porcessedWordData =
+						getDefiniationFromRecognizedResultAndCardProps(
+							{
+								word: wordData.word,
+								phonetic: wordData.phonetic,
+								blocks: wordData.blocks,
+								audio: '',
+							},
+							result,
+						);
+					if (!porcessedWordData) return;
+					await db.collection<Deck>('deck').findOneAndUpdate(
+						{ _id: new ObjectId(deckId), userId: session.user?.id },
+						{
+							$push: {
+								cards: {
+									word: porcessedWordData.word,
+									phonetic: porcessedWordData.phonetic,
+									blocks: porcessedWordData.blocks,
+								},
+							},
+						},
+					);
 				}
 			}, index * 2.5 * 1_000);
 		});
-		/*
-		await unlink(`./public/gemini-data/${filename}`);
-		*/
 		return NextResponse.json(
 			{
 				message: 'Image uploaded successfully',
@@ -164,7 +212,6 @@ export async function POST(req: Request) {
 		);
 	} catch (e) {
 		console.log(e);
-		/*await unlink(`./public/gemini-data/${filename}`);*/
 		return NextResponse.json(
 			{ error: 'Failed to upload image' },
 			{ status: 500 },

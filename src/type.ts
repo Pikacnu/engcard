@@ -256,7 +256,82 @@ export enum DeckType {
 	ChangeByButton,
 }
 
+export enum OCRProcessType {
+	OnlyFromImage,
+	FromSourceButOnlyDefinitionFromImage,
+	FromSource,
+}
+
 export type UserSettingsCollection = {
 	userId: string;
 	deckActionType: DeckType;
+	ocrProcessType: OCRProcessType;
+};
+
+export type WithAvliable<T> = T & {
+	available: boolean;
+};
+
+export type EnWordDefinition = {
+	definition: string;
+	examples?: string[];
+	lemmas: Lemma[];
+	id: string;
+	ili: string;
+	pos: string;
+	subject: string;
+	relations: Relation[];
+	gloss: string | null;
+};
+
+export type Lemma = {
+	lemma: string;
+	language: string;
+	sense_key: string;
+	importance: number;
+	pronunciations: Pronunciation[];
+	entry_no: number;
+};
+
+export type Pronunciation = {
+	value: string;
+	variety: string | null;
+};
+
+export type Relation = {
+	src_word: string | null;
+	trg_word: string | null;
+	rel_type: RelationType;
+	target: string;
+};
+
+export enum RelationType {
+	Hypernym = 'hypernym',
+	Hyponym = 'hyponym',
+	Meronym = 'meronym',
+	Holonym = 'holonym',
+	Antonym = 'antonym',
+	Synonym = 'synonym',
+	Related = 'related',
+	Derivation = 'derivation',
+	DomainRegion = 'domain_region',
+	DomainUsage = 'domain_usage',
+	DomainTopic = 'domain_topic',
+}
+
+export enum EnWordPartOfSpeech {
+	Noun = 'noun',
+	Verb = 'verb',
+	Adjective = 'adj',
+	Error = 'error',
+}
+
+export const EnWordPartOfSpeechToPartOfSpeech: Record<
+	EnWordPartOfSpeech,
+	PartOfSpeech
+> = {
+	[EnWordPartOfSpeech.Noun]: PartOfSpeech.Noun,
+	[EnWordPartOfSpeech.Verb]: PartOfSpeech.Verb,
+	[EnWordPartOfSpeech.Adjective]: PartOfSpeech.Adjective,
+	[EnWordPartOfSpeech.Error]: PartOfSpeech.Error,
 };
