@@ -7,7 +7,7 @@ import AddDeck from '@/components/server/adddeck';
 import { deleteDeck, getShareDeck } from '@/actions/deck';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { useCopyToClipboard } from '@/components/client/copy';
+import { useCopyToClipboard } from '@/hooks/copy';
 
 type Deck = WithId<Document> & { name: string; public: boolean };
 

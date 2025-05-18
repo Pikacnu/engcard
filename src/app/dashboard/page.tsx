@@ -23,8 +23,8 @@ export default async function DashBoard() {
 
 	return (
 		<div className='h-full p-4 flex flex-row overflow-auto max-md:flex-col items-center'>
-			<div className='w-full max-w-4xl *:[h-1/2] flex flex-col space-y-4 *:flex-grow *:overflow-auto'>
-				<div className='mb-6 bg-white p-6 rounded-lg shadow-lg'>
+			<div className='w-full max-w-4xl flex flex-col space-y-4 *:flex-grow max-h-[100vh]'>
+				<div className='mb-6 bg-white p-6 rounded-lg shadow-lg text-black'>
 					<input
 						type='checkbox'
 						id='recent-history'

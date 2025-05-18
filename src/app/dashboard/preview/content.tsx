@@ -15,12 +15,77 @@ import Questions from '@/components/questions';
 import { useSearchParams } from 'next/navigation';
 import List from '@/components/list';
 import { saveHistory } from '@/utils/user-data';
+import Joyride, { ACTIONS, CallBackProps, Status, STATUS } from 'react-joyride';
+import { useLocalStorage } from '@/hooks/localstorage';
 
 const alphabet = 'abcdefghijklmnopqrstuvwxyz'.split('');
 
 const optionCounts = 40;
 
 export default function Content() {
+	const [isGuideCard, setIsGuideCard] = useLocalStorage<boolean>(
+		'guideDashboardPreview',
+		false,
+	);
+	const [joyrideRun, setJoyrideRun] = useState(!isGuideCard);
+
+	const steps = [
+		{
+			target: '.display-area',
+			content: '這裡是顯示區域，所有功能都將顯示在這',
+		},
+		{
+			target: '.mark-button',
+			content: '這裡是標記按鈕，點擊可將單字加入標記列表',
+		},
+		{
+			target: '.function-list',
+			content: '這裡是功能列表，可以在此處切換不同的預覽與限制單字的數量',
+		},
+		{
+			target: '.card-button',
+			content: '這裡是牌組區域，將以翻頁單字卡的行事呈現',
+		},
+		{
+			target: '.questions-button',
+			content: '這裡是問題區塊，用以練習單字拼寫',
+		},
+		{
+			target: '.list-button',
+			content: '這裡是列表區塊，可以查看當前的所有單字',
+		},
+		{
+			target: '.word-button',
+			content: '這裡是單字問題區塊，方便你記憶意思',
+		},
+		{
+			target: '.deck-selector',
+			content: '這裡是牌組選擇區域，可以選擇不同的單字牌組',
+		},
+	];
+
+	const handleJoyrideCallback = (data: CallBackProps) => {
+		const { status, action, step } = data;
+		if (action === ACTIONS.UPDATE) {
+			console.log('Update step:', step.target);
+			const stepCardTypeMap = new Map([
+				['.questions-button', CardType.Questions],
+				['.list-button', CardType.List],
+				['.card-button', CardType.Card],
+				['.word-button', CardType.Word],
+			]);
+			const cardType = stepCardTypeMap.get(step.target as string);
+			if (cardType !== undefined) {
+				console.log('Card type:', cardType);
+				setType(cardType);
+			}
+		}
+		if (([STATUS.FINISHED, STATUS.SKIPPED] as Array<Status>).includes(status)) {
+			setJoyrideRun(false);
+			setIsGuideCard(true);
+		}
+	};
+
 	const [type, setType] = useState<CardType>(CardType.Card);
 	const [cards, setCards] = useState<CardProps[]>([]);
 	const [wordStartWith, setWordStartWith] = useState<string>('');
@@ -113,7 +178,15 @@ export default function Content() {
 
 	return (
 		<div className='flex flex-row-reverse max-md:flex-col items-center justify-center h-full w-full bg-gray-700 '>
-			<div className='flex-grow flex items-center justify-center w-full'>
+			<Joyride
+				steps={steps}
+				continuous
+				showProgress
+				showSkipButton
+				run={joyrideRun}
+				callback={handleJoyrideCallback}
+			/>
+			<div className='flex-grow flex items-center justify-center w-full display-area'>
 				{
 					{
 						[CardType.Card]: (
@@ -167,7 +240,7 @@ export default function Content() {
 				}
 			</div>
 			<button
-				className='absolute top-0 right-0 m-4 p-2 bg-gray-500 text-white rounded-lg'
+				className='absolute top-0 right-0 m-4 p-2 bg-gray-500 text-white rounded-lg mark-button'
 				onClick={() => {
 					if (isMarked) {
 						setMarkedWord((prev) =>
@@ -186,11 +259,11 @@ export default function Content() {
 					alt='Marked'
 				></Image>
 			</button>
-			<div className='flex flex-col h-full bg-gray-200 max-md:flex-row max-md:h-16 max-md:bottom-0 max-md:w-full max-md:justify-center keyboard:hidden'>
+			<div className='flex flex-col h-full bg-gray-200 max-md:flex-row max-md:h-16 max-md:bottom-0 max-md:w-full max-md:justify-center keyboard:hidden function-list'>
 				<button
 					className={`p-2 m-2 text-black bg-emerald-600 rounded-md ${
 						type === CardType.Card ? 'bg-opacity-40' : 'bg-opacity-10'
-					}`}
+					} card-button`}
 					onClick={() => setType(CardType.Card)}
 				>
 					<Image
@@ -203,7 +276,7 @@ export default function Content() {
 				<button
 					className={`p-2 m-2 text-black bg-emerald-600 rounded-md ${
 						type === CardType.Questions ? 'bg-opacity-40' : 'bg-opacity-10'
-					}`}
+					} questions-button`}
 					onClick={() => setType(CardType.Questions)}
 				>
 					<Image
@@ -216,7 +289,7 @@ export default function Content() {
 				<button
 					className={`p-2 m-2 text-black bg-emerald-600 rounded-md ${
 						type === CardType.List ? 'bg-opacity-40' : 'bg-opacity-10'
-					}`}
+					} list-button`}
 					onClick={() => setType(CardType.List)}
 				>
 					<Image
@@ -229,7 +302,7 @@ export default function Content() {
 				<button
 					className={`p-2 m-2 text-black bg-emerald-600 rounded-md ${
 						type === CardType.Word ? 'bg-opacity-40' : 'bg-opacity-10'
-					}`}
+					} word-button`}
 					onClick={() => {
 						setType(CardType.Word);
 						fetchCards(wordStartWith, count * 4);
@@ -251,6 +324,17 @@ export default function Content() {
 						width={24}
 						height={24}
 						alt='Refresh'
+					/>
+				</button>
+				<button
+					onClick={() => setCards(markedWord)}
+					className='p-2 m-2 text-black bg-sky-600 bg-opacity-10 rounded-md hover:bg-opacity-80 transition-all delay-100 marked-list'
+				>
+					<Image
+						src={`/icons/star.svg`}
+						width={24}
+						height={24}
+						alt='Marked'
 					/>
 				</button>
 				<h4 className='text-black self-center'>
@@ -295,7 +379,7 @@ export default function Content() {
 						))}
 				</select>
 			</div>
-			<div className='flex flex-col h-full bg-gray-200 max-md:flex-row max-md:h-8 max-md:bottom-0 max-md:w-full max-md:justify-center px-2 keyboard:hidden'>
+			<div className='flex flex-col h-full bg-gray-200 max-md:flex-row max-md:h-8 max-md:bottom-0 max-md:w-full max-md:justify-center px-2 keyboard:hidden deck-selector'>
 				<div className='flex flex-row items-center justify-center flex-grow md:hidden'>
 					{/*for mobile*/}
 					<p className='text-black self-center'>Selected Deck :</p>
