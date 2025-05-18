@@ -148,7 +148,7 @@ async function getAIResponse(
 
 	try {
 		AIResponse = await OpenAIClient.beta.chat.completions.parse({
-			model: 'gpt-4.1-mini',
+			model: 'gpt-4.1-nano',
 			messages: [
 				{
 					role: 'system',
