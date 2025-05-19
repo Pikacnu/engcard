@@ -178,14 +178,17 @@ export default function Content() {
 
 	return (
 		<div className='flex flex-row-reverse max-md:flex-col items-center justify-center h-full w-full bg-gray-700 '>
-			<Joyride
-				steps={steps}
-				continuous
-				showProgress
-				showSkipButton
-				run={joyrideRun}
-				callback={handleJoyrideCallback}
-			/>
+			{
+				<Joyride
+					steps={steps}
+					continuous
+					showProgress
+					showSkipButton
+					run={joyrideRun}
+					callback={handleJoyrideCallback}
+					disableScrollParentFix
+				/>
+			}
 			<div className='flex-grow flex items-center justify-center w-full display-area'>
 				{
 					{

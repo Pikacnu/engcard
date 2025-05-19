@@ -98,6 +98,7 @@ export default function DashBoardLayout({
 				continuous
 				showProgress
 				showSkipButton
+				scrollToFirstStep
 				run={joyrideRun}
 				callback={handleJoyrideCallback}
 			/>
