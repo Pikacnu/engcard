@@ -15,7 +15,7 @@ import {
 } from '@/utils';
 import {
 	getWordFromDictionaryAPI,
-	getWordFromEnWordNetAPU,
+	getWordFromEnWordNetAPI,
 } from '@/utils/dict/functions';
 import { NextResponse } from 'next/server';
 import { zodResponseFormat } from 'openai/helpers/zod.mjs';
@@ -84,7 +84,7 @@ export async function GET(request: Request): Promise<Response> {
 async function newWord(word: string): Promise<CardProps | null> {
 	const sourceDataPromiseList = [
 		getWordFromDictionaryAPI(word),
-		getWordFromEnWordNetAPU(word),
+		getWordFromEnWordNetAPI(word),
 	];
 	const sourceDataList = (await Promise.all(sourceDataPromiseList)).filter(
 		(data) => data !== null,

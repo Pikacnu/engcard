@@ -44,7 +44,8 @@ export const ChatModelSchema = z.object({
 	action: z.enum(Object.values(ChatAction) as [string, ...string[]]),
 	message: z.string(),
 	changeChatName: z.string().optional(),
-	newDeckName: z.string().optional(),
+	targetDeckName: z.string().optional(),
+	targetDeckId: z.string().optional(),
 	deckId: z.string().optional(),
 });
 
@@ -58,7 +59,8 @@ export const GChatModelSchema = new GObject('chatModelSchema', false, {
 		),
 		new GString('message', true),
 		new GString('changeChatName', false),
-		new GString('newDeckName', false),
+		new GString('targetDeckName', false),
+		new GString('targetDeckId', false),
 		new GString('deckId', false),
 	],
 	showName: false,

@@ -70,7 +70,7 @@ export default function Settings() {
 						alt='loading'
 						width={64}
 						height={64}
-						className='w-12 h-12 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600'
+						className='w-12 h-12 animate-spin text-gray-600 fill-blue-600'
 					/>
 					<p className='text-2xl text-gray-500'>Loading...</p>
 				</div>

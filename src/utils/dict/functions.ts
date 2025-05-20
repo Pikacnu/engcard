@@ -69,7 +69,7 @@ type WithAdditionData<T> = T & {
 	phonetic?: string;
 };
 
-export async function getWordFromEnWordNetAPU(
+export async function getWordFromEnWordNetAPI(
 	word: string,
 ): Promise<CardProps | null> {
 	const response = await fetch(`https://en-word.net/json/lemma/${word}`);
@@ -119,11 +119,14 @@ export async function getWordFromEnWordNetAPU(
 					item.subject.split('.')[0] as EnWordPartOfSpeech
 				],
 		};
-		const phonetic = item.lemmas.find((lemma) => lemma.lemma === word)
-			?.pronunciations[0].value;
-		if (phonetic) {
+		const pronunciations = item.lemmas.find(
+			(lemma) => lemma.lemma === word,
+		)?.pronunciations;
+		if (Array.isArray(pronunciations) && pronunciations.length > 0) {
+			const phonetic = pronunciations[0].value;
 			return Object.assign(definition, { phonetic });
 		}
+
 		return definition;
 	});
 	const blocks: Blocks[] = [];

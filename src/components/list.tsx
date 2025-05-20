@@ -81,7 +81,7 @@ export default function List({
 				<div className='flex flex-col overflow-auto shadow-xl bg-black bg-opacity-50 rounded-lg p-4 flex-grow'>
 					{card.map((card, index) => (
 						<div
-							className='pb-8 shadow-md rounded-lg bg-blue-100 dark:bg-gray-800 p-4 m-4'
+							className='pb-8 shadow-md rounded-lg bg-gray-800 p-4 m-4'
 							key={`${card.word}-${index}`}
 							onClick={() => {
 								setIsFocus(true);

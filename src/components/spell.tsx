@@ -67,12 +67,12 @@ export default function Spell({
 			className={`flex flex-row items-center justify-center flex-grow min-w-[20vw] h-[70%] max-h-[70vh] ${className} relative`}
 		>
 			{!correct && (
-				<div className='flex flex-col items-center justify-center shadow-lg p-4 m-4 rounded-lg select-none bg-blue-100 dark:bg-gray-800 overflow-hidden flex-grow min-w-[20vw] h-full'>
+				<div className='flex flex-col items-center justify-center shadow-lg p-4 m-4 rounded-lg select-none bg-gray-800 overflow-hidden flex-grow min-w-[20vw] h-full'>
 					<div className='flex relative'>
 						<p className='p-2 border-2 opacity-0'>{card.word}</p>
 						<input
 							type='text'
-							className=' text-black dark:text-white bg-transparent p-2 rounded-xl border-2 border-blue-500 absolute w-full'
+							className=' text-white bg-transparent p-2 rounded-xl border-2 border-blue-500 absolute w-full'
 							value={word}
 							placeholder={card.word.substring(0, 1)}
 							onChange={(e) =>

@@ -4,7 +4,13 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useState } from 'react';
 import { redirect } from 'next/navigation';
-import Joyride, { ACTIONS, CallBackProps, Status, STATUS } from 'react-joyride';
+import Joyride, {
+	ACTIONS,
+	CallBackProps,
+	Status,
+	STATUS,
+	Step,
+} from 'react-joyride';
 import { useLocalStorage } from '@/hooks/localstorage';
 
 export default function DashBoardLayout({
@@ -17,16 +23,18 @@ export default function DashBoardLayout({
 		'guideDashboard',
 		false,
 	);
-	const [joyrideRun, setJoyrideRun] = useState(isGuideDashboard);
+	const [joyrideRun, setJoyrideRun] = useState(!isGuideDashboard);
 
-	const steps = [
+	const steps: Array<Step> = [
 		{
-			target: '.dashboard-layout',
-			content: '這是儀表板佈局，所有功能都集中在這裡',
+			target: '.content-area',
+			content: '這裡將顯示您所選功能的內容',
+			placement: 'center',
 		},
 		{
 			target: '.main-nav',
 			content: '這裡是主導航欄，您可以通過它訪問各個功能',
+			placement: 'auto',
 		},
 		{
 			target: '.home-link',
@@ -68,10 +76,6 @@ export default function DashBoardLayout({
 			target: '.settings',
 			content: '設置功能，您可以在這裡調整應用程序的設置',
 		},
-		{
-			target: '.content-area',
-			content: '這裡將顯示您所選功能的內容',
-		},
 	];
 
 	const handleJoyrideCallback = (data: CallBackProps) => {
@@ -92,13 +96,15 @@ export default function DashBoardLayout({
 	};
 
 	return (
-		<div className='flex flex-row max-md:flex-col-reverse w-full h-dvh dark:bg-gray-700 bg-blue-100 relative dashboard-layout'>
+		<div className='flex flex-row max-md:flex-col-reverse w-full h-dvh bg-gray-700 relative dashboard-layout'>
 			<Joyride
 				steps={steps}
 				continuous
 				showProgress
 				showSkipButton
 				scrollToFirstStep
+				disableScrolling
+				disableCloseOnEsc
 				run={joyrideRun}
 				callback={handleJoyrideCallback}
 			/>

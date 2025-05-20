@@ -60,6 +60,7 @@ export default function Search() {
 				<input
 					className='p-2 m-2 rounded-md text-black'
 					type='text'
+					placeholder='Type a word to search'
 					value={word}
 					onChange={(e) => setWord(e.target.value)}
 				/>
@@ -74,7 +75,7 @@ export default function Search() {
 				<div className='flex items-center justify-center h-[80vh]'>
 					<svg
 						aria-hidden='true'
-						className='w-16 h-16 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600'
+						className='w-16 h-16 animate-spin text-gray-600 fill-blue-600'
 						viewBox='0 0 100 101'
 						fill='none'
 						xmlns='http://www.w3.org/2000/svg'

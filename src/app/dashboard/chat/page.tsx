@@ -9,7 +9,8 @@ import {
 } from '@/actions/chat';
 import { WithStringId, WithStringObjectId, ChatAction } from '@/type';
 import { Content } from '@google/generative-ai';
-import { useEffect, useState, useTransition } from 'react';
+import { useEffect, useRef, useState, useTransition } from 'react';
+import { useScrollToBottom } from '@/hooks/scrollToBottom';
 
 export default function Chat() {
 	const [message, setMessage] = useState('');
@@ -31,6 +32,8 @@ export default function Chat() {
 	>([]);
 	const [isSending, startSending] = useTransition();
 	const [loading, setLoading] = useState(true);
+	const chatRef = useRef<HTMLDivElement>(null);
+	useScrollToBottom(chatRef, [chatId]);
 
 	useEffect(() => {
 		getChatList().then((data) => {
@@ -72,7 +75,7 @@ export default function Chat() {
 					const isActive = chat._id === chatId;
 					const color = isActive
 						? 'bg-green-500 text-white'
-						: 'bg-gray-200 dark:bg-gray-700 dark:text-white';
+						: ' bg-gray-700 text-white';
 					return (
 						<div
 							className='flex flex-row justify-center items-center'
@@ -120,7 +123,7 @@ export default function Chat() {
 					+
 				</button>
 			</div>
-			<div className='flex flex-col flex-grow bg-gray-100 dark:bg-gray-800 rounded-lg max-md:max-h-[80vh] max-md:w-full'>
+			<div className='flex flex-col flex-grow bg-gray-800 rounded-lg max-md:max-h-[80vh] max-md:w-full'>
 				<div className='flex flex-col flex-grow overflow-y-auto'>
 					{history.map((content) => {
 						const { role, parts, action } = content;
@@ -134,7 +137,7 @@ export default function Chat() {
 									if (part.text) {
 										return (
 											<div
-												className={`flex flex-col p-2 m-2 rounded-lg bg-gray-200 dark:bg-gray-700 dark:text-white ${direction}`}
+												className={`flex flex-col p-2 m-2 rounded-lg bg-gray-700 text-white ${direction}`}
 												key={part.text}
 											>
 												{part.text}
@@ -164,8 +167,10 @@ export default function Chat() {
 					<input
 						type='text'
 						value={message}
+						disabled={isSending}
+						placeholder='Type a message'
 						onChange={(e) => setMessage(e.target.value)}
-						className='flex-grow h-full px-4 text-lg bg-gray-50 dark:bg-gray-700 dark:text-white p-1 border-2 border-black rounded-xl'
+						className='flex-grow h-full px-4 text-lg bg-gray-700 text-white p-1 border-2 border-black rounded-xl'
 					/>
 					<button
 						className=' w-16 bg-blue-500 text-white rounded-lg p-2'

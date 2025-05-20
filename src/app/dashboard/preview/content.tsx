@@ -15,7 +15,13 @@ import Questions from '@/components/questions';
 import { useSearchParams } from 'next/navigation';
 import List from '@/components/list';
 import { saveHistory } from '@/utils/user-data';
-import Joyride, { ACTIONS, CallBackProps, Status, STATUS } from 'react-joyride';
+import Joyride, {
+	ACTIONS,
+	CallBackProps,
+	Status,
+	STATUS,
+	Step,
+} from 'react-joyride';
 import { useLocalStorage } from '@/hooks/localstorage';
 
 const alphabet = 'abcdefghijklmnopqrstuvwxyz'.split('');
@@ -29,18 +35,21 @@ export default function Content() {
 	);
 	const [joyrideRun, setJoyrideRun] = useState(!isGuideCard);
 
-	const steps = [
+	const steps: Array<Step> = [
 		{
 			target: '.display-area',
 			content: '這裡是顯示區域，所有功能都將顯示在這',
+			placement: 'center',
 		},
 		{
 			target: '.mark-button',
 			content: '這裡是標記按鈕，點擊可將單字加入標記列表',
+			placement: 'auto',
 		},
 		{
 			target: '.function-list',
 			content: '這裡是功能列表，可以在此處切換不同的預覽與限制單字的數量',
+			placement: 'auto',
 		},
 		{
 			target: '.card-button',
@@ -193,20 +202,22 @@ export default function Content() {
 				{
 					{
 						[CardType.Card]: (
-							<Deck
-								cards={cards}
-								onFinishClick={() => {
-									fetchCards(wordStartWith, count);
-									saveHistory(
-										cards.map((card) => card.word),
-										selectedDeck || '',
-									);
-								}}
-								updateCurrentWord={setWord}
-								deckType={
-									userSettings?.deckActionType || DeckType.AutoChangeToNext
-								}
-							/>
+							<div className='max-md:w-[80vw] md:max-[50vw] flex items-center justify-center'>
+								<Deck
+									cards={cards}
+									onFinishClick={() => {
+										fetchCards(wordStartWith, count);
+										saveHistory(
+											cards.map((card) => card.word),
+											selectedDeck || '',
+										);
+									}}
+									updateCurrentWord={setWord}
+									deckType={
+										userSettings?.deckActionType || DeckType.AutoChangeToNext
+									}
+								/>
+							</div>
 						),
 						[CardType.Questions]: (
 							<Questions

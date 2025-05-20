@@ -1,6 +1,12 @@
 'use client';
 
-import Joyride, { ACTIONS, CallBackProps, Status, STATUS } from 'react-joyride';
+import Joyride, {
+	ACTIONS,
+	CallBackProps,
+	Status,
+	STATUS,
+	Step,
+} from 'react-joyride';
 import { CardProps, DeckType, UserSettingsCollection, CardType } from '@/type';
 import Questions from '@/components/questions';
 import { useCallback, useEffect, useState } from 'react';
@@ -19,10 +25,11 @@ export default function Home() {
 		false,
 	);
 	const [joyrideRun, setJoyrideRun] = useState(!isGuideCard);
-	const steps = [
+	const steps: Array<Step> = [
 		{
 			target: '.display',
 			content: '這裡是顯示區域，所有功能都將顯示在這',
+			placement: 'center',
 		},
 		{
 			target: '.mark-button',
@@ -31,6 +38,7 @@ export default function Home() {
 		{
 			target: '.function-list',
 			content: '這裡是功能列表，可以在此處切換不同的預覽與限制單字的數量',
+			placement: 'auto',
 		},
 		{
 			target: '.deck',

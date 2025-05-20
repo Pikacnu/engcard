@@ -72,7 +72,7 @@ export default function Deck() {
 				<div className='flex items-center justify-center h-[80vh]'>
 					<svg
 						aria-hidden='true'
-						className='w-16 h-16 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600'
+						className='w-16 h-16 animate-spin text-gray-600 fill-blue-600'
 						viewBox='0 0 100 101'
 						fill='none'
 						xmlns='http://www.w3.org/2000/svg'
@@ -112,7 +112,7 @@ export default function Deck() {
 										Preview
 									</button>
 								</div>
-								<div className='flex flex-col m-4 bg-green-600 bg-opacity-30 rounded-lg p-4 *:bg-opacity-80 *:rounded-md *:p-2'>
+								<div className='flex flex-col m-4 bg-green-600 bg-opacity-30 rounded-lg p-4 *:bg-opacity-80 *:rounded-md *:p-2 *:text-center'>
 									{/*<h2>Options :</h2>*/}
 									<Link
 										className=' bg-gray-600 '

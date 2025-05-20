@@ -18,7 +18,7 @@ export default function Card({ card }: { card: CardProps }) {
 	const { word, phonetic, blocks, audio } = cardData;
 	return (
 		<div
-			className='flex flex-col h-full min-w-[20vw] shadow-lg p-4 m-4 rounded-lg select-none bg-blue-100 dark:bg-gray-800 overflow-hidden flex-grow'
+			className='flex flex-col h-full min-w-[20vw] shadow-lg p-4 m-4 rounded-lg select-none bg-gray-800 overflow-hidden flex-grow'
 			onClick={() => {
 				if (card.flipped !== true) {
 					setFlipped((prev) => !prev);
@@ -26,7 +26,7 @@ export default function Card({ card }: { card: CardProps }) {
 			}}
 		>
 			{!flipped && (
-				<div className='flex flex-col items-center justify-center flex-grow relative overflow-hidden'>
+				<div className='flex flex-col items-center justify-center flex-grow relative overflow-hidden w-full'>
 					<h1 className='text-4xl text-wrap whitespace-break-spaces '>
 						{word}
 					</h1>

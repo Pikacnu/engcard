@@ -37,7 +37,7 @@ export default function EditPage({
 				<div className=' fixed z-10 inset-0 flex items-center justify-center bg-black bg-opacity-50 h-full w-full top-0 left-0'>
 					<svg
 						aria-hidden='true'
-						className='w-16 h-16 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600'
+						className='w-16 h-16 animate-spin text-gray-600 fill-blue-600'
 						viewBox='0 0 100 101'
 						fill='none'
 						xmlns='http://www.w3.org/2000/svg'
@@ -57,6 +57,7 @@ export default function EditPage({
 			<Add
 				className='max-w-2/5 w-2/5'
 				id={id}
+				onAdd={refresh}
 			/>
 			<List
 				cards={deck ? deck.cards : []}

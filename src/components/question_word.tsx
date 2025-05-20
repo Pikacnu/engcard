@@ -104,7 +104,7 @@ export default function QuestionWord({
 					</div>
 				)}
 			</div>
-			<div className='w-full bg-gray-200 rounded-full h-5.5 dark:bg-gray-700 select-none'>
+			<div className='w-full rounded-full h-5.5 bg-gray-700 select-none'>
 				<div
 					className='bg-blue-600 rounded-full duration-100 transition-all text-xs font-medium text-blue-100 text-end p-1 leading-none'
 					style={{

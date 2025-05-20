@@ -8,6 +8,7 @@ import {
 	DeckCollection,
 	Word,
 	Deck,
+	CardProps,
 } from '@/type';
 import { auth, ChatModelSchema, GenerateTextResponse } from '@/utils';
 import { ObjectId, WithId } from 'mongodb';
@@ -182,6 +183,8 @@ export async function sendMessage(chatId: string, message: string) {
 		session.user?.id || '',
 	);
 
+	console.log('response', response);
+
 	const id = Number(chat.history.length.toString() + Date.now()).toString(16);
 	const chatSession = await db.collection<ChatSession>('chat').findOneAndUpdate(
 		{
@@ -257,11 +260,11 @@ const chatActionFunctions: Record<
 	[ChatAction.AddDeck]: async (data, userData) => {
 		const session = userData || (await auth());
 		if (!session) return { error: 'Not authenticated' };
-		if (!data.newDeckName) return { error: 'No deck name provided' };
+		if (!data.targetDeckName) return { error: 'No deck name provided' };
 		const deckId = (
 			await db.collection<DeckCollection>('deck').insertOne({
 				userId: session.user?.id || '',
-				name: data.newDeckName || '',
+				name: data.targetDeckName || '',
 				isPublic: false,
 				cards: [],
 			})
@@ -272,10 +275,22 @@ const chatActionFunctions: Record<
 	[ChatAction.RemoveDeck]: async (data) => {
 		const session = await auth();
 		if (!session) return { error: 'Not authenticated' };
-		if (!data.deckId) return { error: 'No deck id provided' };
-		if (!ObjectId.isValid(data.deckId)) return { error: 'Invalid deck id' };
+		let deckId = data.deckId;
+		if (!deckId || deckId.trim() === '') {
+			if (data.targetDeckName) {
+				const deck = await db
+					.collection<Deck>('deck')
+					.findOne({ name: data.targetDeckName, userId: session.user?.id });
+				console.log('deck', deck);
+				if (!deck) return { error: 'Deck not found' };
+				deckId = deck._id.toString();
+			} else {
+				return { error: 'No deck id provided' };
+			}
+		}
+		if (!ObjectId.isValid(deckId)) return { error: 'Invalid deck id' };
 		const deck = await db.collection<Deck>('deck').findOneAndDelete({
-			_id: new ObjectId(data.deckId),
+			_id: new ObjectId(deckId),
 			userId: session.user?.id,
 		});
 		if (!deck) return { error: 'Deck not found' };
@@ -305,7 +320,7 @@ const chatActionFunctions: Record<
 			{ _id: new ObjectId(data.deckId), userId: session.user?.id },
 			{
 				$set: {
-					name: data.newDeckName,
+					name: data.targetDeckName,
 					cards: currentDeckData.cards.filter((card) =>
 						removedWords.includes(card.word),
 					),
@@ -317,7 +332,65 @@ const chatActionFunctions: Record<
 		if (!deck) return { error: 'Deck not found' };
 		return;
 	},
-	[ChatAction.AddCard]: async () => {},
+	[ChatAction.AddCard]: async (data, session) => {
+		if (!session) return { error: 'Not authenticated' };
+		let deckId = data.deckId;
+		if (!deckId || deckId.trim() === '') {
+			if (data.targetDeckName) {
+				const deck = await db
+					.collection<Deck>('deck')
+					.findOne({ name: data.targetDeckName, userId: session.user?.id });
+				if (!deck) return { error: 'Deck not found' };
+				deckId = deck._id.toString();
+			} else {
+				return { error: 'No deck id provided' };
+			}
+		}
+		if (!ObjectId.isValid(deckId)) return { error: 'Invalid deck id' };
+		if (!data.words) return { error: 'No word provided' };
+		const words = data.words;
+		words.forEach(async (word, index) => {
+			setTimeout(async () => {
+				let wordData = await db
+					.collection<Word>('words')
+					.findOne({ word: word });
+				if (!wordData) {
+					const res = await GET(
+						new Request(`http://localhost:3000/api/word?word=${word}`),
+					);
+					if (!res.ok) {
+						console.log('Error fetching word data');
+						return;
+					}
+					const temp = (await res.json()) as CardProps | null;
+					if (!temp) {
+						console.log('Error fetching word data');
+						return;
+					}
+					wordData = {
+						word: temp.word,
+						phonetic: temp.phonetic,
+						blocks: temp.blocks,
+					} as WithId<Word>;
+				}
+
+				if (wordData) {
+					await db.collection<Deck>('deck').findOneAndUpdate(
+						{ _id: new ObjectId(deckId), userId: session.user?.id },
+						{
+							$push: {
+								cards: {
+									word: wordData.word,
+									phonetic: wordData.phonetic,
+									blocks: wordData.blocks,
+								},
+							},
+						},
+					);
+				}
+			}, index * 2.5 * 1_000);
+		});
+	},
 };
 
 /*const chatActionFunctions: Record<

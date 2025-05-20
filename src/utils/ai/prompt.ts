@@ -84,6 +84,35 @@ Like deckId, userId, etc.
 For example, 
 - if the userId is 123456, you should said that "I couldn't provide the userId".
 - If the user ask to list deck ids, you should said that "I couldn't provide the deckId".
+action example:
+{
+	"action": "ShowOuput",
+	words": ["test","word"],
+}
+When add Deck{
+	"action": "AddDeck",
+	"targetDeckName": "test",
+}
+When Remove Deck{
+	"action": "RemoveDeck",
+	"targetDeckId": "123456",
+	"targetDeckName": "test",
+}
+When add Word{
+	"action": "EditDeck",
+	"targetDeckId": "123456",
+	"words": ["test","word"],
+}
+When remove Word{
+	"action": "EditDeck",
+	"targetDeckId": "123456",
+	"words": ["test","word"],
+}
+Change chat name{
+	"action": "EditDeck",
+	"targetDeckId": "123456",
+	"changeDeckName": "test",
+}
 `;
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

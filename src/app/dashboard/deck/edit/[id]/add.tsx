@@ -16,15 +16,12 @@ export default function Add({
 	defaultValue,
 	id,
 	className,
-	AddInfo,
+	onAdd,
 }: {
 	defaultValue?: CardProps;
 	id: string;
 	className?: string;
-	AddInfo?: {
-		deckid: string;
-		onAdd?: () => void;
-	};
+	onAdd?: () => void;
 }) {
 	const [word, setWord] = useState('');
 	const [partOfSpeech, setPartOfSpeech] = useState<PartOfSpeech>(
@@ -112,7 +109,7 @@ export default function Add({
 
 	const handleAddCard = () => {
 		addCard(id, word, definitions, partOfSpeech).then(() => {
-			if (AddInfo?.onAdd) AddInfo.onAdd();
+			if (onAdd) onAdd();
 			setWord('');
 			setDefinitions([]);
 			setPartOfSpeech(PartOfSpeech.Noun);
