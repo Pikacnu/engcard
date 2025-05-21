@@ -18,7 +18,7 @@ export default function Card({ card }: { card: CardProps }) {
 	const { word, phonetic, blocks, audio } = cardData;
 	return (
 		<div
-			className='flex flex-col h-full min-w-[20vw] shadow-lg p-4 m-4 rounded-lg select-none bg-gray-800 overflow-hidden flex-grow'
+			className='flex flex-col h-full min-w-[20vw] shadow-lg p-4 m-4 rounded-lg select-none bg-gray-800 overflow-hidden flex-grow text-white'
 			onClick={() => {
 				if (card.flipped !== true) {
 					setFlipped((prev) => !prev);
@@ -63,84 +63,86 @@ export default function Card({ card }: { card: CardProps }) {
 						</div>
 					)}
 
-					{blocks.map((block, index) => (
-						<div
-							key={index}
-							className='flex flex-col m-4 mt-10'
-						>
-							<div className='inline-flex flex-row-reverse sticky self-end top-2'>
-								{block.partOfSpeech && (
-									<h2 className='text-xl p-1 bg-opacity-40 bg-blue-600 border-2 border-blue-700'>
-										{PartOfSpeechShort[block.partOfSpeech]}
-									</h2>
-								)}
-								{block.phonetic && (
-									<p className='p-4 bg-opacity-40 bg-blue-600 border-2 border-blue-700'>
-										{block.phonetic}
-									</p>
-								)}
-							</div>
-							{block.definitions.map((definition, index) => (
-								<div
-									key={index}
-									className='flex flex-col pb-8'
-								>
-									<h2>Definition : </h2>
-									{definition.definition.map((def, index) => (
-										<div
-											key={index}
-											className='flex flex-row pl-8'
-										>
-											<p className='mr-4 border-2 min-w-8 text-center self-center'>
-												{def.lang}
-											</p>
-											<p>{def.content}</p>
-										</div>
-									))}
-									{definition.example && (
-										<>
-											<h3 className='ml-0'>Examples:</h3>
-											<div className='flex flex-col *:ml-4'>
-												{definition.example.map((example, index) => (
-													<div
-														key={index}
-														className='flex flex-col'
-													>
-														{example.map((sentence, index) => (
-															<p key={index}>{sentence.content}</p>
-														))}
-													</div>
-												))}
-											</div>
-										</>
+					{blocks.length > 0 &&
+						blocks.map((block, index) => (
+							<div
+								key={index}
+								className='flex flex-col m-4 mt-10'
+							>
+								<div className='inline-flex flex-row-reverse sticky self-end top-2'>
+									{block.partOfSpeech && (
+										<h2 className='text-xl p-1 bg-opacity-40 bg-blue-600 border-2 border-blue-700'>
+											{PartOfSpeechShort[block.partOfSpeech]}
+										</h2>
 									)}
-									{(definition.synonyms && definition.synonyms.length > 0) ||
-										(definition.antonyms && definition.antonyms.length > 0 && (
-											<div className=' grid grid-cols-2 *:m-2 border list-decimal'>
-												{definition.synonyms &&
-													definition.synonyms.length > 0 && (
-														<div>
-															<h3>Synonyms:</h3>
-															{definition.synonyms.map((synonym, index) => (
-																<li key={index}>{synonym}</li>
-															))}
-														</div>
-													)}
-												{definition.antonyms &&
-													definition.antonyms.length > 0 && (
-														<div>
-															<h3>Antonyms:</h3>
-															{definition.antonyms.map((antonym, index) => (
-																<li key={index}>{antonym}</li>
-															))}
-														</div>
-													)}
-											</div>
-										)) || <hr className='mt-4' />}
+									{block.phonetic && (
+										<p className='p-4 bg-opacity-40 bg-blue-600 border-2 border-blue-700'>
+											{block.phonetic}
+										</p>
+									)}
 								</div>
-							))}
-						</div>
-					))}
+								{block.definitions.map((definition, index) => (
+									<div
+										key={index}
+										className='flex flex-col pb-8'
+									>
+										<h2>Definition : </h2>
+										{definition.definition.map((def, index) => (
+											<div
+												key={index}
+												className='flex flex-row pl-8'
+											>
+												<p className='mr-4 border-2 min-w-8 text-center self-center'>
+													{def.lang}
+												</p>
+												<p>{def.content}</p>
+											</div>
+										))}
+										{definition.example && (
+											<>
+												<h3 className='ml-0'>Examples:</h3>
+												<div className='flex flex-col *:ml-4'>
+													{definition.example.map((example, index) => (
+														<div
+															key={index}
+															className='flex flex-col'
+														>
+															{example.map((sentence, index) => (
+																<p key={index}>{sentence.content}</p>
+															))}
+														</div>
+													))}
+												</div>
+											</>
+										)}
+										{(definition.synonyms && definition.synonyms.length > 0) ||
+											(definition.antonyms &&
+												definition.antonyms.length > 0 && (
+													<div className=' grid grid-cols-2 *:m-2 border list-decimal'>
+														{definition.synonyms &&
+															definition.synonyms.length > 0 && (
+																<div>
+																	<h3>Synonyms:</h3>
+																	{definition.synonyms.map((synonym, index) => (
+																		<li key={index}>{synonym}</li>
+																	))}
+																</div>
+															)}
+														{definition.antonyms &&
+															definition.antonyms.length > 0 && (
+																<div>
+																	<h3>Antonyms:</h3>
+																	{definition.antonyms.map((antonym, index) => (
+																		<li key={index}>{antonym}</li>
+																	))}
+																</div>
+															)}
+													</div>
+												)) || <hr className='mt-4' />}
+									</div>
+								))}
+							</div>
+						))}
 				</div>
 			)}
 		</div>

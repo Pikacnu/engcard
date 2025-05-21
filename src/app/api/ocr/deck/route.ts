@@ -189,6 +189,11 @@ export async function POST(req: Request) {
 							result,
 						);
 					if (!porcessedWordData) return;
+					if (
+						!Array.isArray(porcessedWordData.blocks) ||
+						porcessedWordData.blocks.length <= 0
+					)
+						return;
 					await db.collection<Deck>('deck').findOneAndUpdate(
 						{ _id: new ObjectId(deckId), userId: session.user?.id },
 						{

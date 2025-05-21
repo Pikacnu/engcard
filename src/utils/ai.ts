@@ -28,7 +28,7 @@ export const wordSchema = z.object({
 				z.object({
 					definition: z.array(
 						z.object({
-							lang: z.string(),
+							lang: z.enum(['en', 'tw', 'ja']),
 							content: z.string(),
 						}),
 					),
@@ -85,7 +85,7 @@ export const GwordSchema = new GObject('wordSchema', false, {
 									true,
 									new GObject('definitionItem', true, {
 										properties: [
-											new GString('lang', true),
+											new GEnum('lang', ['en', 'tw', 'ja'], true),
 											new GString('content', true),
 										],
 									}),

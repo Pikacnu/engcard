@@ -90,6 +90,7 @@ export default function DashBoardLayout({
 			}
 		}
 		if (([STATUS.FINISHED, STATUS.SKIPPED] as Array<Status>).includes(status)) {
+			console.log('joyride finished or skipped');
 			setJoyrideRun(false);
 			setIsGuideDashboard(true);
 		}
