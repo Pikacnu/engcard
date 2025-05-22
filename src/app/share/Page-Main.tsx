@@ -69,17 +69,19 @@ export default function Home() {
 			{
 				{
 					[CardType.Card]: (
-						<Deck
-							cards={cards}
-							onFinishClick={() => {
-								fetchCards(wordStartWith, count);
-								saveHistory(
-									cards.map((card) => card.word),
-									'',
-								);
-							}}
-							updateCurrentWord={setWord}
-						/>
+						<div>
+							<Deck
+								cards={cards}
+								onFinishClick={() => {
+									fetchCards(wordStartWith, count);
+									saveHistory(
+										cards.map((card) => card.word),
+										'',
+									);
+								}}
+								updateCurrentWord={setWord}
+							/>
+						</div>
 					),
 					[CardType.Questions]: (
 						<Questions
@@ -222,6 +224,7 @@ export default function Home() {
 				<button
 					className={`p-2 m-2 text-black bg-emerald-600 rounded-md max-md:absolute right-0 max-md:bottom-16 `}
 					onClick={() => {
+						console.log(deckid);
 						fetch('/api/deck/public', {
 							method: 'POST',
 							body: JSON.stringify({
@@ -229,9 +232,12 @@ export default function Home() {
 							}),
 						}).then((res) => {
 							if (res.ok) {
-								alert('Deck is now public');
+								alert('Deck Added to your collection');
+								return;
 							} else {
-								alert('Failed to make deck public');
+								res.json().then((data) => {
+									alert(data.error);
+								});
 							}
 						});
 					}}

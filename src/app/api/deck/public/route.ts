@@ -1,9 +1,10 @@
 import db from '@/lib/db';
 import { DeckCollection, PublicDeckToUser } from '@/type';
 import { auth } from '@/utils';
+import { ObjectId } from 'mongodb';
 
 export async function POST(req: Request) {
-	const { deckId } = await req.json();
+	const { id: deckId } = await req.json();
 	if (!deckId) {
 		return Response.json({ error: 'Deck ID is required' }, { status: 400 });
 	}
@@ -12,14 +13,21 @@ export async function POST(req: Request) {
 		return Response.json({ error: 'Unauthorized' }, { status: 401 });
 	}
 	const userId = session.user?.id;
+	console.log(deckId);
 	const deck = await db
 		.collection<DeckCollection>('deck')
-		.findOne({ _id: new Object(deckId) });
+		.findOne({ _id: new ObjectId(deckId) });
 	if (!deck) {
 		return Response.json({ error: 'Deck not found' }, { status: 404 });
 	}
 	if (!deck.isPublic) {
 		return Response.json({ error: 'Deck is not public' }, { status: 403 });
+	}
+	if (deck.userId === userId) {
+		return Response.json(
+			{ error: 'You cannot add your own deck' },
+			{ status: 403 },
+		);
 	}
 	await db.collection<PublicDeckToUser>('publicDeckToUser').updateOne(
 		{

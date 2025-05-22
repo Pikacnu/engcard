@@ -100,7 +100,7 @@ export async function POST(req: Request) {
 			userId: session.user?.id,
 		});
 	let processType = settings?.ocrProcessType;
-	if (!processType) {
+	if (processType === undefined || processType === null) {
 		processType = OCRProcessType.FromSource;
 	}
 
@@ -126,7 +126,8 @@ export async function POST(req: Request) {
 			],
 		});
 		const result = JSON.parse(response.response.text()) as textRecognizeSchema;
-		if (processType === OCRProcessType.FromSource) {
+
+		if (processType === OCRProcessType.OnlyFromImage) {
 			const words = transfromToCardPropsFromRecognizedResult(result);
 			await db.collection<Deck>('deck').findOneAndUpdate(
 				{ _id: new ObjectId(deckId), userId: session.user?.id },
