@@ -8,10 +8,12 @@ import { deleteDeck, getShareDeck } from '@/actions/deck';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { useCopyToClipboard } from '@/hooks/copy';
+import { useTranslation } from '@/context/LanguageContext'; // Added
 
-type Deck = WithId<Document> & { name: string; public: boolean };
+type Deck = WithId<Document> & { name: string; public: boolean; isPublic?: boolean }; // Added isPublic for consistency with data
 
 export default function Deck() {
+	const { t } = useTranslation(); // Added
 	const [decks, setDecks] = useState<Deck[] | null>(null);
 	const [sharedDecks, setSharedDecks] = useState<Deck[] | null>(null);
 	const [deckId, setDeckId] = useState<ObjectId | null>(null);
@@ -42,9 +44,9 @@ export default function Deck() {
 	const { copyToClipboard } = useCopyToClipboard();
 
 	return (
-		<div className='flex flex-col w-full h-full flex-grow'>
+		<div className='flex flex-col w-full h-full flex-grow dark:bg-gray-700 dark:text-white'>
 			{deckId && (
-				<div className='absolute w-full h-screen overflow-hidden bg-black bg-opacity-40 top-0 left-0 flex items-center justify-center'>
+				<div className='absolute w-full h-screen overflow-hidden bg-black bg-opacity-40 top-0 left-0 flex items-center justify-center z-20'>
 					<DeckPreview
 						deckId={`${deckId.toString()}`}
 						onClose={() => setDeckId(null)}
@@ -53,7 +55,7 @@ export default function Deck() {
 			)}
 			{isOpenAddArea && (
 				<div
-					className='absolute w-full h-screen bg-black bg-opacity-40 top-0 left-0 flex items-center justify-center'
+					className='absolute w-full h-screen bg-black bg-opacity-40 top-0 left-0 flex items-center justify-center z-20'
 					onClick={(e) => {
 						if (e.target === e.currentTarget) {
 							setIsOpenAddArea(false);
@@ -69,10 +71,10 @@ export default function Deck() {
 				</div>
 			)}
 			{decks === null ? (
-				<div className='flex items-center justify-center h-[80vh]'>
+				<div className='flex flex-col items-center justify-center h-[80vh]'>
 					<svg
 						aria-hidden='true'
-						className='w-16 h-16 animate-spin text-gray-600 fill-blue-600'
+						className='w-16 h-16 animate-spin text-gray-600 dark:text-gray-300 fill-blue-600'
 						viewBox='0 0 100 101'
 						fill='none'
 						xmlns='http://www.w3.org/2000/svg'
@@ -86,95 +88,91 @@ export default function Deck() {
 							fill='currentFill'
 						/>
 					</svg>
-					<span className='sr-only'>Loading...</span>
+					<span className='sr-only'>{t('dashboard.deck.altLoading')}</span>
+					<p className='text-lg text-gray-500 dark:text-gray-400'>{t('common.loadingText')}</p>
 				</div>
 			) : (
-				<div className=' p-4 flex-grow grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 lg:grid-rows-3 lg:gap-6 max-lg:grid-rows-3 max-lg:gap-3 *:rounded-lg *:shadow-lg *:bg-black *:bg-opacity-25 '>
+				<div className='p-4 flex-grow grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 lg:grid-rows-3 lg:gap-6 max-lg:grid-rows-3 max-lg:gap-3 *:rounded-lg *:shadow-lg *:bg-gray-100 dark:*:bg-gray-800'>
 					{(decks &&
 						decks.map((deck) => (
 							<div
-								className=' grid grid-cols-2 items-center justify-center p-2 bg-gray-700 gap-4 *:*:m-2'
+								className='grid grid-cols-2 items-center justify-center p-2 bg-white dark:bg-gray-800 gap-4 *:*:m-1 text-gray-800 dark:text-gray-100'
 								key={deck._id.toString()}
 							>
-								<div className='flex flex-col shadow-lg p-2 rounded-lg bg-blue-700 bg-opacity-70'>
+								<div className='flex flex-col shadow-lg p-2 rounded-lg bg-blue-100 dark:bg-blue-700 bg-opacity-70 dark:bg-opacity-70'>
 									<h1>
-										<p className=' border-2 inline p-1 m-1'>Name :</p>
+										<p className='border-2 inline p-1 m-1 border-gray-300 dark:border-gray-600'>{t('dashboard.deck.nameLabel')}</p>
 										{deck.name}
 									</h1>
 									<h1>
-										<p className=' border-2 inline p-1 m-1'>Public :</p>
-										{deck.isPublic ? 'Yes' : 'No'}
+										<p className='border-2 inline p-1 m-1 border-gray-300 dark:border-gray-600'>{t('dashboard.deck.publicLabel')}</p>
+										{deck.isPublic ? t('dashboard.deck.isPublicYes') : t('dashboard.deck.isPublicNo')}
 									</h1>
 									<button
-										className='flex flex-col bg-black bg-opacity-40 p-2 rounded-lg'
+										className='flex flex-col bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500 p-2 rounded-lg mt-2'
 										onClick={() => setDeckId(deck._id)}
 									>
-										Preview
+										{t('dashboard.deck.previewButton')}
 									</button>
 								</div>
-								<div className='flex flex-col m-4 bg-green-600 bg-opacity-30 rounded-lg p-4 *:bg-opacity-80 *:rounded-md *:p-2 *:text-center'>
-									{/*<h2>Options :</h2>*/}
+								<div className='flex flex-col m-1 bg-green-100 dark:bg-green-700 bg-opacity-30 dark:bg-opacity-30 rounded-lg p-2 *:bg-opacity-80 *:rounded-md *:p-2 *:text-center *:my-1'>
 									<Link
-										className=' bg-gray-600 '
+										className='bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500'
 										href={`/dashboard/deck/edit/${deck._id.toString()}`}
 									>
-										Edit
+										{t('dashboard.deck.editButton')}
 									</Link>
 									<button
-										className=' bg-red-700'
+										className='bg-red-300 dark:bg-red-700 hover:bg-red-400 dark:hover:bg-red-600'
 										onClick={async () => {
 											await deleteDeck.bind(null, deck._id.toString())();
 											updateDecks();
 										}}
 									>
-										Delete
+										{t('dashboard.deck.deleteButton')}
 									</button>
 									<button
-										className='bg-blue-700 bg-opacity-40'
+										className='bg-blue-300 dark:bg-blue-700 hover:bg-blue-400 dark:hover:bg-blue-600'
 										onClick={async () => {
 											const searchparams = await getShareDeck(
 												deck._id.toString(),
 											);
-
 											redirect(`/share?${searchparams}`);
 										}}
 									>
-										Share
+										{t('dashboard.deck.shareButton')}
 									</button>
 								</div>
 							</div>
 						))) || (
-						<h1 className='col-span-4 row-span-4 text-center'>
-							No Decks Found
-						</h1>
+						<h1 className='col-span-full row-span-full text-center text-2xl text-gray-500 dark:text-gray-400'>{t('dashboard.deck.noDecksFound')}</h1>
 					)}
 
 					{(sharedDecks &&
 						sharedDecks.map((deck) => (
 							<div
-								className=' grid grid-cols-2 items-center justify-center p-2 bg-gray-700 gap-4 *:*:m-2'
+								className='grid grid-cols-2 items-center justify-center p-2 bg-white dark:bg-gray-800 gap-4 *:*:m-1 text-gray-800 dark:text-gray-100'
 								key={deck._id.toString()}
 							>
-								<div className='flex flex-col shadow-lg p-2 rounded-lg bg-blue-700 bg-opacity-70'>
+								<div className='flex flex-col shadow-lg p-2 rounded-lg bg-blue-100 dark:bg-blue-700 bg-opacity-70 dark:bg-opacity-70'>
 									<h1>
-										<p className=' border-2 inline p-1 m-1'>Name :</p>
+										<p className='border-2 inline p-1 m-1 border-gray-300 dark:border-gray-600'>{t('dashboard.deck.nameLabel')}</p>
 										{deck.name}
 									</h1>
 									<h1>
-										<p className=' border-2 inline p-1 m-1'>Public :</p>
-										Yes
+										<p className='border-2 inline p-1 m-1 border-gray-300 dark:border-gray-600'>{t('dashboard.deck.publicLabel')}</p>
+										{t('dashboard.deck.isPublicYes')}
 									</h1>
 									<Link
-										className='flex flex-col bg-black bg-opacity-40 p-2 rounded-lg'
+										className='flex flex-col bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500 p-2 rounded-lg mt-2'
 										href={`/share?deck=${deck._id.toString()}`}
 									>
-										Preview
+										{t('dashboard.deck.previewButton')}
 									</Link>
 								</div>
-								<div className='flex flex-col m-4 bg-green-600 bg-opacity-30 rounded-lg p-4 *:bg-opacity-80 *:rounded-md *:p-2'>
-									{/*<h2>Options :</h2>*/}
+								<div className='flex flex-col m-1 bg-green-100 dark:bg-green-700 bg-opacity-30 dark:bg-opacity-30 rounded-lg p-2 *:bg-opacity-80 *:rounded-md *:p-2 *:text-center *:my-1'>
 									<button
-										className=' bg-red-700'
+										className='bg-red-300 dark:bg-red-700 hover:bg-red-400 dark:hover:bg-red-600'
 										onClick={async () => {
 											const res = await fetch(
 												`/api/deck/${deck._id.toString()}`,
@@ -185,14 +183,14 @@ export default function Deck() {
 											if (res.ok) {
 												updateDecks();
 											} else {
-												alert('Failed to delete deck');
+												alert(t('dashboard.deck.alertDeleteFailed')); // Translated
 											}
 										}}
 									>
-										Delete
+										{t('dashboard.deck.deleteButton')}
 									</button>
 									<button
-										className='bg-blue-700 bg-opacity-40'
+										className='bg-blue-300 dark:bg-blue-700 hover:bg-blue-400 dark:hover:bg-blue-600'
 										onClick={async () => {
 											const searchparams = await getShareDeck(
 												deck._id.toString(),
@@ -200,10 +198,10 @@ export default function Deck() {
 											copyToClipboard(
 												`${window.location.origin}/share?${searchparams}`,
 											);
-											redirect(`/share?${searchparams}`);
+											// Not redirecting here as copyToClipboard implies user might want to paste it elsewhere
 										}}
 									>
-										Share
+										{t('dashboard.deck.shareButton')}
 									</button>
 								</div>
 							</div>
@@ -211,10 +209,10 @@ export default function Deck() {
 						null}
 
 					<button
-						className='shadow p-4 rounded-lg'
+						className='shadow p-4 rounded-lg bg-green-200 dark:bg-green-600 hover:bg-green-300 dark:hover:bg-green-500 text-gray-800 dark:text-gray-100 text-xl font-semibold'
 						onClick={() => setIsOpenAddArea(true)}
 					>
-						Add
+						{t('dashboard.deck.addButton')}
 					</button>
 				</div>
 			)}

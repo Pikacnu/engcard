@@ -10,11 +10,9 @@
   overflow: hidden;
 }
 
-@media (prefers-color-scheme: dark) {
-	:root {
-		--background: #0a0a0a;
-		--foreground: #ededed;
-	}
+.dark { /* Apply these variables when the .dark class is present on the html or body tag */
+  --background: #0a0a0a; /* Dark mode background */
+  --foreground: #ededed; /* Dark mode foreground */
 }
 
 body {

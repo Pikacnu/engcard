@@ -23,12 +23,13 @@ import Joyride, {
 	Step,
 } from 'react-joyride';
 import { useLocalStorage } from '@/hooks/localstorage';
+import { useTranslation } from '@/context/LanguageContext'; // Added
 
 const alphabet = 'abcdefghijklmnopqrstuvwxyz'.split('');
-
 const optionCounts = 40;
 
 export default function Content() {
+	const { t } = useTranslation(); // Added
 	const [isGuideCard, setIsGuideCard] = useLocalStorage<boolean>(
 		'guideDashboardPreview',
 		false,
@@ -38,38 +39,38 @@ export default function Content() {
 	const steps: Array<Step> = [
 		{
 			target: '.display-area',
-			content: '這裡是顯示區域，所有功能都將顯示在這',
+			content: t('dashboard.preview.joyride.step1DisplayArea'), // Translated
 			placement: 'center',
 		},
 		{
 			target: '.mark-button',
-			content: '這裡是標記按鈕，點擊可將單字加入標記列表',
+			content: t('dashboard.preview.joyride.step2MarkButton'), // Translated
 			placement: 'auto',
 		},
 		{
 			target: '.function-list',
-			content: '這裡是功能列表，可以在此處切換不同的預覽與限制單字的數量',
+			content: t('dashboard.preview.joyride.step3FunctionList'), // Translated
 			placement: 'auto',
 		},
 		{
 			target: '.card-button',
-			content: '這裡是牌組區域，將以翻頁單字卡的行事呈現',
+			content: t('dashboard.preview.joyride.step4CardButton'), // Translated
 		},
 		{
 			target: '.questions-button',
-			content: '這裡是問題區塊，用以練習單字拼寫',
+			content: t('dashboard.preview.joyride.step5QuestionsButton'), // Translated
 		},
 		{
 			target: '.list-button',
-			content: '這裡是列表區塊，可以查看當前的所有單字',
+			content: t('dashboard.preview.joyride.step6ListButton'), // Translated
 		},
 		{
 			target: '.word-button',
-			content: '這裡是單字問題區塊，方便你記憶意思',
+			content: t('dashboard.preview.joyride.step7WordButton'), // Translated
 		},
 		{
 			target: '.deck-selector',
-			content: '這裡是牌組選擇區域，可以選擇不同的單字牌組',
+			content: t('dashboard.preview.joyride.step8DeckSelector'), // Translated
 		},
 	];
 
@@ -110,21 +111,26 @@ export default function Content() {
 		useState<UserSettingsCollection | null>(null);
 
 	const fetchCards = useCallback(
-		async (wordStartWith?: string, count = 15, deckid?: string) => {
-			wordStartWith = wordStartWith || '';
+		async (wordStartWithParam?: string, countParam = 15, deckidParam?: string) => { // Renamed params to avoid conflict
+			const startWith = wordStartWithParam || ''; // Use local param
+			const currentCount = countParam; // Use local param
+			const currentDeckId = deckidParam || selectedDeck; // Use local param or state
+
+			if (!currentDeckId) return; // Avoid fetching if no deck is selected
+
 			const response = await fetch(
-				`/api/deck/cards?id=${
-					deckid ? deckid : selectedDeck
-				}&count=${count}&startWith=${wordStartWith}`,
+				`/api/deck/cards?id=${currentDeckId}&count=${currentCount}&startWith=${startWith}`,
 			);
 			if (!response.ok) {
 				setCards([]);
+				return; // Added return
 			}
 			const deckData = (await response.json()) as DeckCardsResponse;
 			setCards(deckData.cards);
 		},
-		[selectedDeck],
+		[selectedDeck], // selectedDeck is a dependency
 	);
+
 
 	useEffect(() => {
 		(async () => {
@@ -152,41 +158,53 @@ export default function Content() {
 	useEffect(() => {
 		(async () => {
 			const response = await fetch('/api/deck');
-			if (!response.ok) setDecks([]);
-			const decks: DeckResponse[] = await response.json();
-			const selectedDeck =
-				!deckid || deckid?.trim().length === 0
-					? decks.filter((deck) => deck.card_length !== 0)[0]?._id
-					: deckid;
-			const publicDeckResponse = await fetch(`/api/deck/public`);
-			const publicDecks: DeckResponse[] = (await publicDeckResponse.json())
-				.decks;
-
-			setDecks([...decks, ...publicDecks]);
-			setSelectedDeck(
-				decks.filter((deck) => deck.card_length !== 0)[0]?._id || '',
-			);
-			const count = 15;
-			const wordStartWith = '';
-			const responseCards = await fetch(
-				`/api/deck/cards?id=${selectedDeck}&count=${count}&startWith=${wordStartWith}`,
-			);
 			if (!response.ok) {
-				setCards([]);
-			}
-			const deckData = (await responseCards.json()) as DeckCardsResponse;
-			setCards(deckData.cards);
+                            setDecks([]);
+                            return;
+                        }
+			const fetchedDecks: DeckResponse[] = await response.json();
+			
+			const publicDeckResponse = await fetch(`/api/deck/public`);
+                        if (!publicDeckResponse.ok) {
+                             // Handle error for public decks, maybe log it or set publicDecks to []
+                             setDecks(fetchedDecks); // Still set the user's decks
+                        } else {
+			    const publicDecks: DeckResponse[] = (await publicDeckResponse.json()).decks;
+                            setDecks([...fetchedDecks, ...publicDecks]);
+                        }
+
+			const availableDecks = [...fetchedDecks, ...(publicDecks || [])].filter(deck => deck.card_length !== 0);
+
+			const initialDeckId = deckid || availableDecks[0]?._id || '';
+			setSelectedDeck(initialDeckId);
+
+			if (initialDeckId) { // Fetch cards only if a deck is selected
+				const initialCount = 15;
+				const initialWordStartWith = '';
+				const responseCards = await fetch(
+					`/api/deck/cards?id=${initialDeckId}&count=${initialCount}&startWith=${initialWordStartWith}`,
+				);
+				if (!responseCards.ok) { // Changed response to responseCards
+					setCards([]);
+                                        return;
+				}
+				const deckData = (await responseCards.json()) as DeckCardsResponse;
+				setCards(deckData.cards);
+			} else {
+                            setCards([]); // No deck selected or available, set empty cards
+                        }
 		})();
-	}, [deckid]);
+	}, [deckid]); // Removed fetchCards from dependency array as it's called directly
 
 	useEffect(() => {
 		if (selectedDeck) {
-			fetchCards();
+			fetchCards(wordStartWith, count, selectedDeck); // Pass params explicitly
 		}
-	}, [selectedDeck, fetchCards]);
+	}, [selectedDeck, wordStartWith, count, fetchCards]);
+
 
 	return (
-		<div className='flex flex-row-reverse max-md:flex-col items-center justify-center h-full w-full bg-gray-700 '>
+		<div className='flex flex-row-reverse max-md:flex-col items-center justify-center h-full w-full bg-gray-100 dark:bg-gray-700 text-black dark:text-white'>
 			{
 				<Joyride
 					steps={steps}
@@ -198,11 +216,11 @@ export default function Content() {
 					disableScrollParentFix
 				/>
 			}
-			<div className='flex-grow flex items-center justify-center w-full display-area'>
+			<div className='flex-grow flex items-center justify-center w-full display-area p-4'>
 				{
 					{
 						[CardType.Card]: (
-							<div className='max-md:w-[80vw] md:max-[50vw] flex items-center justify-center'>
+							<div className='max-md:w-[80vw] md:w-[50vw] lg:w-[40vw] xl:w-[30vw] flex items-center justify-center'>
 								<Deck
 									cards={cards}
 									onFinishClick={() => {
@@ -233,7 +251,7 @@ export default function Content() {
 							/>
 						),
 						[CardType.List]: (
-							<div className='max-md:w-[80vw] md:max-[50vw] flex items-center justify-center'>
+							<div className='max-md:w-[90vw] md:w-[70vw] lg:w-[60vw] xl:w-[50vw] flex items-center justify-center'>
 								<List cards={cards} />
 							</div>
 						),
@@ -254,154 +272,162 @@ export default function Content() {
 				}
 			</div>
 			<button
-				className='absolute top-0 right-0 m-4 p-2 bg-gray-500 text-white rounded-lg mark-button'
+				className='absolute top-4 right-4 m-4 p-2 bg-gray-300 dark:bg-gray-600 text-black dark:text-white rounded-lg hover:bg-gray-400 dark:hover:bg-gray-500 mark-button'
 				onClick={() => {
 					if (isMarked) {
 						setMarkedWord((prev) =>
 							prev.filter((word) => word.word !== currentWord?.word),
 						);
 					} else {
-						setMarkedWord((prev) => [...prev, currentWord!]);
+						if(currentWord) setMarkedWord((prev) => [...prev, currentWord!]);
 					}
 					setIsMarked((prev) => !prev);
 				}}
+				title={isMarked ? t('dashboard.preview.unmarkWord') : t('dashboard.preview.markWord')}
 			>
 				<Image
 					src={`/icons/star${isMarked ? '-fill' : ''}.svg`}
 					width={24}
 					height={24}
-					alt='Marked'
+					alt={t('dashboard.preview.altMarked')} // Translated
 				></Image>
 			</button>
-			<div className='flex flex-col h-full bg-gray-200 max-md:flex-row max-md:h-16 max-md:bottom-0 max-md:w-full max-md:justify-center keyboard:hidden function-list'>
+			<div className='flex flex-col h-full bg-gray-200 dark:bg-gray-800 max-md:flex-row max-md:h-auto max-md:w-full max-md:justify-center keyboard:hidden function-list p-2 space-y-2 md:space-y-0 max-md:space-x-1'>
 				<button
-					className={`p-2 m-2 text-black bg-emerald-600 rounded-md ${
-						type === CardType.Card ? 'bg-opacity-40' : 'bg-opacity-10'
+					className={`p-2 text-black dark:text-white bg-emerald-300 dark:bg-emerald-700 rounded-md ${
+						type === CardType.Card ? 'bg-opacity-70 dark:bg-opacity-70' : 'bg-opacity-30 dark:bg-opacity-30 hover:bg-opacity-50 dark:hover:bg-opacity-50'
 					} card-button`}
 					onClick={() => setType(CardType.Card)}
+					title={t('dashboard.preview.altCard')}
 				>
 					<Image
 						src={`/icons/card.svg`}
 						width={24}
 						height={24}
-						alt='Card'
+						alt={t('dashboard.preview.altCard')} // Translated
 					/>
 				</button>
 				<button
-					className={`p-2 m-2 text-black bg-emerald-600 rounded-md ${
-						type === CardType.Questions ? 'bg-opacity-40' : 'bg-opacity-10'
+					className={`p-2 text-black dark:text-white bg-emerald-300 dark:bg-emerald-700 rounded-md ${
+						type === CardType.Questions ? 'bg-opacity-70 dark:bg-opacity-70' : 'bg-opacity-30 dark:bg-opacity-30 hover:bg-opacity-50 dark:hover:bg-opacity-50'
 					} questions-button`}
 					onClick={() => setType(CardType.Questions)}
+					title={t('dashboard.preview.altQuestions')}
 				>
 					<Image
 						src={`/icons/question-square.svg`}
 						width={24}
 						height={24}
-						alt='Questions'
+						alt={t('dashboard.preview.altQuestions')} // Translated
 					/>
 				</button>
 				<button
-					className={`p-2 m-2 text-black bg-emerald-600 rounded-md ${
-						type === CardType.List ? 'bg-opacity-40' : 'bg-opacity-10'
+					className={`p-2 text-black dark:text-white bg-emerald-300 dark:bg-emerald-700 rounded-md ${
+						type === CardType.List ? 'bg-opacity-70 dark:bg-opacity-70' : 'bg-opacity-30 dark:bg-opacity-30 hover:bg-opacity-50 dark:hover:bg-opacity-50'
 					} list-button`}
 					onClick={() => setType(CardType.List)}
+					title={t('dashboard.preview.altList')}
 				>
 					<Image
 						src={`/icons/bookmark.svg`}
 						width={24}
 						height={24}
-						alt='List'
+						alt={t('dashboard.preview.altList')} // Translated
 					/>
 				</button>
 				<button
-					className={`p-2 m-2 text-black bg-emerald-600 rounded-md ${
-						type === CardType.Word ? 'bg-opacity-40' : 'bg-opacity-10'
+					className={`p-2 text-black dark:text-white bg-emerald-300 dark:bg-emerald-700 rounded-md ${
+						type === CardType.Word ? 'bg-opacity-70 dark:bg-opacity-70' : 'bg-opacity-30 dark:bg-opacity-30 hover:bg-opacity-50 dark:hover:bg-opacity-50'
 					} word-button`}
 					onClick={() => {
 						setType(CardType.Word);
 						fetchCards(wordStartWith, count * 4);
 					}}
+					title={t('dashboard.preview.altWordQuestions')}
 				>
 					<Image
 						src={`/icons/collection.svg`}
 						width={24}
 						height={24}
-						alt='Word Questions'
+						alt={t('dashboard.preview.altWordQuestions')} // Translated
 					/>
 				</button>
 				<button
 					onClick={() => fetchCards(wordStartWith, count)}
-					className='p-2 m-2 text-black bg-sky-600 bg-opacity-10 rounded-md hover:bg-opacity-80 transition-all delay-100'
+					className='p-2 text-black dark:text-white bg-sky-300 dark:bg-sky-700 bg-opacity-30 dark:bg-opacity-30 rounded-md hover:bg-opacity-50 dark:hover:bg-opacity-50 transition-all delay-100'
+					title={t('dashboard.preview.altRefresh')}
 				>
 					<Image
 						src={`/icons/refresh.svg`}
 						width={24}
 						height={24}
-						alt='Refresh'
+						alt={t('dashboard.preview.altRefresh')} // Translated
 					/>
 				</button>
 				<button
 					onClick={() => setCards(markedWord)}
-					className='p-2 m-2 text-black bg-sky-600 bg-opacity-10 rounded-md hover:bg-opacity-80 transition-all delay-100 marked-list'
+					className='p-2 text-black dark:text-white bg-sky-300 dark:bg-sky-700 bg-opacity-30 dark:bg-opacity-30 rounded-md hover:bg-opacity-50 dark:hover:bg-opacity-50 transition-all delay-100 marked-list'
+					title={t('dashboard.preview.altShowMarkedList')}
 				>
 					<Image
 						src={`/icons/star.svg`}
 						width={24}
 						height={24}
-						alt='Marked'
+						alt={t('dashboard.preview.altShowMarkedList')} // Translated
 					/>
 				</button>
-				<h4 className='text-black self-center'>
+				<div className='flex items-center text-black dark:text-white'> {/* Wrapper for search icon and selects */}
 					<Image
 						src={`/icons/search.svg`}
 						width={24}
 						height={24}
-						alt='Search'
+						alt={t('dashboard.preview.altSearchIcon')} // Translated
+						className="mx-1"
 					/>
-				</h4>
-				<select
-					className=' text-black bg-sky-600 bg-opacity-10 rounded-md m-2'
-					onChange={(e) => setWordStartWith(e.target.value)}
-					value={wordStartWith}
-				>
-					<option value=''>All</option>
-					{alphabet.map((letter) => (
-						<option
-							key={letter}
-							value={letter}
-						>
-							{letter}
-						</option>
-					))}
-				</select>
-				<select
-					className=' text-black bg-sky-600 bg-opacity-10 rounded-md m-2'
-					onChange={(e) => setCount(Number(e.target.value))}
-					value={count}
-				>
-					{Array(optionCounts + 1)
-						.fill(0)
-						.map((_, i) => i * 5)
-						.slice(1)
-						.map((count) => (
+					<select
+						className='text-black dark:text-white bg-sky-200 dark:bg-sky-600 bg-opacity-50 dark:bg-opacity-50 rounded-md m-1 p-1'
+						onChange={(e) => setWordStartWith(e.target.value)}
+						value={wordStartWith}
+						title={t('dashboard.preview.filterByLetter')}
+					>
+						<option value=''>{t('dashboard.preview.filterAll')}</option> {/* Translated */}
+						{alphabet.map((letter) => (
 							<option
-								key={count}
-								value={count}
+								key={letter}
+								value={letter}
 							>
-								{count}
+								{letter.toUpperCase()}
 							</option>
 						))}
-				</select>
-			</div>
-			<div className='flex flex-col h-full bg-gray-200 max-md:flex-row max-md:h-8 max-md:bottom-0 max-md:w-full max-md:justify-center px-2 keyboard:hidden deck-selector'>
-				<div className='flex flex-row items-center justify-center flex-grow md:hidden'>
-					{/*for mobile*/}
-					<p className='text-black self-center'>Selected Deck :</p>
+					</select>
 					<select
-						className=' text-black bg-gray-200 self-center max-w-full flex-grow border-none outline-none'
+						className='text-black dark:text-white bg-sky-200 dark:bg-sky-600 bg-opacity-50 dark:bg-opacity-50 rounded-md m-1 p-1'
+						onChange={(e) => setCount(Number(e.target.value))}
+						value={count}
+						title={t('dashboard.preview.setWordCount')}
+					>
+						{Array(optionCounts + 1)
+							.fill(0)
+							.map((_, i) => i * 5)
+							.slice(1)
+							.map((c) => ( // Renamed count to c
+								<option
+									key={c}
+									value={c}
+								>
+									{c}
+								</option>
+							))}
+					</select>
+				</div>
+			</div>
+			<div className='flex flex-col h-full bg-gray-200 dark:bg-gray-800 max-md:flex-row max-md:h-auto max-md:w-full max-md:justify-center px-2 keyboard:hidden deck-selector p-2 space-y-2 md:space-y-0'>
+				<div className='flex flex-row items-center justify-center flex-grow md:hidden text-black dark:text-white'>
+					<p className='self-center mr-2'>{t('dashboard.preview.selectedDeckLabel')}</p> {/* Translated */}
+					<select
+						className='text-black dark:text-white bg-gray-200 dark:bg-gray-700 self-center max-w-full flex-grow border-none outline-none p-1 rounded'
 						onChange={(e) => {
 							setSelectedDeck(e.target.value);
-							fetchCards();
 						}}
 						value={selectedDeck}
 					>
@@ -415,21 +441,21 @@ export default function Content() {
 						))}
 					</select>
 				</div>
-				<div className='flex-col items-center justify-center flex-grow hidden md:flex'>
-					{/*for Desktop */}
-					<p className='text-black self-center pt-8'>Selected Deck :</p>
-					<div className='flex flex-col items-center  text-black flex-grow'>
+				<div className='flex-col items-center justify-start flex-grow hidden md:flex text-black dark:text-white'>
+					<p className='self-center pt-2 pb-1'>{t('dashboard.preview.selectedDeckLabel')}</p> {/* Translated */}
+					<div className='flex flex-col items-center text-black dark:text-white flex-grow w-full overflow-y-auto max-h-[calc(100%-2rem)]'> {/* Added max-height for scroll */}
 						{decks.map((deck) => (
 							<button
 								key={deck._id}
-								className={`p-2 m-2 text-black bg-emerald-600 rounded-md ${
-									selectedDeck === deck._id ? 'bg-opacity-40' : 'bg-opacity-10'
-								} w-full`}
+								className={`p-2 m-1 text-black dark:text-white bg-emerald-300 dark:bg-emerald-700 rounded-md ${
+									selectedDeck === deck._id ? 'bg-opacity-70 dark:bg-opacity-70' : 'bg-opacity-30 dark:bg-opacity-30 hover:bg-opacity-50 dark:hover:bg-opacity-50'
+								} w-full text-sm`}
 								onClick={() => {
 									setSelectedDeck(deck._id);
 								}}
+								title={deck.name}
 							>
-								{deck.name}
+								{deck.name} ({deck.card_length})
 							</button>
 						))}
 					</div>

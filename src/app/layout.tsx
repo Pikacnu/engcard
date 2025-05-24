@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
+import { LanguageProvider } from '@/context/LanguageContext';
+import { ThemeProvider } from '@/context/ThemeContext'; // Adjust path if necessary
 
 const geistSans = Geist({
 	variable: '--font-geist-sans',
@@ -23,7 +25,7 @@ export default function RootLayout({
 	children: React.ReactNode;
 }>) {
 	return (
-		<html lang='en'>
+		<html lang='en'> {/* This lang might be dynamically set by LanguageProvider/Next.js */}
 			<head>
 				<meta
 					name='viewport'
@@ -33,9 +35,14 @@ export default function RootLayout({
 			<body
 				className={`${geistSans.variable} ${geistMono.variable} antialiased w-full relative h-dvh text-white`}
 			>
-				<div className='flex flex-col items-center justify-center bg-gray-700 w-full h-full min-h-max '>
-					{children}
-				</div>
+				<ThemeProvider> {/* ThemeProvider wraps LanguageProvider */}
+					<LanguageProvider>
+						{/* Other providers or components like Navbar */}
+						<div className='flex flex-col items-center justify-center bg-gray-700 w-full h-full min-h-max '>
+							{children}
+						</div>
+					</LanguageProvider>
+				</ThemeProvider>
 			</body>
 		</html>
 	);

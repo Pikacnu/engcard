@@ -5,12 +5,14 @@ import Search from './search';
 import { use, useCallback, useEffect, useState, useTransition } from 'react';
 import { DeckCollection } from '@/type';
 import { FileToBase64 } from '@/utils/base64';
+import { useTranslation } from '@/context/LanguageContext'; // Added
 
 export default function EditPage({
 	params,
 }: {
 	params: Promise<{ id: string }>;
 }) {
+	const { t } = useTranslation(); // Added
 	const { id } = use(params);
 	const [deck, setDeck] = useState<DeckCollection | null>();
 	const [isPending, startTransition] = useTransition();
@@ -32,12 +34,12 @@ export default function EditPage({
 	}, [refresh]);
 
 	return (
-		<div className='flex flex-row h-full gap-2 max-md:flex-col *:max-md:w-full *:max-md:min-h-full'>
+		<div className='flex flex-row h-full gap-2 max-md:flex-col *:max-md:w-full *:max-md:min-h-full dark:bg-gray-700'>
 			{isPending && (
 				<div className=' fixed z-10 inset-0 flex items-center justify-center bg-black bg-opacity-50 h-full w-full top-0 left-0'>
 					<svg
 						aria-hidden='true'
-						className='w-16 h-16 animate-spin text-gray-600 fill-blue-600'
+						className='w-16 h-16 animate-spin text-gray-600 dark:text-gray-400 fill-blue-600'
 						viewBox='0 0 100 101'
 						fill='none'
 						xmlns='http://www.w3.org/2000/svg'
@@ -51,25 +53,25 @@ export default function EditPage({
 							fill='currentFill'
 						/>
 					</svg>
-					<span className='sr-only'>Loading...</span>
+					<span className='sr-only'>{t('common.loadingSrOnly')}</span> {/* Translated */}
 				</div>
 			)}
 			<Add
-				className='max-w-2/5 w-2/5'
+				className='max-w-2/5 w-2/5 dark:bg-gray-800'
 				id={id}
 				onAdd={refresh}
 			/>
 			<List
 				cards={deck ? deck.cards : []}
-				className='max-h-full md:max-w-[20vw] w-1/5 max-md:w-full overflow-hidden'
+				className='max-h-full md:max-w-[20vw] w-1/5 max-md:w-full overflow-hidden dark:bg-gray-800'
 			/>
-			<div className='max-w-1/5 w-2/5 overflow-clip'>
-				<div className='flex flex-row items-center justify-center bg-slate-400 p-2 rounded-lg'>
+			<div className='max-w-1/5 w-2/5 overflow-clip dark:bg-gray-800 p-2 rounded-lg'>
+				<div className='flex flex-row items-center justify-center bg-slate-200 dark:bg-slate-700 p-2 rounded-lg text-black dark:text-white'>
 					<p className='flex-grow'>
-						Upload a new image to add cards to the deck.
+						{t('dashboard.deckEdit.uploadImagePrompt')} {/* Translated */}
 					</p>
 					<button
-						className='bg-blue-500 text-white p-2 rounded-lg'
+						className='bg-blue-500 dark:bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-600 dark:hover:bg-blue-500'
 						onClick={() => {
 							const input = document.querySelector(
 								'input[type="file"]',
@@ -79,7 +81,7 @@ export default function EditPage({
 							}
 						}}
 					>
-						Upload
+						{t('dashboard.deckEdit.uploadButton')} {/* Translated */}
 					</button>
 					<input
 						hidden
@@ -156,13 +158,13 @@ export default function EditPage({
 									try {
 										const json = await res.json();
 										if (!res.ok) {
-											alert(json.error);
+											alert(`${t('dashboard.deckEdit.alertErrorPrefix')}${json.error}`); // Translated
 											return;
 										}
 									} catch (e) {
 										console.log(e);
 										startTransition(() => {
-											alert('Error uploading image');
+											alert(t('dashboard.deckEdit.alertUploadError')); // Translated
 										});
 									}
 									startTransition(() => {

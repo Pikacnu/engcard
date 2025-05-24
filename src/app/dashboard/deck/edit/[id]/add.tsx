@@ -11,6 +11,7 @@ import {
 import { addCard } from '@/actions/deck';
 import { Langs } from '@/types/lang';
 import { useDebounce } from './../../../../../hooks/usedebounce';
+import { useTranslation } from '@/context/LanguageContext'; // Added
 
 export default function Add({
 	defaultValue,
@@ -23,6 +24,7 @@ export default function Add({
 	className?: string;
 	onAdd?: () => void;
 }) {
+	const { t } = useTranslation(); // Added
 	const [word, setWord] = useState('');
 	const [partOfSpeech, setPartOfSpeech] = useState<PartOfSpeech>(
 		PartOfSpeech.Noun,
@@ -36,22 +38,28 @@ export default function Add({
 		index: number,
 		nestedKey: keyof Definition,
 		subIndex: number,
-		subKey: string,
+		subKey: string, // subKey is not used in the current logic for arrays of strings/numbers
 		value: string | number | PartOfSpeech,
 	) => {
 		setDefinitions((prev) => {
 			const updated = [...prev];
-			const nestedArray = updated[index][nestedKey] as (
-				| string
-				| number
-				| PartOfSpeech
-			)[];
-			nestedArray[subIndex] = value;
-			updated[index] = { ...updated[index], [nestedKey]: nestedArray };
+			// Ensure the nested property is an array
+			if (Array.isArray(updated[index][nestedKey])) {
+				const nestedArray = [...(updated[index][nestedKey] as (string | number | PartOfSpeech)[])];
+				nestedArray[subIndex] = value;
+				updated[index] = { ...updated[index], [nestedKey]: nestedArray };
+			} else if (typeof updated[index][nestedKey] === 'object' && nestedKey === 'definition') {
+				// Handle the case where 'definition' is an array of objects
+                const defArray = [...(updated[index][nestedKey] as { lang: Lang; content: string; partOfSpeech: PartOfSpeech; definition: string }[])];
+                if (defArray[subIndex] && subKey) {
+                    (defArray[subIndex] as any)[subKey] = value;
+                }
+                updated[index] = { ...updated[index], [nestedKey]: defArray };
+			}
 			return updated;
 		});
 	};
-
+	
 	const addNestedItem = (
 		index: number,
 		nestedKey: keyof Definition,
@@ -62,7 +70,7 @@ export default function Add({
 			const nestedArray = updated[index][nestedKey] as (object | string)[];
 			updated[index] = {
 				...updated[index],
-				[nestedKey]: [...(nestedArray || []), newItem],
+				[nestedKey]: [...(nestedArray || []), newItem], // Ensure nestedArray is not null
 			};
 			return updated;
 		});
@@ -88,16 +96,16 @@ export default function Add({
 		});
 	};
 
-	const addDefinition = () => {
+	const addDefinitionBlock = () => { // Renamed from addDefinition to avoid confusion
 		setDefinitions((prev) => [
 			...prev,
 			{
-				definition: [
+				definition: [ // This structure seems to be an array of definitions, not a single definition object
 					{
 						lang: 'en' as Lang,
 						content: '',
-						partOfSpeech: partOfSpeech,
-						definition: '',
+						partOfSpeech: partOfSpeech, // Consider if this should be set per definition or per block
+						definition: '', // This field seems redundant if content is the definition
 					},
 				],
 				example: [],
@@ -126,31 +134,39 @@ export default function Add({
 				console.log(data.error);
 				return;
 			}
-			console.log(data.blocks.map((d: Blocks) => d.definitions).flat());
-			setDefinitionHint(data.blocks.map((d: Blocks) => d.definitions).flat());
+			// Assuming data.blocks is the correct path to an array of Definition-like objects
+			if (data && data.blocks) {
+				const hints = data.blocks.map((d: Blocks) => d.definitions).flat();
+				setDefinitionHint(hints);
+			} else {
+				setDefinitionHint([]);
+			}
 		};
 
 		if (word) {
 			debounceFunction(() => getWord());
+		} else {
+			setDefinitionHint([]);
 		}
 	}, [word, debounceFunction]);
+
 	return (
 		<div
-			className={`flex flex-col bg-white p-4 rounded-lg shadow-lg text-black *:outline-none *:m-2 [&>*:not(h3)]:border-2 *:border-black *:rounded-lg overflow-auto ${className}`}
+			className={`flex flex-col bg-white dark:bg-gray-800 p-4 rounded-lg shadow-lg text-black dark:text-white *:outline-none *:m-2 [&>*:not(h3):not(button)]:border-2 *:border-black dark:*:border-gray-600 *:rounded-lg overflow-auto ${className}`}
 		>
-			<h3>Word:</h3>
+			<h3 className="text-lg font-semibold">{t('dashboard.deckEdit.add.wordLabel')}</h3>
 			<input
-				className='p-1'
+				className='p-1 bg-white dark:bg-gray-700'
 				type='text'
 				value={word}
 				onChange={(e) => setWord(e.target.value)}
 			/>
 
-			<h3>Part Of Speech</h3>
+			<h3 className="text-lg font-semibold">{t('dashboard.deckEdit.add.posLabel')}</h3>
 			<select
 				value={partOfSpeech}
 				onChange={(e) => setPartOfSpeech(e.target.value as PartOfSpeech)}
-				className='p-2'
+				className='p-2 bg-white dark:bg-gray-700'
 			>
 				{Object.values(PartOfSpeechShort).map((pos) => (
 					<option
@@ -162,25 +178,26 @@ export default function Add({
 				))}
 			</select>
 
-			<h3>Definitions:</h3>
-			{definitions.map((definition, index) => (
+			<h3 className="text-lg font-semibold">{t('dashboard.deckEdit.add.definitionsLabel')}</h3>
+			{definitions.map((definitionBlock, blockIndex) => ( // Renamed to definitionBlock and blockIndex
 				<div
-					key={index}
-					className='border-2 p-2 m-2 rounded-lg flex justify-center flex-col *:p-1'
+					key={blockIndex}
+					className='border-2 border-gray-300 dark:border-gray-700 p-2 m-2 rounded-lg flex justify-center flex-col *:p-1 space-y-2 bg-gray-50 dark:bg-gray-700'
 				>
-					{/* Definitions */}
-					{definition.definition.map((def, defIndex) => (
+					{/* Definitions array within a block */}
+					{definitionBlock.definition.map((def, defIndex) => (
 						<div
 							key={defIndex}
-							className='flex gap-2'
+							className='flex gap-2 items-center'
 						>
 							<input
 								type='text'
 								value={def.content}
-								placeholder='Definition'
+								placeholder={t('dashboard.deckEdit.add.definitionPlaceholder')} // Translated
+								className="flex-grow bg-white dark:bg-gray-600"
 								onChange={(e) =>
 									handleNestedChange(
-										index,
+										blockIndex, // Use blockIndex
 										'definition',
 										defIndex,
 										'content',
@@ -190,9 +207,10 @@ export default function Add({
 							/>
 							<select
 								value={def.lang}
+								className="bg-white dark:bg-gray-600"
 								onChange={(e) =>
 									handleNestedChange(
-										index,
+										blockIndex, // Use blockIndex
 										'definition',
 										defIndex,
 										'lang',
@@ -210,143 +228,155 @@ export default function Add({
 								))}
 							</select>
 							<button
-								className='bg-red-500 text-white px-2 my-1 rounded-lg'
-								onClick={() => removeNestedItem(index, 'definition', defIndex)}
+								className='bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded-lg'
+								aria-label={t('dashboard.deckEdit.add.removeButton')} // Translated aria-label
+								onClick={() => removeNestedItem(blockIndex, 'definition', defIndex)} // Use blockIndex
 							>
 								x
 							</button>
 						</div>
 					))}
 					<button
+						className="text-sm bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-500 text-white py-1 px-2 rounded self-start"
 						onClick={() =>
-							addNestedItem(index, 'definition', {
+							addNestedItem(blockIndex, 'definition', { // Use blockIndex
 								lang: 'en',
 								content: '',
+								partOfSpeech: partOfSpeech, // Or derive from context
+								definition: ''
 							})
 						}
 					>
-						Add Definition
+						{t('dashboard.deckEdit.add.addDefinitionButton')} {/* Translated */}
 					</button>
 
 					{/* Synonyms */}
-					<h5>Synonyms:</h5>
-					{definition.synonyms &&
-						definition.synonyms.map((synonym, synonymIndex) => (
+					<h5 className="text-md font-semibold mt-2">{t('dashboard.deckEdit.add.synonymsLabel')}</h5>
+					{definitionBlock.synonyms &&
+						definitionBlock.synonyms.map((synonym, synonymIndex) => (
 							<div
 								key={synonymIndex}
-								className='flex gap-2'
+								className='flex gap-2 items-center'
 							>
 								<input
 									type='text'
 									value={synonym}
-									placeholder='Synonym'
+									placeholder={t('dashboard.deckEdit.add.synonymPlaceholder')} // Translated
+									className="flex-grow bg-white dark:bg-gray-600"
 									onChange={(e) =>
 										handleNestedChange(
-											index,
+											blockIndex, // Use blockIndex
 											'synonyms',
 											synonymIndex,
-											'',
+											'', // No subKey for string array
 											e.target.value,
 										)
 									}
 								/>
 								<button
-									className='bg-red-500 text-white px-2 my-1 rounded-lg'
+									className='bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded-lg'
+									aria-label={t('dashboard.deckEdit.add.removeButton')} // Translated aria-label
 									onClick={() =>
-										removeNestedItem(index, 'synonyms', synonymIndex)
+										removeNestedItem(blockIndex, 'synonyms', synonymIndex) // Use blockIndex
 									}
 								>
 									x
 								</button>
 							</div>
 						))}
-					<button onClick={() => addNestedItem(index, 'synonyms', '')}>
-						Add Synonym
+					<button className="text-sm bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-500 text-white py-1 px-2 rounded self-start" onClick={() => addNestedItem(blockIndex, 'synonyms', '')}> {/* Use blockIndex */}
+						{t('dashboard.deckEdit.add.addSynonymButton')} {/* Translated */}
 					</button>
 
 					{/* Antonyms */}
-					<h5>Antonyms:</h5>
-					{definition.antonyms &&
-						definition.antonyms.map((antonym, antonymIndex) => (
+					<h5 className="text-md font-semibold mt-2">{t('dashboard.deckEdit.add.antonymsLabel')}</h5>
+					{definitionBlock.antonyms &&
+						definitionBlock.antonyms.map((antonym, antonymIndex) => (
 							<div
 								key={antonymIndex}
-								className='flex gap-2'
+								className='flex gap-2 items-center'
 							>
 								<input
 									type='text'
 									value={antonym}
-									placeholder='Antonym'
+									placeholder={t('dashboard.deckEdit.add.antonymPlaceholder')} // Translated
+									className="flex-grow bg-white dark:bg-gray-600"
 									onChange={(e) =>
 										handleNestedChange(
-											index,
+											blockIndex, // Use blockIndex
 											'antonyms',
 											antonymIndex,
-											'',
+											'', // No subKey for string array
 											e.target.value,
 										)
 									}
 								/>
 								<button
-									className='bg-red-500 text-white px-2 my-1 rounded-lg'
+									className='bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded-lg'
+									aria-label={t('dashboard.deckEdit.add.removeButton')} // Translated aria-label
 									onClick={() =>
-										removeNestedItem(index, 'antonyms', antonymIndex)
+										removeNestedItem(blockIndex, 'antonyms', antonymIndex) // Use blockIndex
 									}
 								>
 									x
 								</button>
 							</div>
 						))}
-					<button onClick={() => addNestedItem(index, 'antonyms', '')}>
-						Add Antonym
+					<button className="text-sm bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-500 text-white py-1 px-2 rounded self-start" onClick={() => addNestedItem(blockIndex, 'antonyms', '')}> {/* Use blockIndex */}
+						{t('dashboard.deckEdit.add.addAntonymButton')} {/* Translated */}
 					</button>
 					<button
 						onClick={() =>
-							setDefinitions((prev) => prev.filter((_, i) => i !== index))
+							setDefinitions((prev) => prev.filter((_, i) => i !== blockIndex)) // Use blockIndex
 						}
-						className='bg-red-500 text-white px-2 my-1 rounded-lg'
+						className='bg-red-600 hover:bg-red-700 text-white px-2 py-1 mt-3 rounded-lg self-end text-sm'
 					>
-						remove definition
+						{t('dashboard.deckEdit.add.removeDefinitionBlockButton')} {/* Translated */}
 					</button>
 				</div>
 			))}
 
-			<div className='flex *:flex-grow p-1 *:p-1 items-center'>
+			<div className='flex flex-col md:flex-row *:flex-grow p-1 *:p-1 items-center space-y-2 md:space-y-0 md:space-x-2'>
 				<select
-					className='w-1/2'
-					value={'-1'}
+					className='w-full md:w-1/2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded p-2'
+					value={'-1'} // Reset select after choosing an option
 					onChange={(e) => {
-						setDefinitions((prev) => [
-							...prev,
-							definiationHint.find(
-								(d) => d.definition[0].content === e.target.value,
-							) as Definition,
-						]);
+						if (e.target.value === '-1') return; // Ignore the placeholder option
+						const selectedHint = definiationHint.find(
+							(d) => d.definition[0].content === e.target.value,
+						);
+						if (selectedHint) {
+							setDefinitions((prev) => [...prev, selectedHint]);
+						}
+						e.target.value = '-1'; // Reset select
 					}}
 				>
 					<option
 						value={'-1'}
 						disabled
 					>
-						Select a definition to add
+						{t('dashboard.deckEdit.add.selectDefinitionHint')} {/* Translated */}
 					</option>
 					{definiationHint.map((hint, index) => (
 						<option
 							key={index}
 							value={hint.definition[0].content}
 						>
-							{hint.definition[1]
-								? hint.definition[1].content
+							{hint.definition[1] // Prefer second definition content if available for display
+								? hint.definition[1].content 
 								: hint.definition[0].content}
 						</option>
 					))}
 				</select>
-				<button onClick={addDefinition}>Add Definition</button>
+				<button className="w-full md:w-auto bg-green-500 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-500 text-white py-2 px-3 rounded" onClick={addDefinitionBlock}>
+					{t('dashboard.deckEdit.add.addDefinitionButton')} {/* Reusing for adding a new block */}
+				</button>
 			</div>
 			<button
-				className=' max-w-1/5 w-2/5 self-center p-1'
+				className='max-w-xs w-full self-center p-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white rounded-lg mt-4'
 				onClick={handleAddCard}
 			>
-				Add Card
+				{t('dashboard.deckEdit.add.addCardButton')} {/* Translated */}
 			</button>
 		</div>
 	);
