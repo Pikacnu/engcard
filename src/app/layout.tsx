@@ -37,7 +37,6 @@ export default function RootLayout({
 				className={`${geistSans.variable} ${geistMono.variable} antialiased w-full relative h-dvh text-white`}
 			>
 				<ThemeProvider>
-					{/* ThemeProvider wraps LanguageProvider */}
 					<LanguageProvider>
 						<SessionProvider>
 							{/* Other providers or components like Navbar */}

@@ -464,7 +464,7 @@ export default function Content() {
 								}}
 								title={deck.name}
 							>
-								{deck.name} ({deck.card_length})
+								{deck.name}
 							</button>
 						))}
 					</div>

@@ -14,6 +14,7 @@ import Joyride, {
 import { useLocalStorage } from '@/hooks/localstorage';
 import { useTranslation } from '@/context/LanguageContext';
 import { ThemeToggler } from './../../components/ThemeToggler';
+import { useTheme } from '@/context/ThemeContext';
 
 export default function DashBoardLayout({
 	children,
@@ -27,6 +28,7 @@ export default function DashBoardLayout({
 		false,
 	);
 	const [joyrideRun, setJoyrideRun] = useState(!isGuideDashboard);
+	const theme = useTheme();
 
 	const steps: Array<Step> = [
 		{
@@ -101,7 +103,9 @@ export default function DashBoardLayout({
 
 	return (
 		// Outer div: bg-gray-100 dark:bg-gray-700
-		<div className='flex flex-row max-md:flex-col-reverse w-full h-dvh bg-gray-100 dark:bg-gray-700 relative dashboard-layout'>
+		<div
+			className={`flex flex-row max-md:flex-col-reverse w-full h-dvh bg-gray-100 dark:bg-gray-700 relative dashboard-layout ${theme}`}
+		>
 			<Joyride
 				steps={steps}
 				continuous

@@ -1,5 +1,6 @@
 'use client';
 
+import { useLocalStorage } from '@/hooks/localstorage';
 import React, {
 	createContext,
 	useContext,
@@ -19,19 +20,24 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
-	const [theme, setThemeState] = useState<Theme>('light'); // Default theme
+	const [cachedTheme, setCachedTheme] = useLocalStorage<Theme | null>(
+		'theme',
+		null,
+		'string',
+	);
+	const [theme, setThemeState] = useState<Theme>(cachedTheme || 'light'); // Default theme
 
 	useEffect(() => {
-		// On mount, read theme from localStorage or system preference
-		const storedTheme = localStorage.getItem('theme') as Theme | null;
-		if (storedTheme) {
-			setThemeState(storedTheme);
+		if (!cachedTheme) {
 			// Check system preference if no theme is stored
 			const prefersDark = window.matchMedia(
 				'(prefers-color-scheme: dark)',
 			).matches;
 			setThemeState(prefersDark ? 'dark' : 'light');
+			setCachedTheme(prefersDark ? 'dark' : 'light');
 		}
+		setThemeState(cachedTheme || 'dark');
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
 	useEffect(() => {
