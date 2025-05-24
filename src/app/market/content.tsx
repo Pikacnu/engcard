@@ -2,7 +2,7 @@
 
 import { DeckCollection } from '@/type'; // Assuming WithId<Document> is handled by DeckCollection
 import Link from 'next/link';
-import { useEffect, useState } from 'react'; // Added
+import { useCallback, useEffect, useState } from 'react'; // Added
 import { useSession } from 'next-auth/react'; // Added for client-side session
 import { useTranslation } from '@/context/LanguageContext'; // Added
 
@@ -19,47 +19,49 @@ export default function Content() {
 	const { data: session } = useSession(); // Get session data
 	const userId = session?.user?.id || '';
 
-	useEffect(() => {
-		async function fetchPublicDecks() {
-			setLoading(true);
-			try {
-				// Fetch all public decks
-				const resPublic = await fetch('/api/deck/public?type=full'); // Assuming this endpoint gives all public decks
-				if (!resPublic.ok) {
-					console.error('Failed to fetch public decks');
-					setDecks([]);
-					setLoading(false);
-					return;
-				}
-				const publicDecksData = await resPublic.json();
-				const allPublicDecks: MarketDeck[] = publicDecksData.decks || [];
-				
-				// Filter out decks belonging to the current user and decks with no cards
-				const filteredDecks = allPublicDecks.filter(
-					(deck) => deck.userId !== userId && deck.cards && deck.cards.length !== 0,
-				);
-				setDecks(filteredDecks);
-			} catch (error) {
-				console.error('Error fetching public decks:', error);
+	const fetchPublicDecks = useCallback(async () => {
+		setLoading(true);
+		try {
+			const resPublic = await fetch('/api/deck/public?type=full');
+			if (!resPublic.ok) {
+				console.error('Failed to fetch public decks');
 				setDecks([]);
+				setLoading(false);
+				return;
 			}
-			setLoading(false);
+			const publicDecksData = await resPublic.json();
+			const allPublicDecks: MarketDeck[] = publicDecksData.decks || [];
+			const filteredDecks = allPublicDecks.filter(
+				(deck) =>
+					deck.userId !== userId && deck.cards && deck.cards.length !== 0,
+			);
+			setDecks(filteredDecks);
+		} catch (error) {
+			console.error('Error fetching public decks:', error);
+			setDecks([]);
 		}
-
-		if (userId) { // Only fetch if userId is available
+		setLoading(false);
+		if (userId) {
 			fetchPublicDecks();
-		} else if (session === null) { // If session is explicitly null (not loading), means no user
-             fetchPublicDecks(); // Still fetch, but userId will be empty string, so all public decks are shown
-        }
+		} else if (session === null) {
+			fetchPublicDecks();
+		}
+	}, [userId, session]); // Added userId and session as dependencies
 
-	}, [userId, session]); // Re-fetch if userId changes
+	useEffect(() => {
+		fetchPublicDecks();
+	}, [fetchPublicDecks]); // Added fetchPublicDecks as a dependency
 
 	if (loading) {
-		return <div className="text-center text-gray-500 dark:text-gray-400 p-10">{t('common.loadingText')}</div>;
+		return (
+			<div className='text-center text-gray-500 dark:text-gray-400 p-10'>
+				{t('common.loadingText')}
+			</div>
+		);
 	}
 
 	return (
-		<div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4 w-full max-w-screen-xl mx-auto'> {/* Responsive grid and centered content */}
+		<div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4 w-full max-w-screen-xl mx-auto'>
 			{decks.length !== 0 ? (
 				decks.map((deck) => {
 					return (
@@ -71,7 +73,7 @@ export default function Content() {
 							<h1 className='text-xl font-bold text-gray-800 dark:text-gray-100'>
 								{t('market.deckNameLabel')} {deck.name} {/* Translated */}
 							</h1>
-							<p className="text-gray-600 dark:text-gray-300">
+							<p className='text-gray-600 dark:text-gray-300'>
 								{deck.cards.length} {t('market.cardsSuffix')} {/* Translated */}
 							</p>
 						</Link>
@@ -79,7 +81,7 @@ export default function Content() {
 				})
 			) : (
 				<div className='col-span-full row-span-4 text-center text-2xl font-bold flex items-center justify-center h-full text-gray-500 dark:text-gray-400'>
-					<p>{t('market.noPublicDecks')}</p> {/* Translated */}
+					<p>{t('market.noPublicDecks')}</p>
 				</div>
 			)}
 		</div>

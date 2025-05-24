@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useTranslation } from '@/context/LanguageContext';
-import { LanguageSwitcher } from './LanguageSwitcher';
+import { LanguageSwitcher } from './client/LanguageSwitcher';
 import { ThemeToggler } from './ThemeToggler';
 
 export function NavBar() {
@@ -58,9 +58,11 @@ export function NavBar() {
 				</Link>
 			</div>
 			{/* Login button icon color: text-gray-700 dark:text-white */}
-			<div className="flex items-center text-gray-700 dark:text-white">
-				<ThemeToggler /> {/* ThemeToggler itself handles its icon color internally now */}
-				<LanguageSwitcher /> {/* LanguageSwitcher buttons have their own styling */}
+			<div className='flex items-center text-gray-700 dark:text-white'>
+				<ThemeToggler />{' '}
+				{/* ThemeToggler itself handles its icon color internally now */}
+				<LanguageSwitcher />{' '}
+				{/* LanguageSwitcher buttons have their own styling */}
 				<Link
 					href={'/auth/login'}
 					className='self-center min-w-max

@@ -146,9 +146,12 @@ export async function getWordFromEnWordNetAPI(
 			});
 		}
 	});
+	if (blocks.length === 0) {
+		return null;
+	}
 	return {
 		word,
-		phonetic: blocks[0].phonetic || '',
+		phonetic: blocks[0]?.phonetic || '',
 		audio: '',
 		blocks,
 	};

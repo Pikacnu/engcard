@@ -1,351 +1,353 @@
 {
-  "common": {
-    "greeting": "你好！",
-    "submit": "提交",
-    "cancel": "取消",
-    "language": {
-      "english": "English",
-      "traditionalChinese": "正體中文"
-    },
-    "theme": {
-      "switchToLight": "切換到明亮模式",
-      "switchToDark": "切換到黑暗模式"
-    },
-    "loading": "載入中",
-    "loadingText": "載入中...",
-    "loadingSrOnly": "載入中..."
-  },
-  "navbar": {
-    "home": "首頁",
-    "dashboard": "儀表板",
-    "settings": "設定",
-    "login": "登入",
-    "logout": "登出",
-    "altHome": "首頁",
-    "altInfo": "資訊",
-    "altMarket": "市集",
-    "altDownload": "下載",
-    "altLogin": "登入"
-  },
-  "page": {
-    "home": {
-      "title": "英文卡",
-      "subtitle": "更有效地學習英文。",
-      "description": "英文卡是一款專為詞彙學習設計的閃卡應用程式，具有圖像識別和互動練習功能，助您高效記憶和複習英文單字。",
-      "feature1": {
-        "title": "卡片管理",
-        "description": "創建、編輯和刪除閃卡，靈活管理您的學習內容。"
-      },
-      "feature2": {
-        "title": "圖片導入",
-        "description": "上傳單字和文本的圖片，使用OCR技術自動生成閃卡。"
-      },
-      "feature3": {
-        "title": "AI單字處理",
-        "description": "先進的AI分析單字，提供定義、範例並生成相關的練習題。"
-      },
-      "feature4": {
-        "title": "進度追踪",
-        "description": "通過詳細的分析和表現洞察來監控您的學習旅程，以優化您的學習策略。"
-      },
-      "getStartedButton": "開始使用",
-      "githubButton": "GitHub"
-    }
-  },
-  "dashboard": {
-    "joyride": {
-      "step1Content": "這裡將顯示您所選功能的內容",
-      "step2Content": "這裡是主導航欄，您可以通過它訪問各個功能",
-      "step3Content": "點擊返回儀表板首頁",
-      "step4Content": "搜索功能，可以查找單詞或牌組",
-      "step5Content": "卡片牌組管理區域",
-      "step6Content": "預覽學習內容",
-      "step7Content": "聊天功能區",
-      "step8Content": "市場功能，可以獲取更多學習資源",
-      "step9Content": "更多選項，包含設置和登出功能",
-      "step10Content": "部份 高中 7000 單字",
-      "step11Content": "登出功能，點擊後將退出當前帳號",
-      "step12Content": "設置功能，您可以在這裡調整應用程序的設置"
-    },
-    "navigation": {
-      "sevenThousandWords": "7000單",
-      "altLogout": "登出",
-      "altSettings": "設定",
-      "altMenu": "選單",
-      "altLogo": "標誌",
-      "altSearch": "搜尋",
-      "altDeck": "牌組",
-      "altPreview": "預覽",
-      "altChat": "聊天",
-      "altMarket": "市集"
-    },
-    "home": {
-      "toggleRecentHistory": "點擊查看最近歷史",
-      "recentHistoryTitle": "最近歷史",
-      "noRecentHistory": "沒有最近歷史記錄。",
-      "toggleHotWords": "點擊查看熱門單字",
-      "hotWordsTitle": "熱門單字排行榜",
-      "tableRank": "排名",
-      "tableWord": "單字",
-      "tableCount": "次數",
-      "countSuffix": " 次",
-      "noHotWords": "沒有熱門單字記錄。"
-    },
-    "settings": {
-      "title": "設定",
-      "deckActionLabel": "打開單字卡時是否自動切換到下一個",
-      "ocrProcessLabel": "圖片處理類型",
-      "ocrOptionOnlyImage": "僅來自圖片的資料",
-      "ocrOptionOnlyDefinition": "僅使用掃描圖片中的定義",
-      "ocrOptionFullySource": "完全來自來源",
-      "alertLoadFailed": "載入設定失敗："
-    },
-    "deck": {
-      "altLoading": "載入中...",
-      "nameLabel": "名稱：",
-      "publicLabel": "公開：",
-      "isPublicYes": "是",
-      "isPublicNo": "否",
-      "previewButton": "預覽",
-      "editButton": "編輯",
-      "deleteButton": "刪除",
-      "shareButton": "分享",
-      "noDecksFound": "找不到牌組",
-      "addButton": "新增",
-      "alertDeleteFailed": "刪除牌組失敗"
-    },
-    "chat": {
-      "inputPlaceholder": "輸入訊息",
-      "sendButton": "傳送",
-      "deleteChatButton": "刪除聊天",
-      "newChatButton": "新增聊天"
-    },
-    "preview": {
-      "joyride": {
-        "step1DisplayArea": "這裡是顯示區域，所有功能都將顯示在這",
-        "step2MarkButton": "這裡是標記按鈕，點擊可將單字加入標記列表",
-        "step3FunctionList": "這裡是功能列表，可以在此處切換不同的預覽與限制單字的數量",
-        "step4CardButton": "這裡是牌組區域，將以翻頁單字卡的行事呈現",
-        "step5QuestionsButton": "這裡是問題區塊，用以練習單字拼寫",
-        "step6ListButton": "這裡是列表區塊，可以查看當前的所有單字",
-        "step7WordButton": "這裡是單字問題區塊，方便你記憶意思",
-        "step8DeckSelector": "這裡是牌組選擇區域，可以選擇不同的單字牌組"
-      },
-      "altMarked": "已標記",
-      "altCard": "單字卡",
-      "altQuestions": "問題",
-      "altList": "列表",
-      "altWordQuestions": "單字問題",
-      "altRefresh": "重新整理",
-      "altShowMarkedList": "顯示已標記列表",
-      "altSearchIcon": "搜尋圖示",
-      "filterAll": "全部",
-      "selectedDeckLabel": "已選牌組：",
-      "markWord": "標記單字",
-      "unmarkWord": "取消標記單字",
-      "filterByLetter": "按首字母篩選",
-      "setWordCount": "設定顯示單字數量"
-    },
-    "search": {
-      "inputPlaceholder": "輸入單字進行搜尋",
-      "searchButton": "搜尋",
-      "noResults": "找不到 \"{{word}}\" 的結果。"
-    },
-    "deckEdit": {
-      "uploadImagePrompt": "上傳新圖片以新增卡片至牌組。",
-      "uploadButton": "上傳",
-      "alertErrorPrefix": "錯誤：",
-      "alertUploadError": "上傳圖片時發生錯誤",
-      "add": {
-        "wordLabel": "單字：",
-        "posLabel": "詞性",
-        "definitionsLabel": "定義：",
-        "definitionPlaceholder": "定義",
-        "synonymsLabel": "同義詞：",
-        "synonymPlaceholder": "同義詞",
-        "antonymsLabel": "反義詞：",
-        "antonymPlaceholder": "反義詞",
-        "removeButton": "移除",
-        "addDefinitionButton": "新增定義",
-        "addSynonymButton": "新增同義詞",
-        "addAntonymButton": "新增反義詞",
-        "removeDefinitionBlockButton": "移除定義區塊",
-        "selectDefinitionHint": "選擇要新增的定義",
-        "addCardButton": "新增卡片"
-      },
-      "search": {
-        "inputPlaceholder": "輸入單字進行搜索",
-        "searchButton": "搜索",
-        "addButton": "新增"
-      }
-    },
-    "speedReview": {
-      "noWords": "沒有可用的單字",
-      "nextWordButton": "下一個單字"
-    }
-  },
-  "auth": {
-    "login": {
-      "title": "登入"
-    },
-    "signInWith": "使用 {provider} 登入",
-    "signInGoogle": "使用 Google 登入",
-    "signInDiscord": "使用 Discord 登入"
-  },
-  "info": {
-    "title": "資訊",
-    "aboutLink": "關於",
-    "tosLink": "服務條款",
-    "privacyLink": "隱私權政策",
-    "about": {
-      "title": "關於",
-      "creatorLabel": "創作者：",
-      "emailLabel": "電子郵件：",
-      "versionLabel": "版本："
-    },
-    "privacy": {
-      "title": "隱私權政策",
-      "introTitle": "前言",
-      "introP1": "你的隱私對我們很重要。本隱私政策解釋了我們如何收集、使用和保護您的資訊。",
-      "infoCollectTitle": "我們收集的資訊",
-      "infoCollectP1": "我們可能會收集您的姓名、電子郵件地址以及與您使用我們服務相關的數據等詳細資訊。這包括對您與我們平台互動的洞察，例如查看的頁面、訪問的功能以及在網站上花費的時間。這些資訊用於增強我們的服務並提供更量身定制的用戶體驗。",
-      "howWeUseTitle": "我們如何使用您的資訊",
-      "howWeUseP1": "我們使用您的資訊來提供和改進我們的服務。這包括確保平台順暢高效地運行，以及增強您的整體用戶體驗。",
-      "howWeUseP2": "我們使用您的資訊與您溝通。這可能包括發送更新、回覆查詢或提供支援以解決您遇到的任何問題。",
-      "howWeUseP3": "我們使用您的資訊來確保我們平台的安全。這包括監控可疑活動、防止未經授權的訪問以及維護我們服務的完整性。",
-      "howWeUseP4": "我們將分析用戶數據以推薦並幫助您複習和練習詞彙。這種分析使我們能夠調整內容和建議，以更好地滿足您的學習需求和偏好。",
-      "yourRightsTitle": "您的權利",
-      "yourRightsP1": "您有權訪問、更新或刪除您的個人資訊。我們致力於尊重和維護您的權利，並將盡一切合理努力迅速有效地滿足您的請求。",
-      "yourRightsP2": "如果您希望訪問您的數據，我們將為您提供我們收集到的關於您的資訊的詳細概述。這確保了透明度，並允許您驗證個人數據的準確性。",
-      "yourRightsP3": "如果您需要更新您的資訊，我們將協助您進行必要的更改，以確保您的記錄準確且最新。保持您的資訊最新有助於我們為您提供最佳體驗。",
-      "yourRightsP4": "如果您請求刪除您的個人數據，我們將盡最大努力將其從我們的系統中移除。但是，請注意，在某些情況下，刪除特定數據可能不可行。這可能是由於技術限制、法律義務或為合法商業目的保留某些資訊的必要性。在這種情況下，我們將告知您無法刪除數據的原因。",
-      "yourRightsP5": "我們重視您的信任，並致力於確保您的權利得到尊重。如果您對您的權利或個人資訊的處理有任何疑慮或疑問，請隨時與我們聯繫。我們隨時準備協助您並解決您可能遇到的任何問題。",
-      "contactUsTitle": "聯絡我們",
-      "contactUsP1": "如果您對本隱私權政策有任何疑問，請透過以下方式聯絡我們："
-    },
-    "tos": {
-      "title": "服務條款",
-      "introTitle": "1. 前言",
-      "introP1": "歡迎使用我們的閃卡應用程式！使用我們的服務即表示您同意這些條款。請花點時間仔細閱讀。",
-      "introP2": "我們的應用程式旨在增強您的學習體驗，無論您是學生、專業人士還是終身學習者。我們的目標是提供有效幫助您學習和記憶資訊的工具。",
-      "introP3": "訪問或使用我們的應用程式即表示您確認已閱讀、理解並同意這些條款。如果您不同意，請不要使用我們的服務。",
-      "userRespTitle": "2. 使用者責任",
-      "userRespP1": "作為使用者，您有責任維護帳戶的機密性，並確保帳戶下的所有活動均符合這些條款。",
-      "userRespP2": "我們的應用程式是協助您學習的工具，不能取代您的努力。請負責任地使用它，並作為您學習實踐的補充。",
-      "userRespP3": "您不得試圖干擾、攻擊或破壞應用程式或其服務的完整性。期望您能負責任地使用，並遵守適用的法律法規。",
-      "userRespP4": "雖然我們努力確保應用程式的準確性和可靠性，但您有責任驗證資訊並在您的學習環境中適當使用。",
-      "userRespP5": "我們鼓勵您報告遇到的任何錯誤、漏洞或問題，以幫助我們改進應用程式並維護其安全性。",
-      "prohibitedTitle": "3. 禁止活動",
-      "prohibitedP1": "為維護安全和互相尊重的環境，您同意不濫用本應用程式。這包括但不限於未經授權的存取、數據抓取或散佈有害內容。",
-      "prohibitedP2": "您不得使用本應用程式傳輸不當、冒犯性或非法內容，例如仇恨言論、歧視性言論或露骨材料。此類行為可能導致法律後果。",
-      "prohibitedP3": "嚴禁上傳不相關或惡意內容，例如垃圾郵件或惡意軟體。此外，任何試圖損害應用程式功能的行為，例如使系統超載或利用漏洞，都是被禁止的。",
-      "prohibitedP4": "避免可能損害應用程式聲譽的行為，例如散佈虛假資訊或發表誹謗性言論。我們保留對任何禁止活動進行調查並採取適當行動的權利，包括暫停或終止帳戶。",
-      "terminationTitle": "4. 終止",
-      "terminationP1": "我們保留隨時因違反這些條款而終止您訪問應用程式的權利。終止的原因可能包括：",
-      "terminationL1": "從事第 3 節所述的禁止活動。",
-      "terminationL2": "濫用應用程式於未經授權的目的。",
-      "terminationL3": "試圖干擾或損害應用程式的功能。",
-      "terminationL4": "上傳或散佈惡意或不當內容。",
-      "terminationL5": "在使用應用程式時違反適用的法律或法規。",
-      "terminationP2": "終止可能會在不事先通知的情況下發生，我們對因此類行動導致的任何數據或訪問損失概不負責。",
-      "contactUsP1": "如果您有任何疑問或需要進一步協助，請透過以下方式聯絡我們："
-    }
-  },
-  "market": {
-    "title": "市集 (探索公開牌組)",
-    "deckNameLabel": "名稱：",
-    "cardsSuffix": " 張卡片",
-    "noPublicDecks": "找不到公開牌組"
-  },
-  "download": {
-    "title": "下載",
-    "description": "下載您平台的最新版本 Cardlisher。",
-    "altWindows": "Windows",
-    "buttonWindows": "Windows",
-    "altAndroid": "Android",
-    "buttonAndroid": "Android"
-  },
-  "components": {
-    "card": {
-      "clickToFlip": "點擊翻面",
-      "altPlayAudio": "播放音訊",
-      "definitionLabel": "定義：",
-      "examplesLabel": "範例：",
-      "synonymsLabel": "同義詞：",
-      "antonymsLabel": "反義詞："
-    },
-    "deck": {
-      "previousButton": "上一個",
-      "nextButton": "下一個"
-    },
-    "list": {
-      "altBackArrow": "返回",
-      "empty": {
-        "word": "沒有卡片",
-        "phonetic": "無",
-        "errorContent": "發生錯誤，請回報給開發者。"
-      }
-    },
-    "account": {
-      "signOutAlt": "登出"
-    },
-    "questions": {
-      "skipButton": "跳過"
-    },
-    "questionWord": {
-      "questionLabel": "問題：",
-      "noDefinitions": "此單字沒有可用的定義。"
-    },
-    "server": {
-      "adddeck": {
-        "placeholderName": "名稱",
-        "labelPublic": "將此牌組設為公開",
-        "submitButton": "建立牌組"
-      },
-      "deck": {
-        "loadingText": "載入中",
-        "closeButton": "關閉",
-        "notFoundText": "找不到牌組"
-      }
-    },
-    "spell": {
-      "previousDefButtonLabel": "上一個定義",
-      "nextDefButtonLabel": "下一個定義",
-      "noDefinitions": "沒有可用的定義。"
-    }
-  },
-  "sharePage": {
-    "altMarked": "已標記",
-    "altCard": "單字卡",
-    "altQuestions": "問題",
-    "altList": "列表",
-    "altWordQuestions": "單字問題",
-    "altRefresh": "重新整理",
-    "altMarkedList": "已標記列表",
-    "addToCollectionButton": "新增至我的收藏",
-    "filterAll": "全部",
-    "alertDeckAdded": "牌組已新增至您的收藏",
-    "alertErrorPrefix": "錯誤："
-  },
-  "tempword": {
-    "joyride": {
-      "step1Display": "這裡是顯示區域，所有功能都將顯示在這",
-      "step2MarkButton": "這裡是標記按鈕，點擊可將單字加入標記列表",
-      "step3FunctionList": "這裡是功能列表，可以在此處切換不同的預覽與限制單字的數量",
-      "step4DeckArea": "這裡是牌組區域，將以翻頁單字卡的行事呈現",
-      "step5QuestionsArea": "這裡是問題區塊，用以練習單字拼寫",
-      "step6ListArea": "這裡是列表區塊，可以查看當前的所有單字",
-      "step7WordArea": "這裡是單字問題區塊，方便你記憶意思",
-      "step8MarkedArea": "這裡是標記區塊，可以在此處將單字更換成標記的單字"
-    },
-    "altMarked": "已標記",
-    "altCard": "單字卡",
-    "altQuestions": "問題",
-    "altList": "列表",
-    "altWordQuestions": "單字問題",
-    "altRefresh": "重新整理",
-    "altShowMarkedList": "顯示已標記列表",
-    "altSearchIcon": "搜尋圖示",
-    "filterAll": "全部"
-  }
+	"common": {
+		"greeting": "你好！",
+		"submit": "提交",
+		"cancel": "取消",
+		"language": {
+			"english": "English",
+			"traditionalChinese": "正體中文"
+		},
+		"theme": {
+			"switchToLight": "切換到明亮模式",
+			"switchToDark": "切換到黑暗模式"
+		},
+		"loading": "載入中",
+		"loadingText": "載入中...",
+		"loadingSrOnly": "載入中..."
+	},
+	"navbar": {
+		"home": "首頁",
+		"dashboard": "儀表板",
+		"settings": "設定",
+		"login": "登入",
+		"logout": "登出",
+		"altHome": "首頁",
+		"altInfo": "資訊",
+		"altMarket": "市集",
+		"altDownload": "下載",
+		"altLogin": "登入"
+	},
+	"page": {
+		"home": {
+			"title": "英文卡",
+			"subtitle": "更有效地學習英文。",
+			"description": "英文卡是一款專為詞彙學習設計的閃卡應用程式，具有圖像識別和互動練習功能，助您高效記憶和複習英文單字。",
+			"feature1": {
+				"title": "卡片管理",
+				"description": "創建、編輯和刪除閃卡，靈活管理您的學習內容。"
+			},
+			"feature2": {
+				"title": "圖片導入",
+				"description": "上傳單字和文本的圖片，使用OCR技術自動生成閃卡。"
+			},
+			"feature3": {
+				"title": "AI單字處理",
+				"description": "先進的AI分析單字，提供定義、範例並生成相關的練習題。"
+			},
+			"feature4": {
+				"title": "進度追踪",
+				"description": "通過詳細的分析和表現洞察來監控您的學習旅程，以優化您的學習策略。"
+			},
+			"getStartedButton": "開始使用",
+			"githubButton": "GitHub"
+		}
+	},
+	"dashboard": {
+		"joyride": {
+			"step1Content": "這裡將顯示您所選功能的內容",
+			"step2Content": "這裡是主導航欄，您可以通過它訪問各個功能",
+			"step3Content": "點擊返回儀表板首頁",
+			"step4Content": "搜索功能，可以查找單詞或牌組",
+			"step5Content": "卡片牌組管理區域",
+			"step6Content": "預覽學習內容",
+			"step7Content": "聊天功能區",
+			"step8Content": "市場功能，可以獲取更多學習資源",
+			"step9Content": "更多選項，包含設置和登出功能",
+			"step10Content": "部份 高中 7000 單字",
+			"step11Content": "登出功能，點擊後將退出當前帳號",
+			"step12Content": "設置功能，您可以在這裡調整應用程序的設置"
+		},
+		"navigation": {
+			"sevenThousandWords": "7000單",
+			"altLogout": "登出",
+			"altSettings": "設定",
+			"altMenu": "選單",
+			"altLogo": "標誌",
+			"altSearch": "搜尋",
+			"altDeck": "牌組",
+			"altPreview": "預覽",
+			"altChat": "聊天",
+			"altMarket": "市集"
+		},
+		"home": {
+			"toggleRecentHistory": "點擊查看最近歷史",
+			"recentHistoryTitle": "最近歷史",
+			"noRecentHistory": "沒有最近歷史記錄。",
+			"toggleHotWords": "點擊查看熱門單字",
+			"hotWordsTitle": "熱門單字排行榜",
+			"tableRank": "排名",
+			"tableWord": "單字",
+			"tableCount": "次數",
+			"countSuffix": " 次",
+			"noHotWords": "沒有熱門單字記錄。"
+		},
+		"settings": {
+			"title": "設定",
+			"deckActionLabel": "打開單字卡時是否自動切換到下一個",
+			"ocrProcessLabel": "圖片處理類型",
+			"ocrOptionOnlyImage": "僅來自圖片的資料",
+			"ocrOptionOnlyDefinition": "僅使用掃描圖片中的定義",
+			"ocrOptionFullySource": "完全來自來源",
+			"alertLoadFailed": "載入設定失敗：",
+			"languageLabel": "語言",
+			"themeToggle": "樣式切換"
+		},
+		"deck": {
+			"altLoading": "載入中...",
+			"nameLabel": "名稱：",
+			"publicLabel": "公開：",
+			"isPublicYes": "是",
+			"isPublicNo": "否",
+			"previewButton": "預覽",
+			"editButton": "編輯",
+			"deleteButton": "刪除",
+			"shareButton": "分享",
+			"noDecksFound": "找不到牌組",
+			"addButton": "新增",
+			"alertDeleteFailed": "刪除牌組失敗"
+		},
+		"chat": {
+			"inputPlaceholder": "輸入訊息",
+			"sendButton": "傳送",
+			"deleteChatButton": "刪除聊天",
+			"newChatButton": "新增聊天"
+		},
+		"preview": {
+			"joyride": {
+				"step1DisplayArea": "這裡是顯示區域，所有功能都將顯示在這",
+				"step2MarkButton": "這裡是標記按鈕，點擊可將單字加入標記列表",
+				"step3FunctionList": "這裡是功能列表，可以在此處切換不同的預覽與限制單字的數量",
+				"step4CardButton": "這裡是牌組區域，將以翻頁單字卡的行事呈現",
+				"step5QuestionsButton": "這裡是問題區塊，用以練習單字拼寫",
+				"step6ListButton": "這裡是列表區塊，可以查看當前的所有單字",
+				"step7WordButton": "這裡是單字問題區塊，方便你記憶意思",
+				"step8DeckSelector": "這裡是牌組選擇區域，可以選擇不同的單字牌組"
+			},
+			"altMarked": "已標記",
+			"altCard": "單字卡",
+			"altQuestions": "問題",
+			"altList": "列表",
+			"altWordQuestions": "單字問題",
+			"altRefresh": "重新整理",
+			"altShowMarkedList": "顯示已標記列表",
+			"altSearchIcon": "搜尋圖示",
+			"filterAll": "全部",
+			"selectedDeckLabel": "已選牌組：",
+			"markWord": "標記單字",
+			"unmarkWord": "取消標記單字",
+			"filterByLetter": "按首字母篩選",
+			"setWordCount": "設定顯示單字數量"
+		},
+		"search": {
+			"inputPlaceholder": "輸入單字進行搜尋",
+			"searchButton": "搜尋",
+			"noResults": "找不到 \"{{word}}\" 的結果。"
+		},
+		"deckEdit": {
+			"uploadImagePrompt": "上傳新圖片以新增卡片至牌組。",
+			"uploadButton": "上傳",
+			"alertErrorPrefix": "錯誤：",
+			"alertUploadError": "上傳圖片時發生錯誤",
+			"add": {
+				"wordLabel": "單字：",
+				"posLabel": "詞性",
+				"definitionsLabel": "定義：",
+				"definitionPlaceholder": "定義",
+				"synonymsLabel": "同義詞：",
+				"synonymPlaceholder": "同義詞",
+				"antonymsLabel": "反義詞：",
+				"antonymPlaceholder": "反義詞",
+				"removeButton": "移除",
+				"addDefinitionButton": "新增定義",
+				"addSynonymButton": "新增同義詞",
+				"addAntonymButton": "新增反義詞",
+				"removeDefinitionBlockButton": "移除定義區塊",
+				"selectDefinitionHint": "選擇要新增的定義",
+				"addCardButton": "新增卡片"
+			},
+			"search": {
+				"inputPlaceholder": "輸入單字進行搜索",
+				"searchButton": "搜索",
+				"addButton": "新增"
+			}
+		},
+		"speedReview": {
+			"noWords": "沒有可用的單字",
+			"nextWordButton": "下一個單字"
+		}
+	},
+	"auth": {
+		"login": {
+			"title": "登入"
+		},
+		"signInWith": "使用 {provider} 登入",
+		"signInGoogle": "使用 Google 登入",
+		"signInDiscord": "使用 Discord 登入"
+	},
+	"info": {
+		"title": "資訊",
+		"aboutLink": "關於",
+		"tosLink": "服務條款",
+		"privacyLink": "隱私權政策",
+		"about": {
+			"title": "關於",
+			"creatorLabel": "創作者：",
+			"emailLabel": "電子郵件：",
+			"versionLabel": "版本："
+		},
+		"privacy": {
+			"title": "隱私權政策",
+			"introTitle": "前言",
+			"introP1": "你的隱私對我們很重要。本隱私政策解釋了我們如何收集、使用和保護您的資訊。",
+			"infoCollectTitle": "我們收集的資訊",
+			"infoCollectP1": "我們可能會收集您的姓名、電子郵件地址以及與您使用我們服務相關的數據等詳細資訊。這包括對您與我們平台互動的洞察，例如查看的頁面、訪問的功能以及在網站上花費的時間。這些資訊用於增強我們的服務並提供更量身定制的用戶體驗。",
+			"howWeUseTitle": "我們如何使用您的資訊",
+			"howWeUseP1": "我們使用您的資訊來提供和改進我們的服務。這包括確保平台順暢高效地運行，以及增強您的整體用戶體驗。",
+			"howWeUseP2": "我們使用您的資訊與您溝通。這可能包括發送更新、回覆查詢或提供支援以解決您遇到的任何問題。",
+			"howWeUseP3": "我們使用您的資訊來確保我們平台的安全。這包括監控可疑活動、防止未經授權的訪問以及維護我們服務的完整性。",
+			"howWeUseP4": "我們將分析用戶數據以推薦並幫助您複習和練習詞彙。這種分析使我們能夠調整內容和建議，以更好地滿足您的學習需求和偏好。",
+			"yourRightsTitle": "您的權利",
+			"yourRightsP1": "您有權訪問、更新或刪除您的個人資訊。我們致力於尊重和維護您的權利，並將盡一切合理努力迅速有效地滿足您的請求。",
+			"yourRightsP2": "如果您希望訪問您的數據，我們將為您提供我們收集到的關於您的資訊的詳細概述。這確保了透明度，並允許您驗證個人數據的準確性。",
+			"yourRightsP3": "如果您需要更新您的資訊，我們將協助您進行必要的更改，以確保您的記錄準確且最新。保持您的資訊最新有助於我們為您提供最佳體驗。",
+			"yourRightsP4": "如果您請求刪除您的個人數據，我們將盡最大努力將其從我們的系統中移除。但是，請注意，在某些情況下，刪除特定數據可能不可行。這可能是由於技術限制、法律義務或為合法商業目的保留某些資訊的必要性。在這種情況下，我們將告知您無法刪除數據的原因。",
+			"yourRightsP5": "我們重視您的信任，並致力於確保您的權利得到尊重。如果您對您的權利或個人資訊的處理有任何疑慮或疑問，請隨時與我們聯繫。我們隨時準備協助您並解決您可能遇到的任何問題。",
+			"contactUsTitle": "聯絡我們",
+			"contactUsP1": "如果您對本隱私權政策有任何疑問，請透過以下方式聯絡我們："
+		},
+		"tos": {
+			"title": "服務條款",
+			"introTitle": "1. 前言",
+			"introP1": "歡迎使用我們的閃卡應用程式！使用我們的服務即表示您同意這些條款。請花點時間仔細閱讀。",
+			"introP2": "我們的應用程式旨在增強您的學習體驗，無論您是學生、專業人士還是終身學習者。我們的目標是提供有效幫助您學習和記憶資訊的工具。",
+			"introP3": "訪問或使用我們的應用程式即表示您確認已閱讀、理解並同意這些條款。如果您不同意，請不要使用我們的服務。",
+			"userRespTitle": "2. 使用者責任",
+			"userRespP1": "作為使用者，您有責任維護帳戶的機密性，並確保帳戶下的所有活動均符合這些條款。",
+			"userRespP2": "我們的應用程式是協助您學習的工具，不能取代您的努力。請負責任地使用它，並作為您學習實踐的補充。",
+			"userRespP3": "您不得試圖干擾、攻擊或破壞應用程式或其服務的完整性。期望您能負責任地使用，並遵守適用的法律法規。",
+			"userRespP4": "雖然我們努力確保應用程式的準確性和可靠性，但您有責任驗證資訊並在您的學習環境中適當使用。",
+			"userRespP5": "我們鼓勵您報告遇到的任何錯誤、漏洞或問題，以幫助我們改進應用程式並維護其安全性。",
+			"prohibitedTitle": "3. 禁止活動",
+			"prohibitedP1": "為維護安全和互相尊重的環境，您同意不濫用本應用程式。這包括但不限於未經授權的存取、數據抓取或散佈有害內容。",
+			"prohibitedP2": "您不得使用本應用程式傳輸不當、冒犯性或非法內容，例如仇恨言論、歧視性言論或露骨材料。此類行為可能導致法律後果。",
+			"prohibitedP3": "嚴禁上傳不相關或惡意內容，例如垃圾郵件或惡意軟體。此外，任何試圖損害應用程式功能的行為，例如使系統超載或利用漏洞，都是被禁止的。",
+			"prohibitedP4": "避免可能損害應用程式聲譽的行為，例如散佈虛假資訊或發表誹謗性言論。我們保留對任何禁止活動進行調查並採取適當行動的權利，包括暫停或終止帳戶。",
+			"terminationTitle": "4. 終止",
+			"terminationP1": "我們保留隨時因違反這些條款而終止您訪問應用程式的權利。終止的原因可能包括：",
+			"terminationL1": "從事第 3 節所述的禁止活動。",
+			"terminationL2": "濫用應用程式於未經授權的目的。",
+			"terminationL3": "試圖干擾或損害應用程式的功能。",
+			"terminationL4": "上傳或散佈惡意或不當內容。",
+			"terminationL5": "在使用應用程式時違反適用的法律或法規。",
+			"terminationP2": "終止可能會在不事先通知的情況下發生，我們對因此類行動導致的任何數據或訪問損失概不負責。",
+			"contactUsP1": "如果您有任何疑問或需要進一步協助，請透過以下方式聯絡我們："
+		}
+	},
+	"market": {
+		"title": "市集 (探索公開牌組)",
+		"deckNameLabel": "名稱：",
+		"cardsSuffix": " 張卡片",
+		"noPublicDecks": "找不到公開牌組"
+	},
+	"download": {
+		"title": "下載",
+		"description": "下載您平台的最新版本 Cardlisher。",
+		"altWindows": "Windows",
+		"buttonWindows": "Windows",
+		"altAndroid": "Android",
+		"buttonAndroid": "Android"
+	},
+	"components": {
+		"card": {
+			"clickToFlip": "點擊翻面",
+			"altPlayAudio": "播放音訊",
+			"definitionLabel": "定義：",
+			"examplesLabel": "範例：",
+			"synonymsLabel": "同義詞：",
+			"antonymsLabel": "反義詞："
+		},
+		"deck": {
+			"previousButton": "上一個",
+			"nextButton": "下一個"
+		},
+		"list": {
+			"altBackArrow": "返回",
+			"empty": {
+				"word": "沒有卡片",
+				"phonetic": "無",
+				"errorContent": "發生錯誤，請回報給開發者。"
+			}
+		},
+		"account": {
+			"signOutAlt": "登出"
+		},
+		"questions": {
+			"skipButton": "跳過"
+		},
+		"questionWord": {
+			"questionLabel": "問題：",
+			"noDefinitions": "此單字沒有可用的定義。"
+		},
+		"server": {
+			"adddeck": {
+				"placeholderName": "名稱",
+				"labelPublic": "將此牌組設為公開",
+				"submitButton": "建立牌組"
+			},
+			"deck": {
+				"loadingText": "載入中",
+				"closeButton": "關閉",
+				"notFoundText": "找不到牌組"
+			}
+		},
+		"spell": {
+			"previousDefButtonLabel": "上一個定義",
+			"nextDefButtonLabel": "下一個定義",
+			"noDefinitions": "沒有可用的定義。"
+		}
+	},
+	"sharePage": {
+		"altMarked": "已標記",
+		"altCard": "單字卡",
+		"altQuestions": "問題",
+		"altList": "列表",
+		"altWordQuestions": "單字問題",
+		"altRefresh": "重新整理",
+		"altMarkedList": "已標記列表",
+		"addToCollectionButton": "新增至我的收藏",
+		"filterAll": "全部",
+		"alertDeckAdded": "牌組已新增至您的收藏",
+		"alertErrorPrefix": "錯誤："
+	},
+	"tempword": {
+		"joyride": {
+			"step1Display": "這裡是顯示區域，所有功能都將顯示在這",
+			"step2MarkButton": "這裡是標記按鈕，點擊可將單字加入標記列表",
+			"step3FunctionList": "這裡是功能列表，可以在此處切換不同的預覽與限制單字的數量",
+			"step4DeckArea": "這裡是牌組區域，將以翻頁單字卡的行事呈現",
+			"step5QuestionsArea": "這裡是問題區塊，用以練習單字拼寫",
+			"step6ListArea": "這裡是列表區塊，可以查看當前的所有單字",
+			"step7WordArea": "這裡是單字問題區塊，方便你記憶意思",
+			"step8MarkedArea": "這裡是標記區塊，可以在此處將單字更換成標記的單字"
+		},
+		"altMarked": "已標記",
+		"altCard": "單字卡",
+		"altQuestions": "問題",
+		"altList": "列表",
+		"altWordQuestions": "單字問題",
+		"altRefresh": "重新整理",
+		"altShowMarkedList": "顯示已標記列表",
+		"altSearchIcon": "搜尋圖示",
+		"filterAll": "全部"
+	}
 }

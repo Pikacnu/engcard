@@ -1,351 +1,353 @@
 {
-  "common": {
-    "greeting": "Hello!",
-    "submit": "Submit",
-    "cancel": "Cancel",
-    "language": {
-      "english": "English",
-      "traditionalChinese": "Traditional Chinese"
-    },
-    "theme": {
-      "switchToLight": "Switch to Light Mode",
-      "switchToDark": "Switch to Dark Mode"
-    },
-    "loading": "Loading",
-    "loadingText": "Loading...",
-    "loadingSrOnly": "Loading..."
-  },
-  "navbar": {
-    "home": "Home",
-    "dashboard": "Dashboard",
-    "settings": "Settings",
-    "login": "Login",
-    "logout": "Logout",
-    "altHome": "Home",
-    "altInfo": "Info",
-    "altMarket": "Market",
-    "altDownload": "Download",
-    "altLogin": "Login"
-  },
-  "page": {
-    "home": {
-      "title": "English Card",
-      "subtitle": "Learn English. More Effectively.",
-      "description": "English Card is a flashcard app designed for vocabulary learning, featuring Image recognition, and interactive practice to help you efficiently memorize and review English words.",
-      "feature1": {
-        "title": "Card Management",
-        "description": "Create, edit, and delete flashcards to flexibly manage your learning content."
-      },
-      "feature2": {
-        "title": "Image Import",
-        "description": "Upload images of words and texts to automatically generate flashcards using OCR technology."
-      },
-      "feature3": {
-        "title": "AI Word Processing",
-        "description": "Advanced AI to analyze words, provide definitions, examples, and generate relevant practice exercises."
-      },
-      "feature4": {
-        "title": "Progress Tracking",
-        "description": "Monitor your learning journey with detailed analytics and performance insights to optimize your study strategy."
-      },
-      "getStartedButton": "Get Started",
-      "githubButton": "GitHub"
-    }
-  },
-  "dashboard": {
-    "joyride": {
-      "step1Content": "This area will display the content of your selected feature.",
-      "step2Content": "This is the main navigation bar, allowing you to access various functions.",
-      "step3Content": "Click to return to the dashboard homepage.",
-      "step4Content": "Search function, to find words or decks.",
-      "step5Content": "Card deck management area.",
-      "step6Content": "Preview learning content.",
-      "step7Content": "Chat function area.",
-      "step8Content": "Market function, to get more learning resources.",
-      "step9Content": "More options, including settings and logout functions.",
-      "step10Content": "Contains some high school 7000 words.",
-      "step11Content": "Logout function, click to exit the current account.",
-      "step12Content": "Settings function, you can adjust application settings here."
-    },
-    "navigation": {
-      "sevenThousandWords": "7000 Words",
-      "altLogout": "Logout",
-      "altSettings": "Settings",
-      "altMenu": "Menu",
-      "altLogo": "Logo",
-      "altSearch": "Search",
-      "altDeck": "Deck",
-      "altPreview": "Preview",
-      "altChat": "Chat",
-      "altMarket": "Market"
-    },
-    "home": {
-      "toggleRecentHistory": "Click to view recent history",
-      "recentHistoryTitle": "Recent History",
-      "noRecentHistory": "No recent history available.",
-      "toggleHotWords": "Click to view hot words",
-      "hotWordsTitle": "Hot Words Leaderboard",
-      "tableRank": "Rank",
-      "tableWord": "Word",
-      "tableCount": "Count",
-      "countSuffix": " times",
-      "noHotWords": "No hot words available."
-    },
-    "settings": {
-      "title": "Settings",
-      "deckActionLabel": "Is word card auto change to next when open",
-      "ocrProcessLabel": "Image Process Type",
-      "ocrOptionOnlyImage": "Only Data From Image",
-      "ocrOptionOnlyDefinition": "Only Use Definition From Scanned Image",
-      "ocrOptionFullySource": "Fully From Source",
-      "alertLoadFailed": "Failed to load settings: "
-    },
-    "deck": {
-      "altLoading": "Loading...",
-      "nameLabel": "Name :",
-      "publicLabel": "Public :",
-      "isPublicYes": "Yes",
-      "isPublicNo": "No",
-      "previewButton": "Preview",
-      "editButton": "Edit",
-      "deleteButton": "Delete",
-      "shareButton": "Share",
-      "noDecksFound": "No Decks Found",
-      "addButton": "Add",
-      "alertDeleteFailed": "Failed to delete deck"
-    },
-    "chat": {
-      "inputPlaceholder": "Type a message",
-      "sendButton": "Send",
-      "deleteChatButton": "Delete Chat",
-      "newChatButton": "New Chat"
-    },
-    "preview": {
-      "joyride": {
-        "step1DisplayArea": "This is the display area where all features will be shown.",
-        "step2MarkButton": "This is the mark button; click to add the word to your marked list.",
-        "step3FunctionList": "This is the function list where you can switch previews and limit word count.",
-        "step4CardButton": "This is the card area, presented as flashcards.",
-        "step5QuestionsButton": "This is the questions area for practicing word spelling.",
-        "step6ListButton": "This is the list area where you can view all current words.",
-        "step7WordButton": "This is the word questions area to help you memorize meanings.",
-        "step8DeckSelector": "This is the deck selection area where you can choose different word decks."
-      },
-      "altMarked": "Marked",
-      "altCard": "Card",
-      "altQuestions": "Questions",
-      "altList": "List",
-      "altWordQuestions": "Word Questions",
-      "altRefresh": "Refresh",
-      "altShowMarkedList": "Show Marked List",
-      "altSearchIcon": "Search Icon",
-      "filterAll": "All",
-      "selectedDeckLabel": "Selected Deck :",
-      "markWord": "Mark Word",
-      "unmarkWord": "Unmark Word",
-      "filterByLetter": "Filter by starting letter",
-      "setWordCount": "Set number of words to display"
-    },
-    "search": {
-      "inputPlaceholder": "Type a word to search",
-      "searchButton": "Search",
-      "noResults": "No results found for \"{{word}}\"."
-    },
-    "deckEdit": {
-      "uploadImagePrompt": "Upload a new image to add cards to the deck.",
-      "uploadButton": "Upload",
-      "alertErrorPrefix": "Error: ",
-      "alertUploadError": "Error uploading image",
-      "add": {
-        "wordLabel": "Word:",
-        "posLabel": "Part Of Speech",
-        "definitionsLabel": "Definitions:",
-        "definitionPlaceholder": "Definition",
-        "synonymsLabel": "Synonyms:",
-        "synonymPlaceholder": "Synonym",
-        "antonymsLabel": "Antonyms:",
-        "antonymPlaceholder": "Antonym",
-        "removeButton": "Remove",
-        "addDefinitionButton": "Add Definition",
-        "addSynonymButton": "Add Synonym",
-        "addAntonymButton": "Add Antonym",
-        "removeDefinitionBlockButton": "Remove Definition Block",
-        "selectDefinitionHint": "Select a definition to add",
-        "addCardButton": "Add Card"
-      },
-      "search": {
-        "inputPlaceholder": "Type a word to search",
-        "searchButton": "Search",
-        "addButton": "Add"
-      }
-    },
-    "speedReview": {
-      "noWords": "No words available",
-      "nextWordButton": "Next Word"
-    }
-  },
-  "auth": {
-    "login": {
-      "title": "Login"
-    },
-    "signInWith": "Sign in with {provider}",
-    "signInGoogle": "Sign in with Google",
-    "signInDiscord": "Sign in with Discord"
-  },
-  "info": {
-    "title": "Info",
-    "aboutLink": "About",
-    "tosLink": "Terms of Service",
-    "privacyLink": "Privacy Policy",
-    "about": {
-      "title": "About",
-      "creatorLabel": "Creator:",
-      "emailLabel": "Email:",
-      "versionLabel": "Version:"
-    },
-    "privacy": {
-      "title": "Privacy Policy",
-      "introTitle": "Introduction",
-      "introP1": "Your privacy is important to us. This Privacy Policy explains how we collect, use, and protect your information.",
-      "infoCollectTitle": "Information We Collect",
-      "infoCollectP1": "We may gather details such as your name, email address, and data related to your usage of our services. This includes insights into your interactions with our platform, like pages viewed, features accessed, and time spent on the site. This information is utilized to enhance our services and deliver a more tailored user experience.",
-      "howWeUseTitle": "How We Use Your Information",
-      "howWeUseP1": "We use your information to provide and improve our services. This includes ensuring the platform operates smoothly and efficiently, as well as enhancing your overall user experience.",
-      "howWeUseP2": "We use your information to communicate with you. This may involve sending updates, responding to inquiries, or providing support to address any issues you encounter.",
-      "howWeUseP3": "We use your information to ensure the security of our platform. This includes monitoring for suspicious activities, preventing unauthorized access, and maintaining the integrity of our services.",
-      "howWeUseP4": "We will analyze user data to recommend and help you review and practice vocabulary. This analysis allows us to tailor content and suggestions to better suit your learning needs and preferences.",
-      "yourRightsTitle": "Your Rights",
-      "yourRightsP1": "You have the right to access, update, or delete your personal information. We are committed to respecting and upholding your rights and will make every reasonable effort to fulfill your requests promptly and efficiently.",
-      "yourRightsP2": "If you wish to access your data, we will provide you with a detailed overview of the information we have collected about you. This ensures transparency and allows you to verify the accuracy of your personal data.",
-      "yourRightsP3": "Should you need to update your information, we will assist you in making the necessary changes to ensure that your records are accurate and up-to-date. Keeping your information current helps us provide you with the best possible experience.",
-      "yourRightsP4": "If you request the deletion of your personal data, we will do our utmost to remove it from our systems. However, please note that in certain situations, it may not be feasible to delete specific data. This could be due to technical limitations, legal obligations, or the necessity of retaining certain information for legitimate business purposes. In such cases, we will inform you of the reasons why the data cannot be deleted.",
-      "yourRightsP5": "We value your trust and are dedicated to ensuring that your rights are respected. If you have any concerns or questions regarding your rights or the handling of your personal information, please do not hesitate to contact us. We are here to assist you and address any issues you may have.",
-      "contactUsTitle": "Contact Us",
-      "contactUsP1": "If you have any questions about this Privacy Policy, please contact us at "
-    },
-    "tos": {
-      "title": "Terms of Service",
-      "introTitle": "1. Introduction",
-      "introP1": "Welcome to our flashcard app! By using our services, you agree to these terms. Please take a moment to read them carefully.",
-      "introP2": "Our app is designed to enhance your learning experience, whether you're a student, professional, or lifelong learner. We aim to provide tools that help you learn and retain information effectively.",
-      "introP3": "By accessing or using our app, you confirm that you have read, understood, and agreed to these terms. If you do not agree, we kindly ask you to refrain from using our services.",
-      "userRespTitle": "2. User Responsibilities",
-      "userRespP1": "As a user, you are responsible for maintaining the confidentiality of your account and ensuring all activities under your account comply with these terms.",
-      "userRespP2": "Our app is a tool to assist your learning, not a replacement for your efforts. Use it responsibly and as a complement to your study practices.",
-      "userRespP3": "You must not attempt to disrupt, attack, or undermine the integrity of the app or its services. Responsible usage in compliance with applicable laws and regulations is expected.",
-      "userRespP4": "While we strive to ensure the app's accuracy and reliability, it is your responsibility to verify the information and use it appropriately within your learning context.",
-      "userRespP5": "We encourage you to report any bugs, vulnerabilities, or issues you encounter to help us improve the app and maintain its security.",
-      "prohibitedTitle": "3. Prohibited Activities",
-      "prohibitedP1": "To maintain a safe and respectful environment, you agree not to misuse the app. This includes, but is not limited to, unauthorized access, data scraping, or distributing harmful content.",
-      "prohibitedP2": "You must not use the app to transmit inappropriate, offensive, or illegal content, such as hate speech, discriminatory remarks, or explicit material. Such actions may result in legal consequences.",
-      "prohibitedP3": "Uploading irrelevant or malicious content, such as spam or malware, is strictly prohibited. Additionally, any attempts to harm the app's functionality, such as overloading the system or exploiting vulnerabilities, are forbidden.",
-      "prohibitedP4": "Refrain from actions that could damage the app's reputation, such as spreading false information or making defamatory statements. We reserve the right to investigate and take appropriate action, including account suspension or termination, for any prohibited activities.",
-      "terminationTitle": "4. Termination",
-      "terminationP1": "We reserve the right to terminate your access to the app at any time for violations of these terms. Reasons for termination may include:",
-      "terminationL1": "Engaging in prohibited activities outlined in Section 3.",
-      "terminationL2": "Misusing the app for unauthorized purposes.",
-      "terminationL3": "Attempting to disrupt or harm the app's functionality.",
-      "terminationL4": "Uploading or distributing malicious or inappropriate content.",
-      "terminationL5": "Violating applicable laws or regulations while using the app.",
-      "terminationP2": "Termination may occur without prior notice, and we are not liable for any loss of data or access resulting from such actions.",
-      "contactUsP1": "If you have any questions or need further assistance, please contact us at "
-    }
-  },
-  "market": {
-    "title": "Market (Explore Public Decks)",
-    "deckNameLabel": "Name :",
-    "cardsSuffix": " cards",
-    "noPublicDecks": "No Public Decks Found"
-  },
-  "download": {
-    "title": "Download",
-    "description": "Download the latest version of Cardlisher for your platform.",
-    "altWindows": "Windows",
-    "buttonWindows": "Windows",
-    "altAndroid": "Android",
-    "buttonAndroid": "Android"
-  },
-  "components": {
-    "card": {
-      "clickToFlip": "Click to Flip",
-      "altPlayAudio": "Play Audio",
-      "definitionLabel": "Definition :",
-      "examplesLabel": "Examples:",
-      "synonymsLabel": "Synonyms:",
-      "antonymsLabel": "Antonyms:"
-    },
-    "deck": {
-      "previousButton": "Previous",
-      "nextButton": "Next"
-    },
-    "list": {
-      "altBackArrow": "Back",
-      "empty": {
-        "word": "No Cards",
-        "phonetic": "N/A",
-        "errorContent": "An error occurred. Please report to the developer."
-      }
-    },
-    "account": {
-      "signOutAlt": "Logout"
-    },
-    "questions": {
-      "skipButton": "Skip"
-    },
-    "questionWord": {
-      "questionLabel": "Question:",
-      "noDefinitions": "No definitions available for this word."
-    },
-    "server": {
-      "adddeck": {
-        "placeholderName": "Name",
-        "labelPublic": "Make this Deck to Public",
-        "submitButton": "Create Deck"
-      },
-      "deck": {
-        "loadingText": "Loading",
-        "closeButton": "Close",
-        "notFoundText": "Deck not found"
-      }
-    },
-    "spell": {
-      "previousDefButtonLabel": "Previous definition",
-      "nextDefButtonLabel": "Next definition",
-      "noDefinitions": "No definitions available."
-    }
-  },
-  "sharePage": {
-    "altMarked": "Marked",
-    "altCard": "Card",
-    "altQuestions": "Questions",
-    "altList": "List",
-    "altWordQuestions": "Word Questions",
-    "altRefresh": "Refresh",
-    "altMarkedList": "Marked List",
-    "addToCollectionButton": "Add to Collection",
-    "filterAll": "All",
-    "alertDeckAdded": "Deck Added to your collection",
-    "alertErrorPrefix": "Error: "
-  },
-  "tempword": {
-    "joyride": {
-      "step1Display": "This is the display area where all features will be shown.",
-      "step2MarkButton": "This is the mark button; click to add the word to your marked list.",
-      "step3FunctionList": "This is the function list where you can switch previews and limit word count.",
-      "step4DeckArea": "This is the card deck area, presented as flashcards.",
-      "step5QuestionsArea": "This is the questions area for practicing word spelling.",
-      "step6ListArea": "This is the list area where you can view all current words.",
-      "step7WordArea": "This is the word questions area to help you memorize meanings.",
-      "step8MarkedArea": "This is the marked area; here you can switch words to your marked words."
-    },
-    "altMarked": "Marked",
-    "altCard": "Card",
-    "altQuestions": "Questions",
-    "altList": "List",
-    "altWordQuestions": "Word Questions",
-    "altRefresh": "Refresh",
-    "altShowMarkedList": "Show Marked List",
-    "altSearchIcon": "Search Icon",
-    "filterAll": "All"
-  }
+	"common": {
+		"greeting": "Hello!",
+		"submit": "Submit",
+		"cancel": "Cancel",
+		"language": {
+			"english": "English",
+			"traditionalChinese": "Traditional Chinese"
+		},
+		"theme": {
+			"switchToLight": "Switch to Light Mode",
+			"switchToDark": "Switch to Dark Mode"
+		},
+		"loading": "Loading",
+		"loadingText": "Loading...",
+		"loadingSrOnly": "Loading..."
+	},
+	"navbar": {
+		"home": "Home",
+		"dashboard": "Dashboard",
+		"settings": "Settings",
+		"login": "Login",
+		"logout": "Logout",
+		"altHome": "Home",
+		"altInfo": "Info",
+		"altMarket": "Market",
+		"altDownload": "Download",
+		"altLogin": "Login"
+	},
+	"page": {
+		"home": {
+			"title": "English Card",
+			"subtitle": "Learn English. More Effectively.",
+			"description": "English Card is a flashcard app designed for vocabulary learning, featuring Image recognition, and interactive practice to help you efficiently memorize and review English words.",
+			"feature1": {
+				"title": "Card Management",
+				"description": "Create, edit, and delete flashcards to flexibly manage your learning content."
+			},
+			"feature2": {
+				"title": "Image Import",
+				"description": "Upload images of words and texts to automatically generate flashcards using OCR technology."
+			},
+			"feature3": {
+				"title": "AI Word Processing",
+				"description": "Advanced AI to analyze words, provide definitions, examples, and generate relevant practice exercises."
+			},
+			"feature4": {
+				"title": "Progress Tracking",
+				"description": "Monitor your learning journey with detailed analytics and performance insights to optimize your study strategy."
+			},
+			"getStartedButton": "Get Started",
+			"githubButton": "GitHub"
+		}
+	},
+	"dashboard": {
+		"joyride": {
+			"step1Content": "This area will display the content of your selected feature.",
+			"step2Content": "This is the main navigation bar, allowing you to access various functions.",
+			"step3Content": "Click to return to the dashboard homepage.",
+			"step4Content": "Search function, to find words or decks.",
+			"step5Content": "Card deck management area.",
+			"step6Content": "Preview learning content.",
+			"step7Content": "Chat function area.",
+			"step8Content": "Market function, to get more learning resources.",
+			"step9Content": "More options, including settings and logout functions.",
+			"step10Content": "Contains some high school 7000 words.",
+			"step11Content": "Logout function, click to exit the current account.",
+			"step12Content": "Settings function, you can adjust application settings here."
+		},
+		"navigation": {
+			"sevenThousandWords": "7000 Words",
+			"altLogout": "Logout",
+			"altSettings": "Settings",
+			"altMenu": "Menu",
+			"altLogo": "Logo",
+			"altSearch": "Search",
+			"altDeck": "Deck",
+			"altPreview": "Preview",
+			"altChat": "Chat",
+			"altMarket": "Market"
+		},
+		"home": {
+			"toggleRecentHistory": "Click to view recent history",
+			"recentHistoryTitle": "Recent History",
+			"noRecentHistory": "No recent history available.",
+			"toggleHotWords": "Click to view hot words",
+			"hotWordsTitle": "Hot Words Leaderboard",
+			"tableRank": "Rank",
+			"tableWord": "Word",
+			"tableCount": "Count",
+			"countSuffix": " times",
+			"noHotWords": "No hot words available."
+		},
+		"settings": {
+			"title": "Settings",
+			"deckActionLabel": "Is word card auto change to next when open",
+			"ocrProcessLabel": "Image Process Type",
+			"ocrOptionOnlyImage": "Only Data From Image",
+			"ocrOptionOnlyDefinition": "Only Use Definition From Scanned Image",
+			"ocrOptionFullySource": "Fully From Source",
+			"alertLoadFailed": "Failed to load settings: ",
+			"languageLabel": "Language",
+			"themeToggle": "Theme Mode"
+		},
+		"deck": {
+			"altLoading": "Loading...",
+			"nameLabel": "Name :",
+			"publicLabel": "Public :",
+			"isPublicYes": "Yes",
+			"isPublicNo": "No",
+			"previewButton": "Preview",
+			"editButton": "Edit",
+			"deleteButton": "Delete",
+			"shareButton": "Share",
+			"noDecksFound": "No Decks Found",
+			"addButton": "Add",
+			"alertDeleteFailed": "Failed to delete deck"
+		},
+		"chat": {
+			"inputPlaceholder": "Type a message",
+			"sendButton": "Send",
+			"deleteChatButton": "Delete Chat",
+			"newChatButton": "New Chat"
+		},
+		"preview": {
+			"joyride": {
+				"step1DisplayArea": "This is the display area where all features will be shown.",
+				"step2MarkButton": "This is the mark button; click to add the word to your marked list.",
+				"step3FunctionList": "This is the function list where you can switch previews and limit word count.",
+				"step4CardButton": "This is the card area, presented as flashcards.",
+				"step5QuestionsButton": "This is the questions area for practicing word spelling.",
+				"step6ListButton": "This is the list area where you can view all current words.",
+				"step7WordButton": "This is the word questions area to help you memorize meanings.",
+				"step8DeckSelector": "This is the deck selection area where you can choose different word decks."
+			},
+			"altMarked": "Marked",
+			"altCard": "Card",
+			"altQuestions": "Questions",
+			"altList": "List",
+			"altWordQuestions": "Word Questions",
+			"altRefresh": "Refresh",
+			"altShowMarkedList": "Show Marked List",
+			"altSearchIcon": "Search Icon",
+			"filterAll": "All",
+			"selectedDeckLabel": "Selected Deck :",
+			"markWord": "Mark Word",
+			"unmarkWord": "Unmark Word",
+			"filterByLetter": "Filter by starting letter",
+			"setWordCount": "Set number of words to display"
+		},
+		"search": {
+			"inputPlaceholder": "Type a word to search",
+			"searchButton": "Search",
+			"noResults": "No results found for \"{{word}}\"."
+		},
+		"deckEdit": {
+			"uploadImagePrompt": "Upload a new image to add cards to the deck.",
+			"uploadButton": "Upload",
+			"alertErrorPrefix": "Error: ",
+			"alertUploadError": "Error uploading image",
+			"add": {
+				"wordLabel": "Word:",
+				"posLabel": "Part Of Speech",
+				"definitionsLabel": "Definitions:",
+				"definitionPlaceholder": "Definition",
+				"synonymsLabel": "Synonyms:",
+				"synonymPlaceholder": "Synonym",
+				"antonymsLabel": "Antonyms:",
+				"antonymPlaceholder": "Antonym",
+				"removeButton": "Remove",
+				"addDefinitionButton": "Add Definition",
+				"addSynonymButton": "Add Synonym",
+				"addAntonymButton": "Add Antonym",
+				"removeDefinitionBlockButton": "Remove Definition Block",
+				"selectDefinitionHint": "Select a definition to add",
+				"addCardButton": "Add Card"
+			},
+			"search": {
+				"inputPlaceholder": "Type a word to search",
+				"searchButton": "Search",
+				"addButton": "Add"
+			}
+		},
+		"speedReview": {
+			"noWords": "No words available",
+			"nextWordButton": "Next Word"
+		}
+	},
+	"auth": {
+		"login": {
+			"title": "Login"
+		},
+		"signInWith": "Sign in with {provider}",
+		"signInGoogle": "Sign in with Google",
+		"signInDiscord": "Sign in with Discord"
+	},
+	"info": {
+		"title": "Info",
+		"aboutLink": "About",
+		"tosLink": "Terms of Service",
+		"privacyLink": "Privacy Policy",
+		"about": {
+			"title": "About",
+			"creatorLabel": "Creator:",
+			"emailLabel": "Email:",
+			"versionLabel": "Version:"
+		},
+		"privacy": {
+			"title": "Privacy Policy",
+			"introTitle": "Introduction",
+			"introP1": "Your privacy is important to us. This Privacy Policy explains how we collect, use, and protect your information.",
+			"infoCollectTitle": "Information We Collect",
+			"infoCollectP1": "We may gather details such as your name, email address, and data related to your usage of our services. This includes insights into your interactions with our platform, like pages viewed, features accessed, and time spent on the site. This information is utilized to enhance our services and deliver a more tailored user experience.",
+			"howWeUseTitle": "How We Use Your Information",
+			"howWeUseP1": "We use your information to provide and improve our services. This includes ensuring the platform operates smoothly and efficiently, as well as enhancing your overall user experience.",
+			"howWeUseP2": "We use your information to communicate with you. This may involve sending updates, responding to inquiries, or providing support to address any issues you encounter.",
+			"howWeUseP3": "We use your information to ensure the security of our platform. This includes monitoring for suspicious activities, preventing unauthorized access, and maintaining the integrity of our services.",
+			"howWeUseP4": "We will analyze user data to recommend and help you review and practice vocabulary. This analysis allows us to tailor content and suggestions to better suit your learning needs and preferences.",
+			"yourRightsTitle": "Your Rights",
+			"yourRightsP1": "You have the right to access, update, or delete your personal information. We are committed to respecting and upholding your rights and will make every reasonable effort to fulfill your requests promptly and efficiently.",
+			"yourRightsP2": "If you wish to access your data, we will provide you with a detailed overview of the information we have collected about you. This ensures transparency and allows you to verify the accuracy of your personal data.",
+			"yourRightsP3": "Should you need to update your information, we will assist you in making the necessary changes to ensure that your records are accurate and up-to-date. Keeping your information current helps us provide you with the best possible experience.",
+			"yourRightsP4": "If you request the deletion of your personal data, we will do our utmost to remove it from our systems. However, please note that in certain situations, it may not be feasible to delete specific data. This could be due to technical limitations, legal obligations, or the necessity of retaining certain information for legitimate business purposes. In such cases, we will inform you of the reasons why the data cannot be deleted.",
+			"yourRightsP5": "We value your trust and are dedicated to ensuring that your rights are respected. If you have any concerns or questions regarding your rights or the handling of your personal information, please do not hesitate to contact us. We are here to assist you and address any issues you may have.",
+			"contactUsTitle": "Contact Us",
+			"contactUsP1": "If you have any questions about this Privacy Policy, please contact us at "
+		},
+		"tos": {
+			"title": "Terms of Service",
+			"introTitle": "1. Introduction",
+			"introP1": "Welcome to our flashcard app! By using our services, you agree to these terms. Please take a moment to read them carefully.",
+			"introP2": "Our app is designed to enhance your learning experience, whether you're a student, professional, or lifelong learner. We aim to provide tools that help you learn and retain information effectively.",
+			"introP3": "By accessing or using our app, you confirm that you have read, understood, and agreed to these terms. If you do not agree, we kindly ask you to refrain from using our services.",
+			"userRespTitle": "2. User Responsibilities",
+			"userRespP1": "As a user, you are responsible for maintaining the confidentiality of your account and ensuring all activities under your account comply with these terms.",
+			"userRespP2": "Our app is a tool to assist your learning, not a replacement for your efforts. Use it responsibly and as a complement to your study practices.",
+			"userRespP3": "You must not attempt to disrupt, attack, or undermine the integrity of the app or its services. Responsible usage in compliance with applicable laws and regulations is expected.",
+			"userRespP4": "While we strive to ensure the app's accuracy and reliability, it is your responsibility to verify the information and use it appropriately within your learning context.",
+			"userRespP5": "We encourage you to report any bugs, vulnerabilities, or issues you encounter to help us improve the app and maintain its security.",
+			"prohibitedTitle": "3. Prohibited Activities",
+			"prohibitedP1": "To maintain a safe and respectful environment, you agree not to misuse the app. This includes, but is not limited to, unauthorized access, data scraping, or distributing harmful content.",
+			"prohibitedP2": "You must not use the app to transmit inappropriate, offensive, or illegal content, such as hate speech, discriminatory remarks, or explicit material. Such actions may result in legal consequences.",
+			"prohibitedP3": "Uploading irrelevant or malicious content, such as spam or malware, is strictly prohibited. Additionally, any attempts to harm the app's functionality, such as overloading the system or exploiting vulnerabilities, are forbidden.",
+			"prohibitedP4": "Refrain from actions that could damage the app's reputation, such as spreading false information or making defamatory statements. We reserve the right to investigate and take appropriate action, including account suspension or termination, for any prohibited activities.",
+			"terminationTitle": "4. Termination",
+			"terminationP1": "We reserve the right to terminate your access to the app at any time for violations of these terms. Reasons for termination may include:",
+			"terminationL1": "Engaging in prohibited activities outlined in Section 3.",
+			"terminationL2": "Misusing the app for unauthorized purposes.",
+			"terminationL3": "Attempting to disrupt or harm the app's functionality.",
+			"terminationL4": "Uploading or distributing malicious or inappropriate content.",
+			"terminationL5": "Violating applicable laws or regulations while using the app.",
+			"terminationP2": "Termination may occur without prior notice, and we are not liable for any loss of data or access resulting from such actions.",
+			"contactUsP1": "If you have any questions or need further assistance, please contact us at "
+		}
+	},
+	"market": {
+		"title": "Market (Explore Public Decks)",
+		"deckNameLabel": "Name :",
+		"cardsSuffix": " cards",
+		"noPublicDecks": "No Public Decks Found"
+	},
+	"download": {
+		"title": "Download",
+		"description": "Download the latest version of Cardlisher for your platform.",
+		"altWindows": "Windows",
+		"buttonWindows": "Windows",
+		"altAndroid": "Android",
+		"buttonAndroid": "Android"
+	},
+	"components": {
+		"card": {
+			"clickToFlip": "Click to Flip",
+			"altPlayAudio": "Play Audio",
+			"definitionLabel": "Definition :",
+			"examplesLabel": "Examples:",
+			"synonymsLabel": "Synonyms:",
+			"antonymsLabel": "Antonyms:"
+		},
+		"deck": {
+			"previousButton": "Previous",
+			"nextButton": "Next"
+		},
+		"list": {
+			"altBackArrow": "Back",
+			"empty": {
+				"word": "No Cards",
+				"phonetic": "N/A",
+				"errorContent": "An error occurred. Please report to the developer."
+			}
+		},
+		"account": {
+			"signOutAlt": "Logout"
+		},
+		"questions": {
+			"skipButton": "Skip"
+		},
+		"questionWord": {
+			"questionLabel": "Question:",
+			"noDefinitions": "No definitions available for this word."
+		},
+		"server": {
+			"adddeck": {
+				"placeholderName": "Name",
+				"labelPublic": "Make this Deck to Public",
+				"submitButton": "Create Deck"
+			},
+			"deck": {
+				"loadingText": "Loading",
+				"closeButton": "Close",
+				"notFoundText": "Deck not found"
+			}
+		},
+		"spell": {
+			"previousDefButtonLabel": "Previous definition",
+			"nextDefButtonLabel": "Next definition",
+			"noDefinitions": "No definitions available."
+		}
+	},
+	"sharePage": {
+		"altMarked": "Marked",
+		"altCard": "Card",
+		"altQuestions": "Questions",
+		"altList": "List",
+		"altWordQuestions": "Word Questions",
+		"altRefresh": "Refresh",
+		"altMarkedList": "Marked List",
+		"addToCollectionButton": "Add to Collection",
+		"filterAll": "All",
+		"alertDeckAdded": "Deck Added to your collection",
+		"alertErrorPrefix": "Error: "
+	},
+	"tempword": {
+		"joyride": {
+			"step1Display": "This is the display area where all features will be shown.",
+			"step2MarkButton": "This is the mark button; click to add the word to your marked list.",
+			"step3FunctionList": "This is the function list where you can switch previews and limit word count.",
+			"step4DeckArea": "This is the card deck area, presented as flashcards.",
+			"step5QuestionsArea": "This is the questions area for practicing word spelling.",
+			"step6ListArea": "This is the list area where you can view all current words.",
+			"step7WordArea": "This is the word questions area to help you memorize meanings.",
+			"step8MarkedArea": "This is the marked area; here you can switch words to your marked words."
+		},
+		"altMarked": "Marked",
+		"altCard": "Card",
+		"altQuestions": "Questions",
+		"altList": "List",
+		"altWordQuestions": "Word Questions",
+		"altRefresh": "Refresh",
+		"altShowMarkedList": "Show Marked List",
+		"altSearchIcon": "Search Icon",
+		"filterAll": "All"
+	}
 }

@@ -27,7 +27,8 @@ export default function Home() {
 				<div className='mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 w-full max-w-6xl flex-grow'>
 					{/* Card: bg-white dark:bg-gray-800, border-gray-300 dark:border-gray-700 */}
 					<div className='bg-white dark:bg-gray-800 rounded-xl p-8 flex flex-col items-center transform transition-all duration-300 hover:scale-105 hover:shadow-xl border border-gray-300 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-400'>
-						<span className='text-5xl mb-4'>🗂️</span> {/* Emoji, no color change needed */}
+						<span className='text-5xl mb-4'>🗂️</span>{' '}
+						{/* Emoji, no color change needed */}
 						{/* Card Title: text-gray-800 dark:text-white */}
 						<p className='text-gray-800 dark:text-white font-semibold text-lg mb-2'>
 							{t('page.home.feature1.title')}

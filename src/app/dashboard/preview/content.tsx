@@ -39,38 +39,38 @@ export default function Content() {
 	const steps: Array<Step> = [
 		{
 			target: '.display-area',
-			content: t('dashboard.preview.joyride.step1DisplayArea'), // Translated
+			content: t('dashboard.preview.joyride.step1DisplayArea'),
 			placement: 'center',
 		},
 		{
 			target: '.mark-button',
-			content: t('dashboard.preview.joyride.step2MarkButton'), // Translated
+			content: t('dashboard.preview.joyride.step2MarkButton'),
 			placement: 'auto',
 		},
 		{
 			target: '.function-list',
-			content: t('dashboard.preview.joyride.step3FunctionList'), // Translated
+			content: t('dashboard.preview.joyride.step3FunctionList'),
 			placement: 'auto',
 		},
 		{
 			target: '.card-button',
-			content: t('dashboard.preview.joyride.step4CardButton'), // Translated
+			content: t('dashboard.preview.joyride.step4CardButton'),
 		},
 		{
 			target: '.questions-button',
-			content: t('dashboard.preview.joyride.step5QuestionsButton'), // Translated
+			content: t('dashboard.preview.joyride.step5QuestionsButton'),
 		},
 		{
 			target: '.list-button',
-			content: t('dashboard.preview.joyride.step6ListButton'), // Translated
+			content: t('dashboard.preview.joyride.step6ListButton'),
 		},
 		{
 			target: '.word-button',
-			content: t('dashboard.preview.joyride.step7WordButton'), // Translated
+			content: t('dashboard.preview.joyride.step7WordButton'),
 		},
 		{
 			target: '.deck-selector',
-			content: t('dashboard.preview.joyride.step8DeckSelector'), // Translated
+			content: t('dashboard.preview.joyride.step8DeckSelector'),
 		},
 	];
 
@@ -111,26 +111,29 @@ export default function Content() {
 		useState<UserSettingsCollection | null>(null);
 
 	const fetchCards = useCallback(
-		async (wordStartWithParam?: string, countParam = 15, deckidParam?: string) => { // Renamed params to avoid conflict
-			const startWith = wordStartWithParam || ''; // Use local param
-			const currentCount = countParam; // Use local param
-			const currentDeckId = deckidParam || selectedDeck; // Use local param or state
+		async (
+			wordStartWithParam?: string,
+			countParam = 15,
+			deckidParam?: string,
+		) => {
+			const startWith = wordStartWithParam || '';
+			const currentCount = countParam;
+			const currentDeckId = deckidParam || selectedDeck;
 
-			if (!currentDeckId) return; // Avoid fetching if no deck is selected
+			if (!currentDeckId) return;
 
 			const response = await fetch(
 				`/api/deck/cards?id=${currentDeckId}&count=${currentCount}&startWith=${startWith}`,
 			);
 			if (!response.ok) {
 				setCards([]);
-				return; // Added return
+				return;
 			}
 			const deckData = (await response.json()) as DeckCardsResponse;
 			setCards(deckData.cards);
 		},
-		[selectedDeck], // selectedDeck is a dependency
+		[selectedDeck],
 	);
-
 
 	useEffect(() => {
 		(async () => {
@@ -159,49 +162,34 @@ export default function Content() {
 		(async () => {
 			const response = await fetch('/api/deck');
 			if (!response.ok) {
-                            setDecks([]);
-                            return;
-                        }
+				setDecks([]);
+				return;
+			}
 			const fetchedDecks: DeckResponse[] = await response.json();
-			
+			let publicDecks: DeckResponse[] = [];
 			const publicDeckResponse = await fetch(`/api/deck/public`);
-                        if (!publicDeckResponse.ok) {
-                             // Handle error for public decks, maybe log it or set publicDecks to []
-                             setDecks(fetchedDecks); // Still set the user's decks
-                        } else {
-			    const publicDecks: DeckResponse[] = (await publicDeckResponse.json()).decks;
-                            setDecks([...fetchedDecks, ...publicDecks]);
-                        }
-
-			const availableDecks = [...fetchedDecks, ...(publicDecks || [])].filter(deck => deck.card_length !== 0);
-
+			if (!publicDeckResponse.ok) {
+				return setDecks(fetchedDecks);
+			}
+			publicDecks = (await publicDeckResponse.json()).decks;
+			const availableDecks = [...fetchedDecks, ...(publicDecks || [])].filter(
+				(deck) => deck.card_length !== 0,
+			);
 			const initialDeckId = deckid || availableDecks[0]?._id || '';
 			setSelectedDeck(initialDeckId);
-
-			if (initialDeckId) { // Fetch cards only if a deck is selected
-				const initialCount = 15;
-				const initialWordStartWith = '';
-				const responseCards = await fetch(
-					`/api/deck/cards?id=${initialDeckId}&count=${initialCount}&startWith=${initialWordStartWith}`,
-				);
-				if (!responseCards.ok) { // Changed response to responseCards
-					setCards([]);
-                                        return;
-				}
-				const deckData = (await responseCards.json()) as DeckCardsResponse;
-				setCards(deckData.cards);
-			} else {
-                            setCards([]); // No deck selected or available, set empty cards
-                        }
+			setDecks(availableDecks);
+			if (initialDeckId) {
+				fetchCards(wordStartWith, count, initialDeckId);
+			}
 		})();
-	}, [deckid]); // Removed fetchCards from dependency array as it's called directly
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [fetchCards]);
 
 	useEffect(() => {
 		if (selectedDeck) {
 			fetchCards(wordStartWith, count, selectedDeck); // Pass params explicitly
 		}
 	}, [selectedDeck, wordStartWith, count, fetchCards]);
-
 
 	return (
 		<div className='flex flex-row-reverse max-md:flex-col items-center justify-center h-full w-full bg-gray-100 dark:bg-gray-700 text-black dark:text-white'>
@@ -279,23 +267,29 @@ export default function Content() {
 							prev.filter((word) => word.word !== currentWord?.word),
 						);
 					} else {
-						if(currentWord) setMarkedWord((prev) => [...prev, currentWord!]);
+						if (currentWord) setMarkedWord((prev) => [...prev, currentWord!]);
 					}
 					setIsMarked((prev) => !prev);
 				}}
-				title={isMarked ? t('dashboard.preview.unmarkWord') : t('dashboard.preview.markWord')}
+				title={
+					isMarked
+						? t('dashboard.preview.unmarkWord')
+						: t('dashboard.preview.markWord')
+				}
 			>
 				<Image
 					src={`/icons/star${isMarked ? '-fill' : ''}.svg`}
 					width={24}
 					height={24}
-					alt={t('dashboard.preview.altMarked')} // Translated
+					alt={t('dashboard.preview.altMarked')}
 				></Image>
 			</button>
-			<div className='flex flex-col h-full bg-gray-200 dark:bg-gray-800 max-md:flex-row max-md:h-auto max-md:w-full max-md:justify-center keyboard:hidden function-list p-2 space-y-2 md:space-y-0 max-md:space-x-1'>
+			<div className='flex flex-col h-full bg-gray-200 dark:bg-gray-800 max-md:flex-row max-md:h-auto max-md:w-full max-md:justify-center keyboard:hidden function-list p-2 md:space-y-2 max-md:space-x-1'>
 				<button
 					className={`p-2 text-black dark:text-white bg-emerald-300 dark:bg-emerald-700 rounded-md ${
-						type === CardType.Card ? 'bg-opacity-70 dark:bg-opacity-70' : 'bg-opacity-30 dark:bg-opacity-30 hover:bg-opacity-50 dark:hover:bg-opacity-50'
+						type === CardType.Card
+							? 'bg-opacity-70 dark:bg-opacity-70'
+							: 'bg-opacity-30 dark:bg-opacity-30 hover:bg-opacity-50 dark:hover:bg-opacity-50'
 					} card-button`}
 					onClick={() => setType(CardType.Card)}
 					title={t('dashboard.preview.altCard')}
@@ -304,12 +298,14 @@ export default function Content() {
 						src={`/icons/card.svg`}
 						width={24}
 						height={24}
-						alt={t('dashboard.preview.altCard')} // Translated
+						alt={t('dashboard.preview.altCard')}
 					/>
 				</button>
 				<button
 					className={`p-2 text-black dark:text-white bg-emerald-300 dark:bg-emerald-700 rounded-md ${
-						type === CardType.Questions ? 'bg-opacity-70 dark:bg-opacity-70' : 'bg-opacity-30 dark:bg-opacity-30 hover:bg-opacity-50 dark:hover:bg-opacity-50'
+						type === CardType.Questions
+							? 'bg-opacity-70 dark:bg-opacity-70'
+							: 'bg-opacity-30 dark:bg-opacity-30 hover:bg-opacity-50 dark:hover:bg-opacity-50'
 					} questions-button`}
 					onClick={() => setType(CardType.Questions)}
 					title={t('dashboard.preview.altQuestions')}
@@ -318,12 +314,14 @@ export default function Content() {
 						src={`/icons/question-square.svg`}
 						width={24}
 						height={24}
-						alt={t('dashboard.preview.altQuestions')} // Translated
+						alt={t('dashboard.preview.altQuestions')}
 					/>
 				</button>
 				<button
 					className={`p-2 text-black dark:text-white bg-emerald-300 dark:bg-emerald-700 rounded-md ${
-						type === CardType.List ? 'bg-opacity-70 dark:bg-opacity-70' : 'bg-opacity-30 dark:bg-opacity-30 hover:bg-opacity-50 dark:hover:bg-opacity-50'
+						type === CardType.List
+							? 'bg-opacity-70 dark:bg-opacity-70'
+							: 'bg-opacity-30 dark:bg-opacity-30 hover:bg-opacity-50 dark:hover:bg-opacity-50'
 					} list-button`}
 					onClick={() => setType(CardType.List)}
 					title={t('dashboard.preview.altList')}
@@ -332,12 +330,14 @@ export default function Content() {
 						src={`/icons/bookmark.svg`}
 						width={24}
 						height={24}
-						alt={t('dashboard.preview.altList')} // Translated
+						alt={t('dashboard.preview.altList')}
 					/>
 				</button>
 				<button
 					className={`p-2 text-black dark:text-white bg-emerald-300 dark:bg-emerald-700 rounded-md ${
-						type === CardType.Word ? 'bg-opacity-70 dark:bg-opacity-70' : 'bg-opacity-30 dark:bg-opacity-30 hover:bg-opacity-50 dark:hover:bg-opacity-50'
+						type === CardType.Word
+							? 'bg-opacity-70 dark:bg-opacity-70'
+							: 'bg-opacity-30 dark:bg-opacity-30 hover:bg-opacity-50 dark:hover:bg-opacity-50'
 					} word-button`}
 					onClick={() => {
 						setType(CardType.Word);
@@ -349,7 +349,7 @@ export default function Content() {
 						src={`/icons/collection.svg`}
 						width={24}
 						height={24}
-						alt={t('dashboard.preview.altWordQuestions')} // Translated
+						alt={t('dashboard.preview.altWordQuestions')}
 					/>
 				</button>
 				<button
@@ -361,7 +361,7 @@ export default function Content() {
 						src={`/icons/refresh.svg`}
 						width={24}
 						height={24}
-						alt={t('dashboard.preview.altRefresh')} // Translated
+						alt={t('dashboard.preview.altRefresh')}
 					/>
 				</button>
 				<button
@@ -373,16 +373,18 @@ export default function Content() {
 						src={`/icons/star.svg`}
 						width={24}
 						height={24}
-						alt={t('dashboard.preview.altShowMarkedList')} // Translated
+						alt={t('dashboard.preview.altShowMarkedList')}
 					/>
 				</button>
-				<div className='flex items-center text-black dark:text-white'> {/* Wrapper for search icon and selects */}
+				<div className='flex flex-col items-center text-black dark:text-white max-md:flex-row'>
+					{' '}
+					{/* Wrapper for search icon and selects */}
 					<Image
 						src={`/icons/search.svg`}
 						width={24}
 						height={24}
-						alt={t('dashboard.preview.altSearchIcon')} // Translated
-						className="mx-1"
+						alt={t('dashboard.preview.altSearchIcon')}
+						className='mx-1'
 					/>
 					<select
 						className='text-black dark:text-white bg-sky-200 dark:bg-sky-600 bg-opacity-50 dark:bg-opacity-50 rounded-md m-1 p-1'
@@ -390,7 +392,7 @@ export default function Content() {
 						value={wordStartWith}
 						title={t('dashboard.preview.filterByLetter')}
 					>
-						<option value=''>{t('dashboard.preview.filterAll')}</option> {/* Translated */}
+						<option value=''>{t('dashboard.preview.filterAll')}</option>{' '}
 						{alphabet.map((letter) => (
 							<option
 								key={letter}
@@ -410,7 +412,7 @@ export default function Content() {
 							.fill(0)
 							.map((_, i) => i * 5)
 							.slice(1)
-							.map((c) => ( // Renamed count to c
+							.map((c) => (
 								<option
 									key={c}
 									value={c}
@@ -423,7 +425,9 @@ export default function Content() {
 			</div>
 			<div className='flex flex-col h-full bg-gray-200 dark:bg-gray-800 max-md:flex-row max-md:h-auto max-md:w-full max-md:justify-center px-2 keyboard:hidden deck-selector p-2 space-y-2 md:space-y-0'>
 				<div className='flex flex-row items-center justify-center flex-grow md:hidden text-black dark:text-white'>
-					<p className='self-center mr-2'>{t('dashboard.preview.selectedDeckLabel')}</p> {/* Translated */}
+					<p className='self-center mr-2'>
+						{t('dashboard.preview.selectedDeckLabel')}
+					</p>{' '}
 					<select
 						className='text-black dark:text-white bg-gray-200 dark:bg-gray-700 self-center max-w-full flex-grow border-none outline-none p-1 rounded'
 						onChange={(e) => {
@@ -442,13 +446,18 @@ export default function Content() {
 					</select>
 				</div>
 				<div className='flex-col items-center justify-start flex-grow hidden md:flex text-black dark:text-white'>
-					<p className='self-center pt-2 pb-1'>{t('dashboard.preview.selectedDeckLabel')}</p> {/* Translated */}
-					<div className='flex flex-col items-center text-black dark:text-white flex-grow w-full overflow-y-auto max-h-[calc(100%-2rem)]'> {/* Added max-height for scroll */}
+					<p className='self-center pt-2 pb-1'>
+						{t('dashboard.preview.selectedDeckLabel')}
+					</p>{' '}
+					<div className='flex flex-col items-center text-black dark:text-white flex-grow w-full overflow-y-auto max-h-[calc(100%-2rem)]'>
+						{' '}
 						{decks.map((deck) => (
 							<button
 								key={deck._id}
 								className={`p-2 m-1 text-black dark:text-white bg-emerald-300 dark:bg-emerald-700 rounded-md ${
-									selectedDeck === deck._id ? 'bg-opacity-70 dark:bg-opacity-70' : 'bg-opacity-30 dark:bg-opacity-30 hover:bg-opacity-50 dark:hover:bg-opacity-50'
+									selectedDeck === deck._id
+										? 'bg-opacity-70 dark:bg-opacity-70'
+										: 'bg-opacity-30 dark:bg-opacity-30 hover:bg-opacity-50 dark:hover:bg-opacity-50'
 								} w-full text-sm`}
 								onClick={() => {
 									setSelectedDeck(deck._id);

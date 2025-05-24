@@ -3,7 +3,7 @@ import { CardProps } from '@/type';
 import { useCallback, useEffect, useState, useTransition } from 'react';
 import Card from '@/components/card';
 import List from '@/components/list';
-import { useTranslation } from '@/context/LanguageContext'; // Added
+import { useTranslation } from '@/context/LanguageContext';
 
 enum Type {
 	card,
@@ -11,7 +11,7 @@ enum Type {
 }
 
 export default function Search() {
-	const { t } = useTranslation(); // Added
+	const { t } = useTranslation();
 	const [word, setWord] = useState<string>('');
 	const [card, setCard] = useState<CardProps | null>(null);
 	const [cards, setCards] = useState<CardProps[]>([]);
@@ -23,16 +23,15 @@ export default function Search() {
 			return;
 		}
 		startTransition(async () => {
-			// 'use client'; // Already a client component
 			const res = await fetch(`/api/word?word=${word}`);
 			const json = await res.json();
-			startTransition(() => { // This nested startTransition might be redundant or could be simplified
+			startTransition(() => {
 				if (!json || json.error) {
 					setCard(null);
 					setCards([]);
 					return;
 				}
-				const resultType = Array.isArray(json) ? Type.cards : Type.card; // Renamed to avoid conflict
+				const resultType = Array.isArray(json) ? Type.cards : Type.card;
 				setType(resultType);
 				if (resultType === Type.card) {
 					setCard(Object.assign(json, { flipped: true }));
@@ -62,7 +61,7 @@ export default function Search() {
 				<input
 					className='p-2 m-2 rounded-md text-black dark:text-white bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 focus:ring-blue-500 focus:border-blue-500'
 					type='text'
-					placeholder={t('dashboard.search.inputPlaceholder')} // Translated
+					placeholder={t('dashboard.search.inputPlaceholder')}
 					value={word}
 					onChange={(e) => setWord(e.target.value)}
 				/>
@@ -71,7 +70,7 @@ export default function Search() {
 					onClick={getWord}
 					disabled={isPending}
 				>
-					{t('dashboard.search.searchButton')} {/* Translated */}
+					{t('dashboard.search.searchButton')}
 				</button>
 			</div>
 			{(isPending && (
@@ -92,23 +91,26 @@ export default function Search() {
 							fill='currentFill'
 						/>
 					</svg>
-					<span className='sr-only'>{t('common.loadingSrOnly')}</span> {/* Translated */}
-					<p className='text-lg text-gray-500 dark:text-gray-400'>{t('common.loadingText')}</p>
+					<span className='sr-only'>{t('common.loadingSrOnly')}</span>
+					<p className='text-lg text-gray-500 dark:text-gray-400'>
+						{t('common.loadingText')}
+					</p>
 				</div>
 			)) ||
 				(type === Type.card && card && (
-					<div className="mt-4"> {/* Added margin for spacing */}
+					<div className='mt-4'>
 						<Card card={card} />
 					</div>
 				)) ||
 				(type === Type.cards && cards && cards.length > 0 && (
-					<div className="mt-4 w-full max-w-2xl"> {/* Added margin and width constraints */}
+					<div className='mt-4 w-full max-w-2xl'>
 						<List cards={cards} />
 					</div>
 				))}
-			{/* Added a message for no results */}
 			{!isPending && !card && (!cards || cards.length === 0) && word && (
-				<p className="mt-4 text-gray-500 dark:text-gray-400">{t('dashboard.search.noResults', { word: word })}</p>
+				<p className='mt-4 text-gray-500 dark:text-gray-400'>{`${t(
+					'dashboard.search.noResults',
+				)}`}</p>
 			)}
 		</div>
 	);

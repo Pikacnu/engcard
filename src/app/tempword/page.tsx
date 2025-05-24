@@ -20,14 +20,15 @@ import { useTranslation } from '@/context/LanguageContext'; // Added
 const alphabet = 'abcdefghijklmnopqrstuvwxyz'.split('');
 const optionCounts = 40;
 
-export default function TempWordPage() { // Renamed component for clarity
+export default function TempWordPage() {
+	// Renamed component for clarity
 	const { t } = useTranslation(); // Added
 	const [isGuideCard, setIsGuideCard] = useLocalStorage<boolean>(
 		'guideCard', // Consider renaming this localStorage key if it conflicts with dashboard's preview guide
 		false,
 	);
 	const [joyrideRun, setJoyrideRun] = useState(!isGuideCard);
-	
+
 	const steps: Array<Step> = [
 		{
 			target: '.display',
@@ -97,22 +98,27 @@ export default function TempWordPage() { // Renamed component for clarity
 	const [userSettings, setUserSettings] =
 		useState<UserSettingsCollection | null>(null);
 
-	const fetchCards = useCallback((wordStartWithParam?: string, countParam = 15) => { // Renamed
-		const startWith = wordStartWithParam || ''; // Use local param
-		const currentCount = countParam; // Use local param
-		console.log(startWith);
-		fetch(
-			`/api/cards?count=${currentCount}&deck_id=13${ // Assuming deck_id=13 is intentional for tempword
-				startWith.trim().length !== 0
-					? `&range=${startWith}-${startWith}`
-					: ''
-			}`,
-		)
-			.then((res) => res.json())
-			.then((data) => {
-				setCards(data);
-			});
-	}, []);
+	const fetchCards = useCallback(
+		(wordStartWithParam?: string, countParam = 15) => {
+			// Renamed
+			const startWith = wordStartWithParam || ''; // Use local param
+			const currentCount = countParam; // Use local param
+			console.log(startWith);
+			fetch(
+				`/api/cards?count=${currentCount}&deck_id=13${
+					// Assuming deck_id=13 is intentional for tempword
+					startWith.trim().length !== 0
+						? `&range=${startWith}-${startWith}`
+						: ''
+				}`,
+			)
+				.then((res) => res.json())
+				.then((data) => {
+					setCards(data);
+				});
+		},
+		[],
+	);
 
 	useEffect(() => {
 		(async () => {
@@ -151,7 +157,9 @@ export default function TempWordPage() { // Renamed component for clarity
 				run={joyrideRun}
 				callback={handleJoyrideCallback}
 			/>
-			<div className='display flex-grow flex items-center justify-center w-full p-4'> {/* Added p-4 for spacing */}
+			<div className='display flex-grow flex items-center justify-center w-full p-4'>
+				{' '}
+				{/* Added p-4 for spacing */}
 				{
 					{
 						[CardType.Card]: (
@@ -167,7 +175,7 @@ export default function TempWordPage() { // Renamed component for clarity
 							</div>
 						),
 						[CardType.Questions]: (
-							<div className="w-full max-w-2xl">
+							<div className='w-full max-w-2xl'>
 								<Questions
 									cards={cards}
 									onFinishClick={() => fetchCards(wordStartWith, count)}
@@ -177,11 +185,12 @@ export default function TempWordPage() { // Renamed component for clarity
 						),
 						[CardType.List]: (
 							<div className='max-md:w-[90vw] md:w-[70vw] lg:w-[60vw] xl:w-[50vw] flex items-center justify-center'>
-								<List cards={cards} /> {/* List has its own dark mode styling */}
+								<List cards={cards} />{' '}
+								{/* List has its own dark mode styling */}
 							</div>
 						),
 						[CardType.Word]: (
-							<div className="w-full max-w-lg">
+							<div className='w-full max-w-lg'>
 								<QuestionWord
 									cards={cards}
 									onFinishClick={() => fetchCards(wordStartWith, count)}
@@ -198,14 +207,20 @@ export default function TempWordPage() { // Renamed component for clarity
 				onClick={() => {
 					if (isMarked) {
 						setMarkedWord((prev) =>
-							prev.filter((word) => currentWord && word.word !== currentWord?.word),
+							prev.filter(
+								(word) => currentWord && word.word !== currentWord?.word,
+							),
 						);
 					} else {
-						if(currentWord) setMarkedWord((prev) => [...prev, currentWord!]);
+						if (currentWord) setMarkedWord((prev) => [...prev, currentWord!]);
 					}
 					setIsMarked((prev) => !prev);
 				}}
-                title={isMarked ? t('dashboard.preview.unmarkWord') : t('dashboard.preview.markWord')} // Reusing key
+				title={
+					isMarked
+						? t('dashboard.preview.unmarkWord')
+						: t('dashboard.preview.markWord')
+				} // Reusing key
 			>
 				<Image
 					src={`/icons/star${isMarked ? '-fill' : ''}.svg`}
@@ -217,10 +232,12 @@ export default function TempWordPage() { // Renamed component for clarity
 			<div className='absolute flex flex-col left-0 h-full bg-gray-200 dark:bg-gray-800 p-2 space-y-2 max-md:flex-row max-md:h-auto max-md:w-full max-md:bottom-0 max-md:left-0 max-md:justify-around max-md:space-y-0 max-md:p-1 keyboard:hidden function-list'>
 				<button
 					className={`p-2 text-black dark:text-white bg-emerald-300 dark:bg-emerald-700 rounded-md ${
-						type === CardType.Card ? 'bg-opacity-70 dark:bg-opacity-70' : 'bg-opacity-30 dark:bg-opacity-30 hover:bg-opacity-50 dark:hover:bg-opacity-50'
+						type === CardType.Card
+							? 'bg-opacity-70 dark:bg-opacity-70'
+							: 'bg-opacity-30 dark:bg-opacity-30 hover:bg-opacity-50 dark:hover:bg-opacity-50'
 					} deck`}
 					onClick={() => setType(CardType.Card)}
-                    title={t('tempword.altCard')}
+					title={t('tempword.altCard')}
 				>
 					<Image
 						src={`/icons/card.svg`}
@@ -231,10 +248,12 @@ export default function TempWordPage() { // Renamed component for clarity
 				</button>
 				<button
 					className={`p-2 text-black dark:text-white bg-emerald-300 dark:bg-emerald-700 rounded-md ${
-						type === CardType.Questions ? 'bg-opacity-70 dark:bg-opacity-70' : 'bg-opacity-30 dark:bg-opacity-30 hover:bg-opacity-50 dark:hover:bg-opacity-50'
+						type === CardType.Questions
+							? 'bg-opacity-70 dark:bg-opacity-70'
+							: 'bg-opacity-30 dark:bg-opacity-30 hover:bg-opacity-50 dark:hover:bg-opacity-50'
 					} questions`}
 					onClick={() => setType(CardType.Questions)}
-                    title={t('tempword.altQuestions')}
+					title={t('tempword.altQuestions')}
 				>
 					<Image
 						src={`/icons/question-square.svg`}
@@ -245,10 +264,12 @@ export default function TempWordPage() { // Renamed component for clarity
 				</button>
 				<button
 					className={`p-2 text-black dark:text-white bg-emerald-300 dark:bg-emerald-700 rounded-md ${
-						type === CardType.List ? 'bg-opacity-70 dark:bg-opacity-70' : 'bg-opacity-30 dark:bg-opacity-30 hover:bg-opacity-50 dark:hover:bg-opacity-50'
+						type === CardType.List
+							? 'bg-opacity-70 dark:bg-opacity-70'
+							: 'bg-opacity-30 dark:bg-opacity-30 hover:bg-opacity-50 dark:hover:bg-opacity-50'
 					} list`}
 					onClick={() => setType(CardType.List)}
-                    title={t('tempword.altList')}
+					title={t('tempword.altList')}
 				>
 					<Image
 						src={`/icons/bookmark.svg`}
@@ -259,13 +280,15 @@ export default function TempWordPage() { // Renamed component for clarity
 				</button>
 				<button
 					className={`p-2 text-black dark:text-white bg-emerald-300 dark:bg-emerald-700 rounded-md ${
-						type === CardType.Word ? 'bg-opacity-70 dark:bg-opacity-70' : 'bg-opacity-30 dark:bg-opacity-30 hover:bg-opacity-50 dark:hover:bg-opacity-50'
+						type === CardType.Word
+							? 'bg-opacity-70 dark:bg-opacity-70'
+							: 'bg-opacity-30 dark:bg-opacity-30 hover:bg-opacity-50 dark:hover:bg-opacity-50'
 					} word`}
 					onClick={() => {
 						fetchCards(wordStartWith, count * 4);
 						setType(CardType.Word);
 					}}
-                    title={t('tempword.altWordQuestions')}
+					title={t('tempword.altWordQuestions')}
 				>
 					<Image
 						src={`/icons/collection.svg`}
@@ -277,7 +300,7 @@ export default function TempWordPage() { // Renamed component for clarity
 				<button
 					onClick={() => fetchCards(wordStartWith, count)}
 					className='p-2 text-black dark:text-white bg-sky-300 dark:bg-sky-700 bg-opacity-30 dark:bg-opacity-30 rounded-md hover:bg-opacity-50 dark:hover:bg-opacity-50 transition-all delay-100'
-                    title={t('tempword.altRefresh')}
+					title={t('tempword.altRefresh')}
 				>
 					<Image
 						src={`/icons/refresh.svg`}
@@ -289,7 +312,7 @@ export default function TempWordPage() { // Renamed component for clarity
 				<button
 					onClick={() => setCards(markedWord)} // This might need adjustment if markedWord is empty
 					className='p-2 text-black dark:text-white bg-sky-300 dark:bg-sky-700 bg-opacity-30 dark:bg-opacity-30 rounded-md hover:bg-opacity-50 dark:hover:bg-opacity-50 transition-all delay-100 marked'
-                    title={t('tempword.altShowMarkedList')}
+					title={t('tempword.altShowMarkedList')}
 				>
 					<Image
 						src={`/icons/star.svg`}
@@ -298,50 +321,53 @@ export default function TempWordPage() { // Renamed component for clarity
 						alt={t('tempword.altShowMarkedList')} // Translated
 					/>
 				</button>
-                <div className="flex flex-col md:flex-row items-center text-black dark:text-white mt-auto md:mt-0"> {/* Wrapper for selects */}
-				    <Image
-					    src={`/icons/search.svg`}
-					    width={24}
-					    height={24}
-					    alt={t('tempword.altSearchIcon')} // Translated
-                        className="mx-1 hidden md:block" // Hidden on mobile where layout is tight
-				    />
-				    <select
-					    className='text-black dark:text-white bg-sky-200 dark:bg-sky-600 bg-opacity-50 dark:bg-opacity-50 rounded-md m-1 p-1 w-full md:w-auto'
-					    onChange={(e) => setWordStartWith(e.target.value)}
-					    value={wordStartWith}
-                        title={t('dashboard.preview.filterByLetter')} // Reusing key
-				    >
-					    <option value=''>{t('tempword.filterAll')}</option> {/* Translated */}
-					    {alphabet.map((letter) => (
-						    <option
-							    key={letter}
-							    value={letter}
-						    >
-							    {letter.toUpperCase()}
-						    </option>
-					    ))}
-				    </select>
-				    <select
-					    className='text-black dark:text-white bg-sky-200 dark:bg-sky-600 bg-opacity-50 dark:bg-opacity-50 rounded-md m-1 p-1 w-full md:w-auto'
-					    onChange={(e) => setCount(Number(e.target.value))}
-					    value={count}
-                        title={t('dashboard.preview.setWordCount')} // Reusing key
-				    >
-					    {Array(optionCounts + 1)
-						    .fill(0)
-						    .map((_, i) => i * 5)
-						    .slice(1)
-						    .map((c) => (
-							    <option
-								    key={c}
-								    value={c}
-							    >
-								    {c}
-							    </option>
-						    ))}
-				    </select>
-                </div>
+				<div className='flex flex-col max-md:flex-row items-center text-black dark:text-white mt-auto md:mt-0'>
+					{' '}
+					{/* Wrapper for selects */}
+					<Image
+						src={`/icons/search.svg`}
+						width={24}
+						height={24}
+						alt={t('tempword.altSearchIcon')} // Translated
+						className='mx-1 hidden md:block' // Hidden on mobile where layout is tight
+					/>
+					<select
+						className='text-black dark:text-white bg-sky-200 dark:bg-sky-600 bg-opacity-50 dark:bg-opacity-50 rounded-md m-1 p-1 w-full md:w-auto'
+						onChange={(e) => setWordStartWith(e.target.value)}
+						value={wordStartWith}
+						title={t('dashboard.preview.filterByLetter')} // Reusing key
+					>
+						<option value=''>{t('tempword.filterAll')}</option>{' '}
+						{/* Translated */}
+						{alphabet.map((letter) => (
+							<option
+								key={letter}
+								value={letter}
+							>
+								{letter.toUpperCase()}
+							</option>
+						))}
+					</select>
+					<select
+						className='text-black dark:text-white bg-sky-200 dark:bg-sky-600 bg-opacity-50 dark:bg-opacity-50 rounded-md m-1 p-1 w-full md:w-auto'
+						onChange={(e) => setCount(Number(e.target.value))}
+						value={count}
+						title={t('dashboard.preview.setWordCount')} // Reusing key
+					>
+						{Array(optionCounts + 1)
+							.fill(0)
+							.map((_, i) => i * 5)
+							.slice(1)
+							.map((c) => (
+								<option
+									key={c}
+									value={c}
+								>
+									{c}
+								</option>
+							))}
+					</select>
+				</div>
 			</div>
 		</div>
 	);
