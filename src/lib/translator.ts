@@ -1,5 +1,5 @@
-import en from '@/locales/en.json';
-import zhTw from '@/locales/zh-TW.json';
+import en from 'public/locales/en.json';
+import zhTw from 'public/locales/zh-TW.json';
 
 export function createTranslator(
 	lang: string,

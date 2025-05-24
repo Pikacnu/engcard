@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import { NavBar } from './../components/navbar'; // Assuming NavBar will also be themed
 import { useTranslation } from '@/context/LanguageContext';
+import { LanguageSwitcher } from './../components/client/LanguageSwitcher';
 
 export default function Home() {
 	const { t } = useTranslation();
@@ -69,7 +70,7 @@ export default function Home() {
 						</p>
 					</div>
 				</div>
-				<div className='flex flex-col sm:flex-row gap-4 mt-14 mb-20'>
+				<div className='flex flex-col sm:flex-row gap-4 mt-14 mb-8'>
 					{/* Get Started Button: Light mode: blue gradient, Dark mode: slightly different blue gradient or solid color */}
 					<Link
 						href='/dashboard'
@@ -86,6 +87,13 @@ export default function Home() {
 						{t('page.home.githubButton')}
 					</Link>
 				</div>
+			</div>
+			{/* Language Switcher */}
+			<div className='flex items-center gap-2 p-2 w-full max-w-md bg-white dark:bg-gray-800 shadow justify-center'>
+				<span className='text-gray-700 dark:text-gray-200'>
+					{t('dashboard.settings.languageLabel')}
+				</span>
+				<LanguageSwitcher></LanguageSwitcher>
 			</div>
 		</div>
 	);

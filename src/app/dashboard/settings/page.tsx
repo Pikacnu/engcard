@@ -165,7 +165,7 @@ export default function Settings() {
 								htmlFor='darkModeToggle'
 								className='text-gray-700 dark:text-gray-200'
 							>
-								{t('dashboard.settings.darkModeLabel')}
+								{t('dashboard.settings.themeToggle')}
 							</label>
 							<ThemeToggler />
 						</div>

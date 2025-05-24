@@ -6,6 +6,7 @@ import React, {
 	useState,
 	useEffect,
 	ReactNode,
+	useCallback,
 } from 'react';
 import useCookie from '@/hooks/cookie';
 import { useLocalStorage } from '@/hooks/localstorage';
@@ -34,38 +35,78 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
 	);
 	const [currentLocale, setCurrentLocale] = useState<string>('en'); // Default locale
 	const [loadedTranslations, setLoadedTranslations] = useState<Messages>({});
+	const [isLoadedCache, setIsLoadedCache] = useState(false);
+
+	const [LanguageDataCache, setLanguageDataCache] = useLocalStorage(
+		'LanguageDataCache',
+		['null', {} as Messages],
+	);
 
 	useEffect(() => {
 		const cookieLocale = getCookie('language');
 		if (cookieLocale) {
 			setCurrentLocale(cookieLocale);
 			setLanguageCache(cookieLocale);
+			setIsLoadedCache(true);
 			return;
 		}
-
 		setCurrentLocale(languageCache);
+		setIsLoadedCache(true);
 	}, [languageCache, getCookie, setCookie, setLanguageCache]);
 
+	const getLanguageData = useCallback(
+		async (locale: string) => {
+			try {
+				const res = await fetch(`/locales/${locale}.json`, {
+					headers: {
+						'Content-Type': 'application/json',
+					},
+				});
+				if (!res.ok) {
+					throw new Error(`Failed to fetch translations for ${locale}`);
+				}
+				const data = await res.json();
+				setLoadedTranslations(data);
+				setCookie('languageCache', locale, 30); // Set cookie for 30 days
+				setLanguageCache(locale);
+				setLanguageDataCache([locale, data]);
+			} catch (error) {
+				console.error(`Could not load translations for ${locale}`, error);
+			}
+		},
+		[setCookie, setLanguageCache, setLanguageDataCache],
+	);
 	useEffect(() => {
 		// Load translations when locale changes
 		const loadTranslations = async () => {
-			if (currentLocale) {
+			if (currentLocale && isLoadedCache) {
 				try {
-					const translations = await import(`@/locales/${currentLocale}.json`);
-					setLoadedTranslations(translations.default || translations);
+					const savedLang = LanguageDataCache[0] as unknown as string;
+					if (
+						savedLang === currentLocale &&
+						LanguageDataCache[1] !== null &&
+						LanguageDataCache[1] !== undefined &&
+						Object.keys(LanguageDataCache[1]).length > 0
+					) {
+						console.log(`Using cached translations for ${currentLocale}`);
+						return setLoadedTranslations(
+							LanguageDataCache[1] as unknown as Messages,
+						);
+					}
+					console.log(`Loading translations for ${currentLocale}`);
+					getLanguageData(currentLocale);
 				} catch (error) {
 					console.error(
 						`Could not load translations for ${currentLocale}`,
 						error,
 					);
 					// Fallback to English if current locale's translations are missing
-					const fallback = await import(`@/locales/en.json`);
-					setLoadedTranslations(fallback.default || fallback);
+					getLanguageData('en');
 				}
 			}
 		};
 		loadTranslations();
-	}, [currentLocale]);
+	}, [currentLocale, LanguageDataCache, getLanguageData, isLoadedCache]);
 
 	const translate = (key: string): string => {
 		const keys = key.split('.');

@@ -4,7 +4,7 @@ import { useTranslation } from '@/context/LanguageContext';
 import useCookie from '@/hooks/cookie';
 import { useLocalStorage } from '@/hooks/localstorage';
 
-export const LanguageSwitcher = () => {
+export const LanguageSwitcher = ({ short = false }: { short?: boolean }) => {
 	const { t, locale } = useTranslation(); // Assuming 'locale' is available from context
 
 	const { setCookie } = useCookie();
@@ -30,7 +30,7 @@ export const LanguageSwitcher = () => {
 										}`}
 				aria-pressed={locale === 'en'}
 			>
-				{t('common.language.english')}
+				{short ? t('common.language.english') : 'en'}
 			</button>
 			<button
 				onClick={() => changeLanguage('zh-TW')}
@@ -42,7 +42,7 @@ export const LanguageSwitcher = () => {
 										}`}
 				aria-pressed={locale === 'zh-TW'}
 			>
-				{t('common.language.traditionalChinese')}
+				{short ? t('common.language.chinese') : 'zh-TW'}
 			</button>
 		</div>
 	);

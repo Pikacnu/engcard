@@ -29,9 +29,9 @@
 	},
 	"page": {
 		"home": {
-			"title": "英文卡",
+			"title": "Cardlisher",
 			"subtitle": "更有效地學習英文。",
-			"description": "英文卡是一款專為詞彙學習設計的閃卡應用程式，具有圖像識別和互動練習功能，助您高效記憶和複習英文單字。",
+			"description": "Cardlisher是一款專為詞彙學習設計的閃卡應用程式，具有圖像識別和互動練習功能，助您高效記憶和複習英文單字。",
 			"feature1": {
 				"title": "卡片管理",
 				"description": "創建、編輯和刪除閃卡，靈活管理您的學習內容。"
