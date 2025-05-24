@@ -12,12 +12,14 @@ import Joyride, {
 	Step,
 } from 'react-joyride';
 import { useLocalStorage } from '@/hooks/localstorage';
+import { useTranslation } from '@/context/LanguageContext';
 
 export default function DashBoardLayout({
 	children,
 }: {
 	children: React.ReactNode;
 }) {
+	const { t } = useTranslation();
 	const [isBiMenuOpen, setIsBiMenuOpen] = useState(false);
 	const [isGuideDashboard, setIsGuideDashboard] = useLocalStorage<boolean>(
 		'guideDashboard',
@@ -28,53 +30,53 @@ export default function DashBoardLayout({
 	const steps: Array<Step> = [
 		{
 			target: '.content-area',
-			content: '這裡將顯示您所選功能的內容',
+			content: t('dashboard.joyride.step1Content'),
 			placement: 'center',
 		},
 		{
 			target: '.main-nav',
-			content: '這裡是主導航欄，您可以通過它訪問各個功能',
+			content: t('dashboard.joyride.step2Content'),
 			placement: 'auto',
 		},
 		{
 			target: '.home-link',
-			content: '點擊返回儀表板首頁',
+			content: t('dashboard.joyride.step3Content'),
 		},
 		{
 			target: '.search-link',
-			content: '搜索功能，可以查找單詞或牌組',
+			content: t('dashboard.joyride.step4Content'),
 		},
 		{
 			target: '.deck-link',
-			content: '卡片牌組管理區域',
+			content: t('dashboard.joyride.step5Content'),
 		},
 		{
 			target: '.preview-link',
-			content: '預覽學習內容',
+			content: t('dashboard.joyride.step6Content'),
 		},
 		{
 			target: '.chat-link',
-			content: '聊天功能區',
+			content: t('dashboard.joyride.step7Content'),
 		},
 		{
 			target: '.market-link',
-			content: '市場功能，可以獲取更多學習資源',
+			content: t('dashboard.joyride.step8Content'),
 		},
 		{
 			target: '.more-options',
-			content: '更多選項，包含設置和登出功能',
+			content: t('dashboard.joyride.step9Content'),
 		},
 		{
 			target: '.tempword',
-			content: '部份 高中 7000 單字',
+			content: t('dashboard.joyride.step10Content'),
 		},
 		{
 			target: '.logout',
-			content: '登出功能，點擊後將退出當前帳號',
+			content: t('dashboard.joyride.step11Content'),
 		},
 		{
 			target: '.settings',
-			content: '設置功能，您可以在這裡調整應用程序的設置',
+			content: t('dashboard.joyride.step12Content'),
 		},
 	];
 
@@ -97,7 +99,8 @@ export default function DashBoardLayout({
 	};
 
 	return (
-		<div className='flex flex-row max-md:flex-col-reverse w-full h-dvh bg-gray-700 relative dashboard-layout'>
+		// Outer div: bg-gray-100 dark:bg-gray-700
+		<div className='flex flex-row max-md:flex-col-reverse w-full h-dvh bg-gray-100 dark:bg-gray-700 relative dashboard-layout'>
 			<Joyride
 				steps={steps}
 				continuous
@@ -108,16 +111,19 @@ export default function DashBoardLayout({
 				disableCloseOnEsc
 				run={joyrideRun}
 				callback={handleJoyrideCallback}
+				// Assuming Joyride styles are handled internally or will be addressed separately if they don't adapt
 			/>
 			<SessionProvider>
-				<div className='flex flex-col max-md:flex-row h-full bg-gray-50 md:left-0 md:top-0 max-md:h-16 max-md:bottom-0 max-md:w-full justify-between text-black items-center keyboard:hidden main-nav'>
+				{/* Navbar div (main-nav): bg-white dark:bg-gray-800 text-black dark:text-white */}
+				<div className='flex flex-col max-md:flex-row h-full bg-white dark:bg-gray-800 text-black dark:text-white md:left-0 md:top-0 max-md:h-16 max-md:bottom-0 max-md:w-full justify-between items-center keyboard:hidden main-nav'>
 					{isBiMenuOpen ? (
-						<div className='*:bg-emerald-600 *:bg-opacity-40 *:p-2 *:m-2 *:hover:bg-opacity-40 *:rounded-md *:text-center flex flex-col max-md:flex-row'>
+						// Buttons: bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-700 dark:bg-opacity-40 dark:hover:bg-emerald-600
+						<div className='*:bg-emerald-100 *:hover:bg-emerald-200 dark:*:bg-emerald-700 dark:*:bg-opacity-40 dark:*:hover:bg-emerald-600 *:p-2 *:m-2 *:rounded-md *:text-center flex flex-col max-md:flex-row'>
 							<Link
 								href={'/tempword'}
 								className='w-10 break-words max-md:w-auto max-md:h-10 tempword'
 							>
-								7000單
+								{t('dashboard.navigation.sevenThousandWords')}
 							</Link>
 							<button
 								onClick={() => redirect('/auth/logout')}
@@ -125,10 +131,10 @@ export default function DashBoardLayout({
 							>
 								<Image
 									src='/icons/box-arrow-in-left.svg'
-									alt='logout'
+									alt={t('dashboard.navigation.altLogout')}
 									width={24}
 									height={24}
-									className='cursor-pointer'
+									className='cursor-pointer' // Icon color should adapt if parent text color changes and SVG uses currentColor
 								></Image>
 							</button>
 							<Link
@@ -137,7 +143,7 @@ export default function DashBoardLayout({
 							>
 								<Image
 									src='/icons/gear.svg'
-									alt='settings'
+									alt={t('dashboard.navigation.altSettings')}
 									width={24}
 									height={24}
 									className='cursor-pointer'
@@ -149,7 +155,7 @@ export default function DashBoardLayout({
 							>
 								<Image
 									src='/icons/more.svg'
-									alt='menu'
+									alt={t('dashboard.navigation.altMenu')}
 									width={24}
 									height={24}
 									className='cursor-pointer'
@@ -157,14 +163,14 @@ export default function DashBoardLayout({
 							</button>
 						</div>
 					) : (
-						<div className='*:bg-emerald-600 *:bg-opacity-40 *:p-2 *:m-2 *:hover:bg-opacity-40 *:rounded-md *:text-center flex flex-col max-md:flex-row'>
+						<div className='*:bg-emerald-100 *:hover:bg-emerald-200 dark:*:bg-emerald-700 dark:*:bg-opacity-40 dark:*:hover:bg-emerald-600 *:p-2 *:m-2 *:rounded-md *:text-center flex flex-col max-md:flex-row'>
 							<Link
 								href='/dashboard'
 								className='home-link'
 							>
 								<Image
 									src='/icons/home.svg'
-									alt='logo'
+									alt={t('dashboard.navigation.altLogo')}
 									width={24}
 									height={24}
 									className='cursor-pointer'
@@ -176,7 +182,7 @@ export default function DashBoardLayout({
 							>
 								<Image
 									src='/icons/search.svg'
-									alt='search'
+									alt={t('dashboard.navigation.altSearch')}
 									width={24}
 									height={24}
 									className='cursor-pointer'
@@ -188,7 +194,7 @@ export default function DashBoardLayout({
 							>
 								<Image
 									src='/icons/card.svg'
-									alt='deck'
+									alt={t('dashboard.navigation.altDeck')}
 									width={24}
 									height={24}
 									className='cursor-pointer'
@@ -200,7 +206,7 @@ export default function DashBoardLayout({
 							>
 								<Image
 									src='/icons/file-play.svg'
-									alt='preview'
+									alt={t('dashboard.navigation.altPreview')}
 									width={24}
 									height={24}
 									className='cursor-pointer'
@@ -212,7 +218,7 @@ export default function DashBoardLayout({
 							>
 								<Image
 									src='/icons/chat.svg'
-									alt='chat'
+									alt={t('dashboard.navigation.altChat')}
 									width={24}
 									height={24}
 									className='cursor-pointer'
@@ -224,7 +230,7 @@ export default function DashBoardLayout({
 							>
 								<Image
 									src='/icons/shop.svg'
-									alt='market'
+									alt={t('dashboard.navigation.altMarket')}
 									width={24}
 									height={24}
 									className='cursor-pointer'
@@ -236,7 +242,7 @@ export default function DashBoardLayout({
 							>
 								<Image
 									src='/icons/more.svg'
-									alt='menu'
+									alt={t('dashboard.navigation.altMenu')}
 									width={24}
 									height={24}
 									className='cursor-pointer'
@@ -245,6 +251,7 @@ export default function DashBoardLayout({
 						</div>
 					)}
 				</div>
+				{/* The content area should inherit its background from the outer div's dark:bg-gray-700 */}
 				<div className='flex-grow w-full overflow-auto h-full relative content-area'>
 					{children}
 				</div>

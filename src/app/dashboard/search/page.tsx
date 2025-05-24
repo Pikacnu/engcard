@@ -3,6 +3,7 @@ import { CardProps } from '@/type';
 import { useCallback, useEffect, useState, useTransition } from 'react';
 import Card from '@/components/card';
 import List from '@/components/list';
+import { useTranslation } from '@/context/LanguageContext'; // Added
 
 enum Type {
 	card,
@@ -10,6 +11,7 @@ enum Type {
 }
 
 export default function Search() {
+	const { t } = useTranslation(); // Added
 	const [word, setWord] = useState<string>('');
 	const [card, setCard] = useState<CardProps | null>(null);
 	const [cards, setCards] = useState<CardProps[]>([]);
@@ -21,18 +23,18 @@ export default function Search() {
 			return;
 		}
 		startTransition(async () => {
-			'use client';
+			// 'use client'; // Already a client component
 			const res = await fetch(`/api/word?word=${word}`);
 			const json = await res.json();
-			startTransition(() => {
+			startTransition(() => { // This nested startTransition might be redundant or could be simplified
 				if (!json || json.error) {
 					setCard(null);
 					setCards([]);
 					return;
 				}
-				const type = Array.isArray(json) ? Type.cards : Type.card;
-				setType(type);
-				if (type === Type.card) {
+				const resultType = Array.isArray(json) ? Type.cards : Type.card; // Renamed to avoid conflict
+				setType(resultType);
+				if (resultType === Type.card) {
 					setCard(Object.assign(json, { flipped: true }));
 				} else {
 					console.log(json);
@@ -55,27 +57,28 @@ export default function Search() {
 	}, [word, getWord]);
 
 	return (
-		<div className='flex flex-col items-center justify-center h-full bg-gray-700 w-full'>
-			<div className='flex flex-row'>
+		<div className='flex flex-col items-center justify-start pt-10 h-full bg-gray-100 dark:bg-gray-700 w-full text-black dark:text-white'>
+			<div className='flex flex-row mb-4'>
 				<input
-					className='p-2 m-2 rounded-md text-black'
+					className='p-2 m-2 rounded-md text-black dark:text-white bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 focus:ring-blue-500 focus:border-blue-500'
 					type='text'
-					placeholder='Type a word to search'
+					placeholder={t('dashboard.search.inputPlaceholder')} // Translated
 					value={word}
 					onChange={(e) => setWord(e.target.value)}
 				/>
 				<button
-					className=' md:hidden p-2 m-2 rounded-md bg-blue-600 text-white'
+					className='md:hidden p-2 m-2 rounded-md bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-500 text-white'
 					onClick={getWord}
+					disabled={isPending}
 				>
-					Search
+					{t('dashboard.search.searchButton')} {/* Translated */}
 				</button>
 			</div>
 			{(isPending && (
-				<div className='flex items-center justify-center h-[80vh]'>
+				<div className='flex flex-col items-center justify-center h-auto'>
 					<svg
 						aria-hidden='true'
-						className='w-16 h-16 animate-spin text-gray-600 fill-blue-600'
+						className='w-16 h-16 animate-spin text-gray-500 dark:text-gray-400 fill-blue-600'
 						viewBox='0 0 100 101'
 						fill='none'
 						xmlns='http://www.w3.org/2000/svg'
@@ -89,13 +92,24 @@ export default function Search() {
 							fill='currentFill'
 						/>
 					</svg>
-					<span className='sr-only'>Loading...</span>
+					<span className='sr-only'>{t('common.loadingSrOnly')}</span> {/* Translated */}
+					<p className='text-lg text-gray-500 dark:text-gray-400'>{t('common.loadingText')}</p>
 				</div>
 			)) ||
-				(type === Type.card && card && <Card card={card} />) ||
+				(type === Type.card && card && (
+					<div className="mt-4"> {/* Added margin for spacing */}
+						<Card card={card} />
+					</div>
+				)) ||
 				(type === Type.cards && cards && cards.length > 0 && (
-					<List cards={cards} />
+					<div className="mt-4 w-full max-w-2xl"> {/* Added margin and width constraints */}
+						<List cards={cards} />
+					</div>
 				))}
+			{/* Added a message for no results */}
+			{!isPending && !card && (!cards || cards.length === 0) && word && (
+				<p className="mt-4 text-gray-500 dark:text-gray-400">{t('dashboard.search.noResults', { word: word })}</p>
+			)}
 		</div>
 	);
 }

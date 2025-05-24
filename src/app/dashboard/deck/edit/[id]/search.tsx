@@ -3,6 +3,7 @@ import { CardProps } from '@/type';
 import { useCallback, useEffect, useState, useTransition } from 'react';
 import Card from '@/components/card';
 import { addCardFromDB } from '@/actions/deck';
+import { useTranslation } from '@/context/LanguageContext'; // Added
 
 type PageProps = {
 	deckid?: string;
@@ -10,6 +11,7 @@ type PageProps = {
 };
 
 export default function Search({ deckid, onAdd }: PageProps) {
+	const { t } = useTranslation(); // Added
 	const [word, setWord] = useState<string>('');
 	const [card, setCard] = useState<CardProps | null>(null);
 	const [isPending, startTransition] = useTransition();
@@ -19,7 +21,7 @@ export default function Search({ deckid, onAdd }: PageProps) {
 			return;
 		}
 		startTransition(async () => {
-			'use client';
+			// 'use client'; // Already a client component
 			const res = await fetch(`/api/word?word=${word}`);
 			console.log(res);
 			const json = await res.json();
@@ -46,41 +48,43 @@ export default function Search({ deckid, onAdd }: PageProps) {
 	}, [word, getWord]);
 
 	return (
-		<div className='flex flex-col items-center justify-center h-screen bg-gray-700 w-full'>
-			<div className='flex flex-row max-md:text-md'>
+		<div className='flex flex-col items-center justify-start pt-5 h-full bg-white dark:bg-gray-800 w-full text-black dark:text-white rounded-lg shadow'>
+			<div className='flex flex-row max-md:text-md mb-4'>
 				<input
-					className='p-2 m-2 rounded-md text-black'
+					className='p-2 m-2 rounded-md text-black dark:text-white bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 focus:ring-blue-500 focus:border-blue-500'
 					type='text'
 					value={word}
-					placeholder='Type a word to search'
+					placeholder={t('dashboard.deckEdit.search.inputPlaceholder')} // Translated
 					onChange={(e) => setWord(e.target.value)}
 				/>
 				<button
-					className=' md:hidden p-2 m-2 rounded-md bg-blue-600 text-white'
+					className='md:hidden p-2 m-2 rounded-md bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-500 text-white'
 					onClick={getWord}
+					disabled={isPending}
 				>
-					Search
+					{t('dashboard.deckEdit.search.searchButton')} {/* Translated */}
 				</button>
 				{deckid && (
 					<button
-						className='p-2 m-2 rounded-md bg-green-600 text-white'
+						className='p-2 m-2 rounded-md bg-green-500 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-500 text-white'
 						onClick={async () => {
+							if (!word || !card) return; // Ensure word and card exist before adding
 							await addCardFromDB.bind(null, deckid, word)();
-
 							if (onAdd) {
 								onAdd();
 							}
 						}}
+						disabled={isPending || !card} // Disable if no card to add
 					>
-						Add
+						{t('dashboard.deckEdit.search.addButton')} {/* Translated */}
 					</button>
 				)}
 			</div>
 			{(isPending && (
-				<div className='flex items-center justify-center h-[80vh]'>
+				<div className='flex flex-col items-center justify-center h-auto'>
 					<svg
 						aria-hidden='true'
-						className='w-16 h-16 animate-spin text-gray-600 fill-blue-600'
+						className='w-16 h-16 animate-spin text-gray-500 dark:text-gray-400 fill-blue-600'
 						viewBox='0 0 100 101'
 						fill='none'
 						xmlns='http://www.w3.org/2000/svg'
@@ -94,11 +98,12 @@ export default function Search({ deckid, onAdd }: PageProps) {
 							fill='currentFill'
 						/>
 					</svg>
-					<span className='sr-only'>Loading...</span>
+					<span className='sr-only'>{t('common.loadingSrOnly')}</span> {/* Translated */}
+					<p className='text-lg text-gray-500 dark:text-gray-400'>{t('common.loadingText')}</p>
 				</div>
 			)) ||
 				(card && (
-					<div className='flex flex-col items-center justify-center h-[80vh] min-w-1/5 max-w-4/5 w-3/5 max-md:min-w-[90vw]'>
+					<div className='flex flex-col items-center justify-center h-auto min-w-1/5 max-w-4/5 w-3/5 max-md:min-w-[90vw] mt-4'>
 						<Card card={card} />
 					</div>
 				))}
