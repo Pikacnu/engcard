@@ -87,7 +87,7 @@ async function newWord(word: string): Promise<CardProps | null> {
 		getWordFromEnWordNetAPI(word),
 	];
 	const sourceDataList = (await Promise.all(sourceDataPromiseList)).filter(
-		(data) => data !== null,
+		(data) => data !== null && data !== undefined,
 	) as CardProps[];
 	if (sourceDataList.length < 1) {
 		return await getAIResponse(word);

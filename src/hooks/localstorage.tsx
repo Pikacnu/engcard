@@ -1,13 +1,40 @@
 import { useState } from 'react';
 
-export function useLocalStorage<T>(key: string, initialValue: T) {
+export function useLocalStorage<T>(
+	key: string,
+	initialValue: T,
+	forceType?: string,
+) {
 	const [storedValue, setStoredValue] = useState<T>(() => {
 		if (typeof window === 'undefined') {
 			return initialValue;
 		}
 		try {
 			const item = window.localStorage.getItem(key);
-			return item ? JSON.parse(item) : initialValue;
+			const type = forceType || typeof initialValue;
+			switch (type) {
+				case 'object':
+					if (item === null) {
+						return initialValue;
+					}
+					return item ? JSON.parse(item) : initialValue;
+
+				case 'string':
+					if (item === null) {
+						return '';
+					}
+					return item || '';
+				case 'number':
+					if (item === null) {
+						return 0;
+					}
+					return item ? Number(item) : 0;
+				case 'boolean':
+					if (item === null) {
+						return false;
+					}
+					return item ? JSON.parse(item) : false;
+			}
 		} catch (error) {
 			console.error(`Error reading localStorage key “${key}”:`, error);
 			return initialValue;

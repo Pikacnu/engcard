@@ -1,61 +1,33 @@
-'use client'; // Added
+'use server';
 import { getRecentlyHistory, getRecentHotWords } from '@/actions/history';
 import QuickReview from './speedReview';
-import { Suspense, useEffect, useState } from 'react'; // useEffect and useState might be needed if data fetching moves client-side
-import { useTranslation } from '@/context/LanguageContext'; // Added
+import { Suspense } from 'react';
+import { createTranslator } from '@/lib/translator';
+import { cookies } from 'next/headers';
 
 const maxWords = 5;
 
-// Define types for the data if not already defined elsewhere
-interface HistoryItem {
-	_id: string; // Or appropriate type
-	words: string[];
-	date: string; // Or Date object
-}
-
-interface HotWordItem {
-	word: string;
-	count: number;
-}
-
-export default function DashBoard() {
-	const { t } = useTranslation(); // Added
-	const [recentHistory, setRecentHistory] = useState<HistoryItem[]>([]);
-	const [hotWords, setHotWords] = useState<HotWordItem[]>([]);
-
-	// Data fetching should ideally be done in a useEffect for client components
-	// or passed as props if fetched by a server component parent.
-	// For this refactor, we'll assume it might be adapted to client-side fetching or props.
-	// The original 'use server' and direct async fetching is not compatible with 'use client'
-	// without further architectural changes. For now, we'll populate with example data
-	// or ensure the original data fetching methods are called appropriately (e.g. in useEffect).
-
-	useEffect(() => {
-		async function fetchData() {
-			const historyData = await getRecentlyHistory();
-			setRecentHistory(historyData as HistoryItem[]); // Added type assertion
-
-			const hotWordData = await getRecentHotWords(5);
-			const processedHotWords = hotWordData
-				.map((word) => {
-					const count = word.count;
-					const words = word._id.map((w: string) => ({
-						word: w,
-						count,
-					}));
-					return [...words];
-				})
-				.flat()
-				.sort((a, b) => b.count - a.count)
-				.slice(0, 5);
-			setHotWords(processedHotWords as HotWordItem[]); // Added type assertion
-		}
-		fetchData();
-	}, []);
-
+export default async function DashBoard() {
+	const cookie = await cookies();
+	const lang = cookie.get('language')?.value || 'zh-TW';
+	const t = createTranslator(lang); // 伺服器端翻譯
+	const recentHistory = await getRecentlyHistory();
+	const hotWord = await getRecentHotWords(5);
+	const hotWords = hotWord
+		.map((word) => {
+			const count = word.count;
+			const words = word._id.map((w: string) => ({
+				word: w,
+				count,
+			}));
+			return [...words];
+		})
+		.flat()
+		.sort((a, b) => b.count - a.count)
+		.slice(0, 5);
 
 	return (
-		<div className='h-full p-4 flex flex-row overflow-auto max-md:flex-col items-center dark:bg-gray-700'>
+		<div className='h-full p-4 flex flex-row overflow-auto max-md:flex-col items-center dark:bg-gray-700 gap-8'>
 			<div className='w-full max-w-4xl flex flex-col space-y-4 *:flex-grow max-h-[100vh]'>
 				<div className='mb-6 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg text-black dark:text-white'>
 					<input
@@ -68,7 +40,7 @@ export default function DashBoard() {
 							{t('dashboard.home.toggleRecentHistory')}
 						</span>
 					</label>
-					<div className=' max-md:hidden peer-checked:block'>
+					<div className='max-md:hidden peer-checked:block'>
 						<h2 className='text-2xl font-semibold mb-4 text-gray-800 dark:text-gray-100'>
 							{t('dashboard.home.recentHistoryTitle')}
 						</h2>
@@ -76,14 +48,14 @@ export default function DashBoard() {
 							{recentHistory.length > 0 ? (
 								recentHistory.map((item, index) => (
 									<li
-										key={item._id || index} // Use a unique key like item._id if available
+										key={index}
 										className='text-gray-700 dark:text-gray-300 flex-wrap flex items-center'
 									>
 										<span className='font-medium flex flex-wrap gap-2'>
 											{item.words.slice(0, maxWords).map((word, i2) => (
 												<span
 													key={word + index.toString() + i2.toString()}
-													className='p-2 rounded-lg bg-blue-200 dark:bg-blue-700 bg-opacity-40 mx-2'
+													className='p-2 rounded-lg bg-blue-700 dark:bg-blue-800 bg-opacity-40 dark:bg-opacity-60 mx-2 text-black dark:text-white'
 												>
 													{word}
 												</span>
@@ -97,7 +69,9 @@ export default function DashBoard() {
 									</li>
 								))
 							) : (
-								<li className='text-gray-500 dark:text-gray-400'>{t('dashboard.home.noRecentHistory')}</li>
+								<li className='text-gray-500 dark:text-gray-400'>
+									{t('dashboard.home.noRecentHistory')}
+								</li>
 							)}
 						</ul>
 					</div>
@@ -113,7 +87,7 @@ export default function DashBoard() {
 							{t('dashboard.home.toggleHotWords')}
 						</span>
 					</label>
-					<div className=' max-md:hidden peer-checked:block'>
+					<div className='max-md:hidden peer-checked:block'>
 						<h2 className='text-2xl font-semibold mb-4 text-gray-800 dark:text-gray-100'>
 							{t('dashboard.home.hotWordsTitle')}
 						</h2>
@@ -135,30 +109,38 @@ export default function DashBoard() {
 								<tbody>
 									{hotWords.map((word, index) => (
 										<tr
-											key={index} // Consider a more stable key if word.word can repeat
+											key={index}
 											className='hover:bg-gray-50 dark:hover:bg-gray-600'
 										>
 											<td className='border border-gray-200 dark:border-gray-600 px-4 py-2'>
 												#{index + 1}
 											</td>
-											<td className='border border-gray-200 dark:border-gray-600 px-4 py-2 text-blue-600 dark:text-blue-400'>
+											<td className='border border-gray-200 dark:border-gray-600 px-4 py-2 text-blue-700 dark:text-blue-400'>
 												{word.word}
 											</td>
 											<td className='border border-gray-200 dark:border-gray-600 px-4 py-2'>
-												{word.count}{t('dashboard.home.countSuffix')}
+												{word.count} {t('dashboard.home.countSuffix')}
 											</td>
 										</tr>
 									))}
 								</tbody>
 							</table>
 						) : (
-							<div className='text-gray-500 dark:text-gray-400'>{t('dashboard.home.noHotWords')}</div>
+							<div className='text-gray-500 dark:text-gray-400'>
+								{t('dashboard.home.noHotWords')}
+							</div>
 						)}
 					</div>
 				</div>
 			</div>
 			<div className='w-[40vw] *:[h-1/2] flex flex-col space-y-4 *:flex-grow *:overflow-auto items-center'>
-				<Suspense fallback={<div className="text-black dark:text-white">{t('common.loadingText')}</div>}>
+				<Suspense
+					fallback={
+						<div className='text-black dark:text-white'>
+							{t('common.loadingText')}
+						</div>
+					}
+				>
 					<QuickReview></QuickReview>
 				</Suspense>
 			</div>

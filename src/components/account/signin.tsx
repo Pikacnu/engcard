@@ -21,7 +21,7 @@ export default function SignInButton({
 		buttonText = t('auth.signInGoogle');
 	} else {
 		// Fallback or generic text if provider is something else or for future providers
-		buttonText = t('auth.signInWith', { provider: provider });
+		buttonText = t('auth.signInWith');
 	}
 
 	return (
@@ -30,7 +30,8 @@ export default function SignInButton({
 		<button
 			onClick={async () => {
 				// No 'use server' needed here as signIn is a client-side function
-				await signIn(provider.toLowerCase(), { // provider name for next-auth is typically lowercase
+				await signIn(provider.toLowerCase(), {
+					// provider name for next-auth is typically lowercase
 					redirectTo: '/dashboard',
 				});
 			}}

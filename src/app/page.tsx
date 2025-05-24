@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import { NavBar } from './../components/navbar'; // Assuming NavBar will also be themed
 import { useTranslation } from '@/context/LanguageContext';
+import { LanguageSwitcher } from './../components/client/LanguageSwitcher';
 
 export default function Home() {
 	const { t } = useTranslation();
@@ -27,7 +28,8 @@ export default function Home() {
 				<div className='mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 w-full max-w-6xl flex-grow'>
 					{/* Card: bg-white dark:bg-gray-800, border-gray-300 dark:border-gray-700 */}
 					<div className='bg-white dark:bg-gray-800 rounded-xl p-8 flex flex-col items-center transform transition-all duration-300 hover:scale-105 hover:shadow-xl border border-gray-300 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-400'>
-						<span className='text-5xl mb-4'>🗂️</span> {/* Emoji, no color change needed */}
+						<span className='text-5xl mb-4'>🗂️</span>{' '}
+						{/* Emoji, no color change needed */}
 						{/* Card Title: text-gray-800 dark:text-white */}
 						<p className='text-gray-800 dark:text-white font-semibold text-lg mb-2'>
 							{t('page.home.feature1.title')}
@@ -68,7 +70,7 @@ export default function Home() {
 						</p>
 					</div>
 				</div>
-				<div className='flex flex-col sm:flex-row gap-4 mt-14 mb-20'>
+				<div className='flex flex-col sm:flex-row gap-4 mt-14 mb-8'>
 					{/* Get Started Button: Light mode: blue gradient, Dark mode: slightly different blue gradient or solid color */}
 					<Link
 						href='/dashboard'
@@ -85,6 +87,13 @@ export default function Home() {
 						{t('page.home.githubButton')}
 					</Link>
 				</div>
+			</div>
+			{/* Language Switcher */}
+			<div className='flex items-center gap-2 p-2 w-full max-w-md bg-white dark:bg-gray-800 shadow justify-center'>
+				<span className='text-gray-700 dark:text-gray-200'>
+					{t('dashboard.settings.languageLabel')}
+				</span>
+				<LanguageSwitcher></LanguageSwitcher>
 			</div>
 		</div>
 	);

@@ -13,6 +13,8 @@ import Joyride, {
 } from 'react-joyride';
 import { useLocalStorage } from '@/hooks/localstorage';
 import { useTranslation } from '@/context/LanguageContext';
+import { ThemeToggler } from './../../components/ThemeToggler';
+import { useTheme } from '@/context/ThemeContext';
 
 export default function DashBoardLayout({
 	children,
@@ -26,6 +28,7 @@ export default function DashBoardLayout({
 		false,
 	);
 	const [joyrideRun, setJoyrideRun] = useState(!isGuideDashboard);
+	const theme = useTheme();
 
 	const steps: Array<Step> = [
 		{
@@ -100,7 +103,9 @@ export default function DashBoardLayout({
 
 	return (
 		// Outer div: bg-gray-100 dark:bg-gray-700
-		<div className='flex flex-row max-md:flex-col-reverse w-full h-dvh bg-gray-100 dark:bg-gray-700 relative dashboard-layout'>
+		<div
+			className={`flex flex-row max-md:flex-col-reverse w-full h-dvh bg-gray-100 dark:bg-gray-700 relative dashboard-layout ${theme}`}
+		>
 			<Joyride
 				steps={steps}
 				continuous
@@ -111,17 +116,16 @@ export default function DashBoardLayout({
 				disableCloseOnEsc
 				run={joyrideRun}
 				callback={handleJoyrideCallback}
-				// Assuming Joyride styles are handled internally or will be addressed separately if they don't adapt
 			/>
 			<SessionProvider>
 				{/* Navbar div (main-nav): bg-white dark:bg-gray-800 text-black dark:text-white */}
-				<div className='flex flex-col max-md:flex-row h-full bg-white dark:bg-gray-800 text-black dark:text-white md:left-0 md:top-0 max-md:h-16 max-md:bottom-0 max-md:w-full justify-between items-center keyboard:hidden main-nav'>
+				<div className='flex flex-col max-md:flex-row h-full bg-white dark:bg-gray-800 text-black dark:text-white md:left-0 md:top-0 max-md:h-16 max-md:bottom-0 max-md:w-full justify-between items-center keyboard:hidden main-nav delay-0'>
 					{isBiMenuOpen ? (
 						// Buttons: bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-700 dark:bg-opacity-40 dark:hover:bg-emerald-600
 						<div className='*:bg-emerald-100 *:hover:bg-emerald-200 dark:*:bg-emerald-700 dark:*:bg-opacity-40 dark:*:hover:bg-emerald-600 *:p-2 *:m-2 *:rounded-md *:text-center flex flex-col max-md:flex-row'>
 							<Link
 								href={'/tempword'}
-								className='w-10 break-words max-md:w-auto max-md:h-10 tempword'
+								className='w-10 break-words max-md:w-auto max-md:h-10 tempword text-black'
 							>
 								{t('dashboard.navigation.sevenThousandWords')}
 							</Link>
@@ -161,6 +165,7 @@ export default function DashBoardLayout({
 									className='cursor-pointer'
 								></Image>
 							</button>
+							<ThemeToggler></ThemeToggler>
 						</div>
 					) : (
 						<div className='*:bg-emerald-100 *:hover:bg-emerald-200 dark:*:bg-emerald-700 dark:*:bg-opacity-40 dark:*:hover:bg-emerald-600 *:p-2 *:m-2 *:rounded-md *:text-center flex flex-col max-md:flex-row'>

@@ -10,7 +10,11 @@ import { redirect } from 'next/navigation';
 import { useCopyToClipboard } from '@/hooks/copy';
 import { useTranslation } from '@/context/LanguageContext'; // Added
 
-type Deck = WithId<Document> & { name: string; public: boolean; isPublic?: boolean }; // Added isPublic for consistency with data
+type Deck = WithId<Document> & {
+	name: string;
+	public: boolean;
+	isPublic?: boolean;
+}; // Added isPublic for consistency with data
 
 export default function Deck() {
 	const { t } = useTranslation(); // Added
@@ -89,7 +93,9 @@ export default function Deck() {
 						/>
 					</svg>
 					<span className='sr-only'>{t('dashboard.deck.altLoading')}</span>
-					<p className='text-lg text-gray-500 dark:text-gray-400'>{t('common.loadingText')}</p>
+					<p className='text-lg text-gray-500 dark:text-gray-400'>
+						{t('common.loadingText')}
+					</p>
 				</div>
 			) : (
 				<div className='p-4 flex-grow grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 lg:grid-rows-3 lg:gap-6 max-lg:grid-rows-3 max-lg:gap-3 *:rounded-lg *:shadow-lg *:bg-gray-100 dark:*:bg-gray-800'>
@@ -101,12 +107,18 @@ export default function Deck() {
 							>
 								<div className='flex flex-col shadow-lg p-2 rounded-lg bg-blue-100 dark:bg-blue-700 bg-opacity-70 dark:bg-opacity-70'>
 									<h1>
-										<p className='border-2 inline p-1 m-1 border-gray-300 dark:border-gray-600'>{t('dashboard.deck.nameLabel')}</p>
+										<p className='border-2 inline p-1 m-1 border-gray-300 dark:border-gray-600'>
+											{t('dashboard.deck.nameLabel')}
+										</p>
 										{deck.name}
 									</h1>
 									<h1>
-										<p className='border-2 inline p-1 m-1 border-gray-300 dark:border-gray-600'>{t('dashboard.deck.publicLabel')}</p>
-										{deck.isPublic ? t('dashboard.deck.isPublicYes') : t('dashboard.deck.isPublicNo')}
+										<p className='border-2 inline p-1 m-1 border-gray-300 dark:border-gray-600'>
+											{t('dashboard.deck.publicLabel')}
+										</p>
+										{deck.isPublic
+											? t('dashboard.deck.isPublicYes')
+											: t('dashboard.deck.isPublicNo')}
 									</h1>
 									<button
 										className='flex flex-col bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500 p-2 rounded-lg mt-2'
@@ -145,7 +157,9 @@ export default function Deck() {
 								</div>
 							</div>
 						))) || (
-						<h1 className='col-span-full row-span-full text-center text-2xl text-gray-500 dark:text-gray-400'>{t('dashboard.deck.noDecksFound')}</h1>
+						<h1 className='col-span-full row-span-full text-center text-2xl text-gray-500 dark:text-gray-400'>
+							{t('dashboard.deck.noDecksFound')}
+						</h1>
 					)}
 
 					{(sharedDecks &&
@@ -156,11 +170,15 @@ export default function Deck() {
 							>
 								<div className='flex flex-col shadow-lg p-2 rounded-lg bg-blue-100 dark:bg-blue-700 bg-opacity-70 dark:bg-opacity-70'>
 									<h1>
-										<p className='border-2 inline p-1 m-1 border-gray-300 dark:border-gray-600'>{t('dashboard.deck.nameLabel')}</p>
+										<p className='border-2 inline p-1 m-1 border-gray-300 dark:border-gray-600'>
+											{t('dashboard.deck.nameLabel')}
+										</p>
 										{deck.name}
 									</h1>
 									<h1>
-										<p className='border-2 inline p-1 m-1 border-gray-300 dark:border-gray-600'>{t('dashboard.deck.publicLabel')}</p>
+										<p className='border-2 inline p-1 m-1 border-gray-300 dark:border-gray-600'>
+											{t('dashboard.deck.publicLabel')}
+										</p>
 										{t('dashboard.deck.isPublicYes')}
 									</h1>
 									<Link
