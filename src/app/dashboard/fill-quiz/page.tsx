@@ -188,7 +188,18 @@ export default function FillQuizPage() {
                         {generatedQuestions.map((q, index) => (
                             <div key={index} className="p-4 bg-white dark:bg-gray-700 rounded-lg shadow">
                                 <p className="text-sm text-gray-500 dark:text-gray-400">{t('dashboard.fillQuiz.labelSourceWordDisplay', { word: q.sourceWord })}</p>
-                                <p className="mt-1">{q.blankedSentence}</p>
+                                <p className="mt-1">
+                                    {q.blankedSentence ? (
+                                        q.blankedSentence.split('____').map((part, partIndex, arr) => (
+                                            <span key={partIndex}>
+                                                {part}
+                                                {partIndex < arr.length - 1 && (
+                                                    <strong className="text-blue-500 dark:text-blue-400 font-semibold">____</strong>
+                                                )}
+                                            </span>
+                                        ))
+                                    ) : ''}
+                                </p>
                                 <p className="mt-1 text-sm font-medium text-green-600 dark:text-green-400">{t('dashboard.fillQuiz.labelCorrectAnswer', { answer: q.correctWord })}</p>
                                 {q.options && q.options.length > 0 && (
                                     <div className="mt-2">
@@ -219,8 +230,20 @@ export default function FillQuizPage() {
                         {userQuestions.map((q) => (
                             <div key={q._id} className="p-4 bg-white dark:bg-gray-700 rounded-lg shadow">
                                 <p className="text-sm text-gray-500 dark:text-gray-400">{t('dashboard.fillQuiz.labelSourceWordDisplay', { word: q.sourceWord })}</p>
-                                {/* Using dangerouslySetInnerHTML to render the highlighted blank. Ensure blankedSentence is sanitized if it can contain user input directly, though here it's from AI. */}
-                                <p className="mt-1" dangerouslySetInnerHTML={{ __html: q.blankedSentence?.replace(/____/g, "<strong class='text-blue-500'>____</strong>") || '' }}></p>
+                                <p className="mt-1">
+                                    {q.blankedSentence ? (
+                                        q.blankedSentence.split('____').map((part, partIndex, arr) => (
+                                            <span key={partIndex}>
+                                                {part}
+                                                {partIndex < arr.length - 1 && (
+                                                    <strong className="text-blue-500 dark:text-blue-400 font-semibold">____</strong>
+                                                )}
+                                            </span>
+                                        ))
+                                    ) : (
+                                        '' 
+                                    )}
+                                </p>
                                 <details className="text-sm mt-1">
                                     <summary className="cursor-pointer text-indigo-600 dark:text-indigo-400 hover:underline">{t('dashboard.fillQuiz.showAnswer')}</summary>
                                     <p className="mt-1 font-medium text-green-600 dark:text-green-400">{q.correctWord}</p>

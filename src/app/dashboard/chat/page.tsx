@@ -2,18 +2,17 @@
 
 import {
 	createChatSession,
-	createChatSession,
 	deleteChatSession,
 	getChatHistory,
 	getChatList,
 	sendMessage,
 } from '@/actions/chat';
-import { WithStringId, WithStringObjectId, ChatAction, GrammarError } from '@/type'; // Added GrammarError
-import { ChatModelSchema } from '@/utils'; // Added ChatModelSchema
+import { WithStringId, WithStringObjectId, ChatAction, GrammarError } from '@/type'; 
+import { ChatModelSchema } from '@/utils'; 
 import { Content } from '@google/generative-ai';
 import { useEffect, useRef, useState, useTransition } from 'react';
 import { useScrollToBottom } from '@/hooks/scrollToBottom';
-import { useTranslation } from '@/context/LanguageContext'; // Added
+import { useTranslation } from '@/context/LanguageContext'; 
 import Joyride, {
 	Step,
 	CallBackProps,
@@ -22,16 +21,16 @@ import Joyride, {
 	Status,
 } from 'react-joyride';
 import { useLocalStorage } from '@/hooks/localstorage';
+import { v4 as uuidv4 } from 'uuid'; // Added import for uuid
 
 export default function Chat() {
-	const { t } = useTranslation(); // Added
+	const { t } = useTranslation(); 
 	const [message, setMessage] = useState('');
-	// Updated history state definition
 	const [history, setHistory] = useState<
 		Array<{
 			id: string;
-			role: string; // 'user', 'model', 'tool'
-			parts: Array<{ text?: string | null } & Record<string, any>>; // Flexible parts
+			role: string; 
+			parts: Array<{ text?: string | null } & Record<string, any>>; 
 			action?: ChatModelSchema;
 			grammarCheckResults?: GrammarError[];
 		}>
@@ -45,7 +44,7 @@ export default function Chat() {
 	const [isSending, startSending] = useTransition();
 	const [loading, setLoading] = useState(true);
 	const chatRef = useRef<HTMLDivElement>(null);
-	useScrollToBottom(chatRef, [chatId]); // Assuming this hook doesn't need translation context
+	useScrollToBottom(chatRef, [chatId]); 
 
 	useEffect(() => {
 		getChatList().then((data) => {
@@ -59,7 +58,7 @@ export default function Chat() {
 	}, [chatId]);
 
 	useEffect(() => {
-		if (chatId) { // If chatId is already set (e.g., from a previous state or user click)
+		if (chatId) { 
 			getChatHistory.bind(null, chatId)().then((data) => {
 				if (!Array.isArray(data)) {
 					console.error(data.error);
@@ -68,30 +67,22 @@ export default function Chat() {
 				}
 				setHistory(data);
 			});
-		} else { // chatId is not set (it's initially an empty string)
-			if (!loading) { // Only proceed if the initial chat list loading is complete
+		} else { 
+			if (!loading) { 
 				if (chatList && chatList.length > 0) {
-					// If chatList is populated, set the first chat as active
 					setChatId(chatList[0]._id);
 				} else if (chatList && chatList.length === 0) {
-					// If chatList is empty after loading, create a new chat session
-					// Add a state to prevent multiple creations if this effect somehow re-triggers quickly
-					// For this subtask, we'll assume the chatId change is sufficient to prevent immediate re-triggering of this specific block.
 					createChatSession().then(newChatData => {
 						if ('id' in newChatData) {
 							setChatId(newChatData.id);
-							// The first useEffect (which depends on chatId) will re-run
-							// and call getChatList(), which should include the new chat.
 						} else {
-							// Handle error, e.g., log it or show a user-facing message
 							console.error("Failed to create new chat session:", newChatData.error);
 						}
 					});
 				}
 			}
-			// If still loading, or chatList isn't ready in some other way, do nothing and wait.
 		}
-	}, [chatId, chatList, loading]); // Ensure all dependencies are listed
+	}, [chatId, chatList, loading]); 
 
 	const [guideChatPage, setGuideChatPage] = useLocalStorage(
 		'guideChatPage',
@@ -132,6 +123,46 @@ export default function Chat() {
 		console.log('Joyride callback data for chat page', data);
 	};
 
+	const handleSendMessage = () => {
+		const optimisticUserMessage = {
+			id: uuidv4(),
+			role: 'user' as const,
+			parts: [{ text: message }],
+			action: undefined,
+			grammarCheckResults: undefined,
+		};
+		setHistory((prev) => [...prev, optimisticUserMessage]);
+		
+		startSending(() =>
+			sendMessage
+				.bind(null, chatId, message)()
+				.then((data) => {
+					if ('error' in data) {
+						console.error(data.error);
+						setHistory((prev) => prev.filter(item => item.id !== optimisticUserMessage.id)); // Revert optimistic update on error
+						return;
+					}
+					// Replace optimistic update with server response OR add server response
+					// For simplicity, if IDs might change, it's safer to filter out optimistic and add server one.
+					// However, if server uses the same ID or we just append, it's simpler.
+					// Assuming the server response `data.content` is the full history item:
+                    const newHistoryItem = {
+                        id: data.content.id,
+                        role: data.content.role,
+                        parts: data.content.parts,
+                        action: (data as any).action, 
+                        grammarCheckResults: (data as any).grammarCheckResults,
+                    };
+					setHistory((prev) => [...prev.filter(item => item.id !== optimisticUserMessage.id), newHistoryItem]);
+					setMessage('');
+				}).catch(e => {
+                    console.error("Failed to send message:", e);
+                    setHistory((prev) => prev.filter(item => item.id !== optimisticUserMessage.id));
+                })
+		);
+		setMessage(''); // Clear message input immediately after optimistic update
+	};
+
 	return (
 		<div className='flex flex-row max-md:flex-col flex-grow md:*:m-4 max-md:*:m-1 items-center justify-center h-full *:md:h-full dark:bg-gray-700'>
 			<Joyride
@@ -143,8 +174,8 @@ export default function Chat() {
 				showSkipButton
 				styles={{
 					options: {
-						zIndex: 10000, // Ensure it's above other elements
-						primaryColor: '#007bff', // Example color
+						zIndex: 10000, 
+						primaryColor: '#007bff', 
 					},
 				}}
 			/>
@@ -163,14 +194,14 @@ export default function Chat() {
 								className={`flex flex-row m-1 p-1 rounded-lg ${color} text-md overflow-ellipsis`}
 								key={chat._id}
 								onClick={() => setChatId(chat._id)}
-								title={chat.chatName} // Added title for better UX on truncated names
+								title={chat.chatName} 
 							>
 								{chat.chatName}
 							</button>
 							<button
 								className='flex flex-row p-1 m-1 rounded-lg bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-500 text-white'
-								title={t('dashboard.chat.deleteChatButton')} // Added title
-								aria-label={t('dashboard.chat.deleteChatButton')} // Added aria-label
+								title={t('dashboard.chat.deleteChatButton')} 
+								aria-label={t('dashboard.chat.deleteChatButton')} 
 								onClick={() => {
 									deleteChatSession
 										.bind(null, chat._id)()
@@ -192,7 +223,7 @@ export default function Chat() {
 				<button
 					className='w-full bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-500 text-white rounded-lg p-2 self-end mt-2 joyride-chat-new-button'
 					disabled={loading}
-					title={t('dashboard.chat.newChatButton')} // Added title
+					title={t('dashboard.chat.newChatButton')} 
 					onClick={async () => {
 						const data = await createChatSession();
 						if ('error' in data) {
@@ -229,7 +260,6 @@ export default function Chat() {
 													key={`${content.id}-part-${index}`}
 												>
 													{part.text}
-													{/* Display ShowOuput action words if present (assuming action is on the top-level contentItem) */}
 													{content.action && content.action.action === ChatAction.ShowOuput && content.action.words && (
 														<div className={`flex text-sm flex-wrap *:p-1 *:bg-yellow-200 dark:*:bg-yellow-700 *:rounded-lg *:m-1 ${partsDirection}`}>
 															{content.action.words.map((word) => (
@@ -240,7 +270,6 @@ export default function Chat() {
 												</div>
 											);
 										}
-										// Placeholder for rendering other part types like functionCall or functionResponse if needed directly
 										if (part.functionCall) {
 											return (
 												<div className={`p-3 m-1 rounded-xl shadow ${messageBgColor} ${messageAlign} text-xs italic`} key={`${content.id}-part-${index}`}>
@@ -257,7 +286,6 @@ export default function Chat() {
 										}
 										return null;
 									})}
-                                    {/* Render Grammar Check Results */}
                                     {content.grammarCheckResults && content.grammarCheckResults.length > 0 && (
                                         <div className="mt-1 pl-3 pr-3">
                                             {content.grammarCheckResults.map((error, errIdx) => (
@@ -287,43 +315,12 @@ export default function Chat() {
 						type='text'
 						value={message}
 						disabled={isSending}
-						placeholder={t('dashboard.chat.inputPlaceholder')} // Translated
+						placeholder={t('dashboard.chat.inputPlaceholder')} 
 						onChange={(e) => setMessage(e.target.value)}
-						onKeyPress={(e) => { // Added Enter key press functionality
+						onKeyPress={(e) => { 
 							if (e.key === 'Enter' && !e.shiftKey && message.trim() !== '' && !isSending) {
-								e.preventDefault(); // Prevents newline in some browsers
-								// Trigger send logic
-								setHistory((prev) => [
-									...prev,
-									{
-										id: Number(prev.length.toString() + Date.now()).toString(16),
-										role: 'user',
-										parts: [{ text: message }],
-									},
-								]);
-								startSending(() =>
-									sendMessage
-										.bind(null, chatId, message)()
-										.then((data) => {
-											if ('error' in data) {
-												console.error(data.error);
-												setHistory(history.slice(0, -1)); // Revert optimistic update
-												return;
-											}
-                                            // Assuming 'data' from server action is the full history item
-                                            // or data.content is. The backend returns an object with 'content' and 'grammarCheckResults'.
-                                            // The history item type on frontend expects these to be merged.
-                                            const newHistoryItem = {
-                                                id: data.content.id,
-                                                role: data.content.role,
-                                                parts: data.content.parts,
-                                                action: (data as any).action, // Cast if action is not directly on content
-                                                grammarCheckResults: (data as any).grammarCheckResults,
-                                            };
-											setHistory((prev) => [...prev, newHistoryItem]);
-											setMessage('');
-										}),
-								);
+								e.preventDefault(); 
+								handleSendMessage();
 							}
 						}}
 						className='flex-grow h-full px-4 text-lg bg-gray-300 dark:bg-gray-700 text-black dark:text-white p-1 border-2 border-gray-400 dark:border-gray-600 rounded-xl focus:ring-blue-500 focus:border-blue-500 joyride-chat-message-input'
@@ -331,38 +328,9 @@ export default function Chat() {
 					<button
 						className='w-auto px-4 bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-500 text-white rounded-lg p-2 joyride-chat-send-button'
 						disabled={isSending || message.trim() === ''}
-						onClick={() => {
-							setHistory((prev) => [
-								...prev,
-								{
-									id: Number(prev.length.toString() + Date.now()).toString(16),
-									role: 'user',
-									parts: [{ text: message }],
-								},
-							]);
-							startSending(() =>
-								sendMessage
-									.bind(null, chatId, message)()
-									.then((data) => {
-										if ('error' in data) {
-											console.error(data.error);
-											setHistory(history.slice(0, -1)); // Revert optimistic update
-											return;
-										}
-                                            const newHistoryItem = {
-                                                id: data.content.id,
-                                                role: data.content.role,
-                                                parts: data.content.parts,
-                                                action: (data as any).action,
-                                                grammarCheckResults: (data as any).grammarCheckResults,
-                                            };
-											setHistory((prev) => [...prev, newHistoryItem]);
-										setMessage('');
-									}),
-							);
-						}}
+						onClick={handleSendMessage}
 					>
-						{t('dashboard.chat.sendButton')} {/* Translated */}
+						{t('dashboard.chat.sendButton')} 
 					</button>
 				</div>
 			</div>

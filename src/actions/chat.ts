@@ -19,7 +19,8 @@ import { Content, FunctionCall, Part } from '@google/generative-ai';
 import { ModelLevel, AiResponse } from '@/utils/ai/generate'; 
 import { GChatModelSchema } from '@/utils/ai/schema';
 import { aiFeatures } from '@/config'; 
-import { checkTextGrammar } from '@/lib/grammar';
+import { checkTextGrammar } from '@/lib/grammar'; 
+import { v4 as uuidv4 } from 'uuid'; // Added import for uuid
 
 // Helper to get current chat from DB, ensuring it's fresh
 async function getFreshChat(chatId: ObjectId): Promise<ChatSession | null> {
@@ -35,8 +36,8 @@ async function saveHistoryItem(chatId: ObjectId, item: ChatSession['history'][0]
 }
 
 // Helper to generate a unique ID for history items
-function generateHistoryId(currentHistoryLength: number): string {
-    return Number(currentHistoryLength.toString() + Date.now()).toString(16);
+function generateHistoryId(): string { // Parameter removed
+    return uuidv4();
 }
 
 // Helper to map string function names to ChatAction enum values
@@ -187,7 +188,8 @@ export async function sendMessage(chatId: string, message: string) {
         return { error: 'Chat not found or not authorized' };
     }
 
-    const userMessageId = generateHistoryId(currentChat.history.length);
+    // 1. Save user's message
+    const userMessageId = generateHistoryId(); // Updated call
     const userMessageContent: Content = { role: 'user', parts: [{ text: message }] };
     await saveHistoryItem(chatObjectId, { content: { id: userMessageId, ...userMessageContent } });
     
@@ -211,7 +213,7 @@ export async function sendMessage(chatId: string, message: string) {
     while (aiFeatures.useFunctionCalling && currentAiResponse.type === 'functionCall' && loopCount < maxLoops) {
         loopCount++;
         const functionCall = currentAiResponse.functionCall;
-        const currentAiResponseId = generateHistoryId(currentChat.history.length);
+        const currentAiResponseId = generateHistoryId(); // Updated call
 
         const aiFuncCallContent: Content = { role: 'model', parts: [{ functionCall }] };
         await saveHistoryItem(chatObjectId, { 
@@ -222,13 +224,11 @@ export async function sendMessage(chatId: string, message: string) {
         if (!currentChat) return { error: "Failed to refresh chat after saving AI function call" };
 
         const functionName = functionCall.name;
-        const functionArgs = functionCall.args as any; // Type assertion for convenience
+        const functionArgs = functionCall.args as any; 
         let executionResultContent: Record<string, any> = { success: false, message: `Function ${functionName} execution failed or name not recognized.` };
         
         let lastGrammarCheckResultsThisIteration: GrammarError[] | undefined = undefined;
-        // Reset grammarResultsForFinalMessage at the start of each iteration's logic
-        // This ensures it's only set if checkGrammar is the *last* function in a potential chain for this iteration.
-        grammarResultsForFinalMessage = undefined;
+        grammarResultsForFinalMessage = undefined; 
 
 
         switch (functionName) {
@@ -279,7 +279,7 @@ export async function sendMessage(chatId: string, message: string) {
             grammarResultsForFinalMessage = lastGrammarCheckResultsThisIteration;
         }
         
-        const toolResponseId = generateHistoryId(currentChat.history.length);
+        const toolResponseId = generateHistoryId(); // Updated call
         const toolMessageParts: Part[] = [{ functionResponse: { name: functionName, response: executionResultContent } }];
         const toolMessageContent: Content = { role: 'tool', parts: toolMessageParts };
         
@@ -298,7 +298,7 @@ export async function sendMessage(chatId: string, message: string) {
     }
 
     let finalAiData: ChatModelSchema;
-    const finalMessageId = generateHistoryId(currentChat.history.length);
+    const finalMessageId = generateHistoryId(); // Updated call
 
     if (currentAiResponse.type === 'functionCall' && loopCount >= maxLoops) {
         console.log("Max function call loops reached.");
