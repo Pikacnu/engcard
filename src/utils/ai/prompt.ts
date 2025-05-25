@@ -1,9 +1,10 @@
 import { ChatAction } from '@/type';
 import {
 	Content,
-	FunctionDeclaration,
-	SchemaType,
+	FunctionDeclaration, 
+	SchemaType,         
 } from '@google/generative-ai';
+
 export const wordSystemInstruction = `
 <instruction>
 	<role>English Linguistics Expert</role>
@@ -74,123 +75,229 @@ Your response must meet the following requirements:
 `;
 
 export const chatModelInstruction = `
-Analyze the user's message and generate an appropriate response.
-The response should be relevant to the user's input and provide useful information or assistance.
-Your response must meet the following requirements:
-- Provide a helpful and informative response.
-- Ensure the output is in JSON format and adheres to the provided schema.
-Please refer to the documentation which in system instruction.
-And make sure that you hide the user's personal information.
-Like deckId, userId, etc.
-For example, 
-- if the userId is 123456, you should said that "I couldn't provide the userId".
-- If the user ask to list deck ids, you should said that "I couldn't provide the deckId".
-action example:
+You are a helpful and friendly chat assistant. Your primary goal is to assist users and engage in natural conversation.
+Analyze the user's message to understand their intent. Generate a relevant, informative, and helpful response.
+
+**Conversation First:**
+- Respond conversationally by default.
+- If the user's request clearly matches one of your defined capabilities (actions/functions), you may use the specified JSON format to invoke that capability.
+- If the user is asking for information you can provide directly, or is just chatting, respond naturally without forcing an action.
+
+**Output Format:**
+- For general conversation, your response text will be directly shown to the user.
+- If you need to perform a specific action (like managing decks, words, or chat settings), ensure your output is in the specified JSON format adhering to the schema. The JSON output should contain a "message" field which is a human-readable summary of the action being taken, or the information being provided.
+
+**Important Considerations:**
+- ALWAYS protect user privacy. Do not reveal or ask for sensitive information like deckId, userId, etc. If a user asks for such information, politely decline (e.g., "I cannot provide that specific ID, but I can help you manage your decks if you tell me the name.").
+- If you are unsure of the user's intent or how to help, ask clarifying questions.
+- If you identify grammatical errors in the user's input, you can also proactively offer corrections using the \`GrammarCheck\` action or by discussing it conversationally.
+
+**Action Examples (use ONLY when the intent is clear and appropriate):**
+
+To show specific words or simple messages:
 {
 	"action": "ShowOuput",
-	words": ["test","word"],
+	"words": ["example","word"],
+    "message": "Here are the words you asked about: example, word."
 }
-When add Deck{
+
+When the user wants to create a new deck:
+User: "Make a new deck for my English vocabulary."
+AI: {
 	"action": "AddDeck",
-	"targetDeckName": "test",
+	"targetDeckName": "English vocabulary",
+    "words": [], // Assuming words can be added later or if specified by user
+    "message": "Okay, I've created a new deck named 'English vocabulary' for you."
 }
-When Remove Deck{
+
+When the user wants to remove a deck (if they provide an ID or a name you can resolve to an ID):
+User: "Delete my 'Old German Phrases' deck."
+AI: {
 	"action": "RemoveDeck",
-	"targetDeckId": "123456",
-	"targetDeckName": "test",
+	"targetDeckName": "Old German Phrases", // Backend will try to find ID by name if ID not given
+    "message": "Understood. I'm attempting to remove the deck named 'Old German Phrases'."
 }
-When add Word{
-	"action": "EditDeck",
-	"targetDeckId": "123456",
-	"words": ["test","word"],
+
+When the user wants to add words to a specific deck (if they provide deck ID or name):
+User: "Add 'serendipity' and 'ephemeral' to my 'Rare Words' deck."
+AI: {
+	"action": "AddCard", // Or EditDeck if AddCard isn't fully implemented for adding words directly yet. Review available actions. Assuming AddCard is preferred for adding words.
+	"targetDeckName": "Rare Words", // or targetDeckId if known
+	"words": ["serendipity", "ephemeral"],
+    "message": "I've added 'serendipity' and 'ephemeral' to your 'Rare Words' deck."
 }
-When remove Word{
-	"action": "EditDeck",
-	"targetDeckId": "123456",
-	"words": ["test","word"],
+
+When the user wants to change the current chat session's name:
+User: "Rename this conversation to 'Holiday Planning'."
+AI: {
+    "action": "ChangeChatName",
+    "targetDeckId": "CURRENT_CHAT_ID", // System should inject or allow AI to infer current chat ID
+    "changeChatName": "Holiday Planning",
+    "message": "Done! I've renamed this chat to 'Holiday Planning'."
 }
-Change chat name{
-	"action": "EditDeck",
-	"targetDeckId": "123456",
-	"changeDeckName": "test",
+
+When you identify grammar or spelling issues and want to provide structured feedback directly:
+User: "I think teh cat are on table."
+AI: {
+    "action": "GrammarCheck",
+    "message": "I noticed a couple of things in your sentence. Here are some suggestions:",
+    "grammarCheckResults": [
+        {
+            "message": "Possible typo for 'the'.",
+            "shortMessage": "Typo",
+            "correction": "the",
+            "offset": 8, 
+            "length": 3
+        },
+        {
+            "message": "Subject-verb agreement: 'cat' is singular, so use 'is'.",
+            "shortMessage": "Agreement",
+            "correction": "cat is",
+            "offset": 12, 
+            "length": 7 
+        }
+    ],
+    "words": [] 
 }
+
+Remember to prioritize a friendly, conversational, and helpful interaction. If the user's query doesn't fit an action, just chat!
 `;
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const functions: FunctionDeclaration[] = [
-	{
-		name: ChatAction.AddDeck,
-		description: 'Add a new deck with the given name.',
-		parameters: {
-			type: SchemaType.OBJECT,
-			properties: {
-				deckName: {
-					type: SchemaType.STRING,
-					description: 'The name of the new deck.',
-				},
-				words: {
-					type: SchemaType.ARRAY,
-					items: {
-						type: SchemaType.STRING,
-						description: 'The words to add to the new deck.',
-					},
-				},
-			},
-			required: ['deckName', 'words'],
-		},
-	},
-	{
-		name: ChatAction.RemoveDeck,
-		description: 'Remove the given deck by deckid.',
-		parameters: {
-			type: SchemaType.OBJECT,
-			properties: {
-				deckId: {
-					type: SchemaType.STRING,
-					description: 'The ID of the deck to remove.',
-				},
-			},
-			required: ['deckId'],
-		},
-	},
-	{
-		name: ChatAction.EditDeck,
-		description: 'Edit the given deck by deckid.',
-		parameters: {
-			type: SchemaType.OBJECT,
-			properties: {
-				deckId: {
-					type: SchemaType.STRING,
-					description: 'The ID of the deck to edit.',
-				},
-				words: {
-					type: SchemaType.ARRAY,
-					items: {
-						type: SchemaType.STRING,
-						description:
-							'The words to add to the deck.If it is in the deck, words will be removed.',
-					},
-				},
-				newDeckName: {
-					type: SchemaType.STRING,
-					description: 'The new name of the deck.',
-				},
-			},
-			required: ['deckId', 'words'],
-		},
-	},
-	{
-		name: ChatAction.ShowOuput,
-		description: 'Show the output to the user.',
-		parameters: {
-			type: SchemaType.OBJECT,
-			properties: {
-				message: {
-					type: SchemaType.STRING,
-					description: 'The message to show to the user.',
-				},
-			},
-			required: ['message'],
-		},
-	},
+export const functions: FunctionDeclaration[] = [ 
+    {
+        name: 'checkGrammar',
+        description: "Checks a given text for grammatical errors and suggests corrections. Use this when the user asks for a grammar check or when you identify potential errors in the user's input that are relevant to the ongoing conversation or task.",
+        parameters: {
+            type: SchemaType.OBJECT,
+            properties: {
+                text: {
+                    type: SchemaType.STRING,
+                    description: 'The text to be checked for grammar errors.',
+                },
+            },
+            required: ['text'],
+        },
+    },
+    {
+        name: ChatAction.AddDeck, 
+        description: 'Creates a new deck with a given name and optionally adds initial words to it.',
+        parameters: {
+            type: SchemaType.OBJECT,
+            properties: {
+                targetDeckName: {
+                    type: SchemaType.STRING,
+                    description: 'The name for the new deck to be created.',
+                },
+                words: {
+                    type: SchemaType.ARRAY,
+                    items: { type: SchemaType.STRING },
+                    description: 'Optional. An array of words to add to the new deck.',
+                    nullable: true 
+                },
+            },
+            required: ['targetDeckName'],
+        },
+    },
+    {
+        name: ChatAction.RemoveDeck, 
+        description: 'Removes a deck, identified by its ID or name. At least one identifier must be provided.',
+        parameters: {
+            type: SchemaType.OBJECT,
+            properties: {
+                targetDeckId: {
+                    type: SchemaType.STRING,
+                    description: 'Optional. The ID of the deck to remove.',
+                    nullable: true
+                },
+                targetDeckName: {
+                    type: SchemaType.STRING,
+                    description: 'Optional. The name of the deck to remove. Used if ID is not provided.',
+                    nullable: true
+                },
+            },
+        },
+    },
+    {
+        name: ChatAction.EditDeck, 
+        description: 'Modifies an existing deck by its ID, primarily for adding or removing words. Can also be used to rename the deck.',
+        parameters: {
+            type: SchemaType.OBJECT,
+            properties: {
+                targetDeckId: { 
+                    type: SchemaType.STRING,
+                    description: 'The ID of the deck to be modified.',
+                },
+                words: {
+                    type: SchemaType.ARRAY,
+                    items: { type: SchemaType.STRING },
+                    description: 'An array of words. Words present in the deck will be removed, new words will be added.',
+                    nullable: true
+                },
+                newDeckName: { 
+                    type: SchemaType.STRING,
+                    description: 'Optional. If provided, the deck will be renamed to this new name.',
+                    nullable: true
+                }
+            },
+            required: ['targetDeckId'], 
+        },
+    },
+    {
+        name: ChatAction.ShowOuput, // Using the current enum value with the typo
+        description: 'Displays a message to the user, optionally highlighting specific words. Use this to present information or results.',
+        parameters: {
+            type: SchemaType.OBJECT,
+            properties: {
+                message: {
+                    type: SchemaType.STRING,
+                    description: 'The primary message to display to the user.',
+                },
+                words: {
+                    type: SchemaType.ARRAY,
+                    items: { type: SchemaType.STRING },
+                    description: 'Optional. Specific words to highlight or list along with the message.',
+                    nullable: true
+                },
+            },
+            required: ['message'],
+        },
+    }
 ];
+
+export const fillInTheBlankSystemInstruction = `
+You are an AI specialized in creating educational content. Your task is to generate fill-in-the-blank questions based on a given source word.
+The questions should help users understand the usage and context of the source word.
+
+**Input:** You will receive a source word.
+
+**Output Requirements:**
+For each source word, generate one or more fill-in-the-blank questions. Each question must adhere to the following JSON schema:
+{
+  "sourceWord": "string", // The word provided as input for which this question is generated.
+  "originalSentence": "string", // A complete, grammatically correct sentence that uses the source word in a clear context.
+  "blankedSentence": "string", // The originalSentence with the sourceWord (or a close variation) replaced by '____'.
+  "correctWord": "string", // The exact word that was replaced to create the blank. This might be the sourceWord or its inflected form used in the sentence.
+  "options": ["string"], // Optional: An array of 3-4 strings for multiple choice. One of these must be the correctWord. If not providing options, omit this field.
+  "difficulty": "string" // Optional: Indicate difficulty, e.g., "easy", "medium", "hard".
+}
+
+**Guidelines:**
+- The \`originalSentence\` should clearly demonstrate the meaning and common usage of the \`sourceWord\`.
+- The \`blankedSentence\` should replace only one instance of the \`correctWord\` (or its direct morphological variant).
+- The \`correctWord\` must be the exact word that fits into the blank.
+- If providing \`options\`, ensure they are plausible distractors and one of them is the \`correctWord\`.
+- Aim for variety in sentence structures.
+- Ensure content is appropriate for general learners.
+
+**Example for sourceWord: "ubiquitous"**
+{
+  "sourceWord": "ubiquitous",
+  "originalSentence": "Smartphones have become ubiquitous in modern society, found in nearly everyone's pocket or bag.",
+  "blankedSentence": "Smartphones have become ____ in modern society, found in nearly everyone's pocket or bag.",
+  "correctWord": "ubiquitous",
+  "options": ["ubiquitous", "rare", "expensive", "optional"],
+  "difficulty": "medium"
+}
+
+Provide the output as a JSON array of these question objects if multiple questions are generated for a single source word, or a single JSON object if only one is generated.
+`;

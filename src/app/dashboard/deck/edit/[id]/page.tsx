@@ -6,6 +6,14 @@ import { use, useCallback, useEffect, useState, useTransition } from 'react';
 import { DeckCollection } from '@/type';
 import { FileToBase64 } from '@/utils/base64';
 import { useTranslation } from '@/context/LanguageContext'; // Added
+import Joyride, {
+	Step,
+	CallBackProps,
+	ACTIONS,
+	STATUS,
+	Status,
+} from 'react-joyride';
+import { useLocalStorage } from '@/hooks/localstorage';
 
 export default function EditPage({
 	params,
@@ -33,8 +41,61 @@ export default function EditPage({
 		refresh();
 	}, [refresh]);
 
+	const [guideDeckEditPage, setGuideDeckEditPage] = useLocalStorage(
+		'guideDeckEditPage',
+		false,
+	);
+	const [joyrideRun, setJoyrideRun] = useState(!guideDeckEditPage);
+
+	const steps: Array<Step> = [
+		{
+			target: '.joyride-deck-edit-add',
+			content: t('dashboard.deckEdit.joyride.step1Add'),
+			disableBeacon: true,
+		},
+		{
+			target: '.joyride-deck-edit-list',
+			content: t('dashboard.deckEdit.joyride.step2List'),
+		},
+		{
+			target: '.joyride-deck-edit-search-upload-area',
+			content: t('dashboard.deckEdit.joyride.step3SearchUploadArea'),
+		},
+		{
+			target: '.joyride-deck-edit-upload-button',
+			content: t('dashboard.deckEdit.joyride.step4UploadButton'),
+		},
+		{
+			target: '.joyride-deck-edit-search-component',
+			content: t('dashboard.deckEdit.joyride.step5SearchComponent'),
+		},
+	];
+
+	const handleJoyrideCallback = (data: CallBackProps) => {
+		const { action, index, status, type } = data;
+		if ([STATUS.FINISHED, STATUS.SKIPPED].includes(status as Status)) {
+			setJoyrideRun(false);
+			setGuideDeckEditPage(true);
+		}
+		console.log('Joyride callback data', data);
+	};
+
 	return (
 		<div className='flex flex-row h-full gap-2 max-md:flex-col *:max-md:w-full *:max-md:min-h-full dark:bg-gray-700'>
+			<Joyride
+				steps={steps}
+				run={joyrideRun}
+				callback={handleJoyrideCallback}
+				continuous
+				showProgress
+				showSkipButton
+				styles={{
+					options: {
+						zIndex: 10000,
+						primaryColor: '#007bff', // Example color, adjust as needed
+					},
+				}}
+			/>
 			{isPending && (
 				<div className=' fixed z-10 inset-0 flex items-center justify-center bg-black bg-opacity-50 h-full w-full top-0 left-0'>
 					<svg
@@ -57,21 +118,21 @@ export default function EditPage({
 				</div>
 			)}
 			<Add
-				className='max-w-2/5 w-2/5 dark:bg-gray-800'
+				className='max-w-2/5 w-2/5 dark:bg-gray-800 joyride-deck-edit-add'
 				id={id}
 				onAdd={refresh}
 			/>
 			<List
 				cards={deck ? deck.cards : []}
-				className='max-h-full md:max-w-[20vw] w-1/5 max-md:w-full overflow-hidden dark:bg-gray-800'
+				className='max-h-full md:max-w-[20vw] w-1/5 max-md:w-full overflow-hidden dark:bg-gray-800 joyride-deck-edit-list max-md:order-3'
 			/>
-			<div className='max-w-1/5 w-2/5 overflow-clip dark:bg-gray-800 p-2 rounded-lg'>
+			<div className='max-w-1/5 w-2/5 overflow-clip dark:bg-gray-800 p-2 rounded-lg joyride-deck-edit-search-upload-area max-md:order-2'>
 				<div className='flex flex-row items-center justify-center bg-slate-200 dark:bg-slate-700 p-2 rounded-lg text-black dark:text-white'>
 					<p className='flex-grow'>
 						{t('dashboard.deckEdit.uploadImagePrompt')} {/* Translated */}
 					</p>
 					<button
-						className='bg-blue-500 dark:bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-600 dark:hover:bg-blue-500'
+						className='bg-blue-500 dark:bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-600 dark:hover:bg-blue-500 joyride-deck-edit-upload-button'
 						onClick={() => {
 							const input = document.querySelector(
 								'input[type="file"]',
@@ -180,6 +241,7 @@ export default function EditPage({
 				<Search
 					deckid={id}
 					onAdd={refresh}
+					className='joyride-deck-edit-search-component'
 				/>
 			</div>
 		</div>

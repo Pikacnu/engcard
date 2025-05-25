@@ -9,10 +9,44 @@ import {
 	Word,
 	Deck,
 	CardProps,
+    GrammarError,
 } from '@/type';
 import { auth, ChatModelSchema, GenerateTextResponse } from '@/utils';
 import { ObjectId, WithId } from 'mongodb';
 import { Session } from 'next-auth';
+import { functions as aiDefinedFunctions, chatModelInstruction } from '@/utils/ai/prompt';
+import { Content, FunctionCall, Part } from '@google/generative-ai'; 
+import { ModelLevel, AiResponse } from '@/utils/ai/generate'; 
+import { GChatModelSchema } from '@/utils/ai/schema';
+import { aiFeatures } from '@/config'; 
+import { checkTextGrammar } from '@/lib/grammar';
+
+// Helper to get current chat from DB, ensuring it's fresh
+async function getFreshChat(chatId: ObjectId): Promise<ChatSession | null> {
+    return await db.collection<ChatSession>('chat').findOne({ _id: chatId });
+}
+
+// Helper to save a history item
+async function saveHistoryItem(chatId: ObjectId, item: ChatSession['history'][0]): Promise<void> {
+    await db.collection<ChatSession>('chat').updateOne(
+        { _id: chatId },
+        { $push: { history: item as any } } 
+    );
+}
+
+// Helper to generate a unique ID for history items
+function generateHistoryId(currentHistoryLength: number): string {
+    return Number(currentHistoryLength.toString() + Date.now()).toString(16);
+}
+
+// Helper to map string function names to ChatAction enum values
+function getChatActionFromString(actionName: string): ChatAction | undefined {
+    if (Object.values(ChatAction).includes(actionName as ChatAction)) {
+        return actionName as ChatAction;
+    }
+    return undefined;
+}
+
 
 export async function getChatList() {
 	const session = await auth();
@@ -62,6 +96,50 @@ export async function createChatSession() {
 }
 
 export async function getChatHistory(chatId: string) {
+    const session = await auth();
+    if (!session?.user?.id) {
+        return {
+            error: 'Not authenticated',
+        };
+    }
+    if (!ObjectId.isValid(chatId)) {
+        return {
+            error: 'Invalid chat id',
+        };
+    }
+
+    const chatSession = await db.collection<ChatSession>('chat').findOne({
+        _id: new ObjectId(chatId),
+        userId: session.user.id, 
+    });
+
+    if (!chatSession) {
+        return {
+            error: 'Chat not found or not authorized',
+        };
+    }
+
+    return chatSession.history.map((historyItem) => {
+        const { content, action, grammarCheckResults } = historyItem;
+        
+        const frontendHistoryItem: any = { 
+            id: content.id,
+            role: content.role,
+            parts: content.parts,
+        };
+
+        if (action) {
+            frontendHistoryItem.action = action; 
+        }
+        if (grammarCheckResults) {
+            frontendHistoryItem.grammarCheckResults = grammarCheckResults;
+        }
+        
+        return frontendHistoryItem;
+    });
+}
+
+export async function changeChatName(chatId: string, newName: string) {
 	const session = await auth();
 	if (!session) {
 		return {
@@ -74,51 +152,14 @@ export async function getChatHistory(chatId: string) {
 		};
 	}
 
-	const chatSession = await db.collection<ChatSession>('chat').findOne({
-		_id: new ObjectId(chatId),
-	});
-
-	if (!chatSession) {
-		return {
-			error: 'Chat not found',
-		};
-	}
-
-	return chatSession.history.map((history) => {
-		if (history.action && history.action.action === ChatAction.ShowOuput) {
-			return {
-				...history.content,
-				action: {
-					action: ChatAction.ShowOuput,
-					words: history.action.words,
-				},
-			};
-		}
-		return history.content;
-	});
-}
-
-export async function chagneChatName(deckId: string, name: string) {
-	const session = await auth();
-	if (!session) {
-		return {
-			error: 'Not authenticated',
-		};
-	}
-	if (!ObjectId.isValid(deckId)) {
-		return {
-			error: 'Invalid chat id',
-		};
-	}
-
 	const chatSession = await db.collection<ChatSession>('chat').findOneAndUpdate(
 		{
-			_id: new ObjectId(deckId),
+			_id: new ObjectId(chatId),
 			userId: session.user?.id,
 		},
 		{
 			$set: {
-				chatName: name,
+				chatName: newName,
 			},
 		},
 	);
@@ -133,119 +174,176 @@ export async function chagneChatName(deckId: string, name: string) {
 }
 
 export async function sendMessage(chatId: string, message: string) {
-	const session = await auth();
-	if (!session) {
-		return {
-			error: 'Not authenticated',
-		};
-	}
-	if (!ObjectId.isValid(chatId)) return { error: 'Invalid chat id' };
+    const session = await auth();
+    if (!session?.user?.id) {
+        return { error: 'Not authenticated' };
+    }
+    if (!ObjectId.isValid(chatId)) return { error: 'Invalid chat id' };
 
-	const chat = await db.collection<ChatSession>('chat').findOne({
-		_id: new ObjectId(chatId),
-	});
+    const chatObjectId = new ObjectId(chatId);
 
-	if (!chat) {
-		return {
-			error: 'Chat not found',
-		};
-	}
-	if (!chat.userId || chat.userId !== session.user?.id)
-		return { error: 'Chat not found' };
+    let currentChat = await getFreshChat(chatObjectId);
+    if (!currentChat || currentChat.userId !== session.user.id) {
+        return { error: 'Chat not found or not authorized' };
+    }
 
-	const messageId = Number(
-		chat.history.length.toString() + Date.now(),
-	).toString(16);
+    const userMessageId = generateHistoryId(currentChat.history.length);
+    const userMessageContent: Content = { role: 'user', parts: [{ text: message }] };
+    await saveHistoryItem(chatObjectId, { content: { id: userMessageId, ...userMessageContent } });
+    
+    currentChat = await getFreshChat(chatObjectId); 
+    if (!currentChat) return { error: "Failed to refresh chat after saving user message" };
 
-	db.collection<ChatSession>('chat').updateOne(
-		{ _id: new ObjectId(chatId) },
-		{
-			$push: {
-				history: {
-					content: {
-						id: messageId,
-						role: 'user',
-						parts: [{ text: message }],
-					},
-				},
-			},
-		},
-	);
+    const functionsToPass = aiFeatures.useFunctionCalling ? aiDefinedFunctions : undefined;
+    let currentAiResponse = await GenerateTextResponse<ChatModelSchema>(
+        message, 
+        currentChat.history.map(h => h.content as Content),
+        chatModelInstruction, 
+        ModelLevel.Simple,    
+        [[ChatModelSchema, ChatModelSchema], GChatModelSchema], 
+        functionsToPass
+    );
 
-	const response = await GenerateTextResponse(
-		message,
-		chat.history.map((h) => {
-			return {
-				role: h.content.role,
-				parts: h.content.parts,
-			};
-		}),
-		session.user?.id || '',
-	);
+    let loopCount = 0;
+    const maxLoops = 5;
+    let grammarResultsForFinalMessage: GrammarError[] | undefined = undefined;
 
-	console.log('response', response);
+    while (aiFeatures.useFunctionCalling && currentAiResponse.type === 'functionCall' && loopCount < maxLoops) {
+        loopCount++;
+        const functionCall = currentAiResponse.functionCall;
+        const currentAiResponseId = generateHistoryId(currentChat.history.length);
 
-	const id = Number(chat.history.length.toString() + Date.now()).toString(16);
-	const chatSession = await db.collection<ChatSession>('chat').findOneAndUpdate(
-		{
-			_id: new ObjectId(chatId),
-			userId: session.user?.id,
-		},
-		{
-			$push: {
-				history: {
-					content: {
-						id: id,
-						...response.content,
-					},
-					action: response.data,
-				},
-			},
-			$set: {
-				chatName: response.data.changeChatName
-					? response.data.changeChatName
-					: chat.chatName,
-			},
-		},
-	);
+        const aiFuncCallContent: Content = { role: 'model', parts: [{ functionCall }] };
+        await saveHistoryItem(chatObjectId, { 
+            content: { id: currentAiResponseId, ...aiFuncCallContent }, 
+            functionCall 
+        });
+        currentChat = await getFreshChat(chatObjectId);
+        if (!currentChat) return { error: "Failed to refresh chat after saving AI function call" };
 
-	if (!chatSession) {
-		return {
-			error: 'Chat not found',
-		};
-	}
+        const functionName = functionCall.name;
+        const functionArgs = functionCall.args as any; // Type assertion for convenience
+        let executionResultContent: Record<string, any> = { success: false, message: `Function ${functionName} execution failed or name not recognized.` };
+        
+        let lastGrammarCheckResultsThisIteration: GrammarError[] | undefined = undefined;
+        // Reset grammarResultsForFinalMessage at the start of each iteration's logic
+        // This ensures it's only set if checkGrammar is the *last* function in a potential chain for this iteration.
+        grammarResultsForFinalMessage = undefined;
 
-	const optionalValue =
-		response.data.action === ChatAction.ShowOuput
-			? {
-					action: ChatAction.ShowOuput,
-					words: response.data.words,
-			  }
-			: {};
 
-	const runFunctionResult = await chatActionFunctions[
-		response.data.action as ChatAction
-	](response.data, session);
+        switch (functionName) {
+            case 'checkGrammar': {
+                const textToParse = functionArgs.text || '';
+                const actualGrammarResults = await checkTextGrammar(textToParse);
+                executionResultContent = { 
+                    name: functionName, 
+                    content: { summary: `Grammar check done. ${actualGrammarResults.length} issues found.`, results: actualGrammarResults } 
+                };
+                lastGrammarCheckResultsThisIteration = actualGrammarResults; 
+                break;
+            }
+            default: {
+                const actionKey = getChatActionFromString(functionName);
+                if (actionKey && 
+                    actionKey !== ChatAction.DoNothing && 
+                    actionKey !== ChatAction.GrammarCheck 
+                   ) {
+                    const actionHandler = chatActionFunctions[actionKey];
+                    if (actionHandler) {
+                        const adaptedArgsAsChatModelSchema: Partial<ChatModelSchema> = { 
+                            ...(functionArgs || {}), 
+                            action: actionKey, 
+                            message: `Executing ${functionName} via function call.` 
+                        };
+                        if (!Array.isArray(adaptedArgsAsChatModelSchema.words)) {
+                            adaptedArgsAsChatModelSchema.words = [];
+                        }
 
-	if (
-		chatActionFunctions instanceof Object &&
-		runFunctionResult &&
-		'error' in runFunctionResult
-	) {
-		console.error(runFunctionResult.error);
-	}
+                        const handlerResult = await actionHandler(adaptedArgsAsChatModelSchema as ChatModelSchema, session);
+                        executionResultContent = { 
+                            name: functionName, 
+                            content: { success: !handlerResult?.error, message: handlerResult?.error || `Action '${functionName}' executed successfully via function call.` } 
+                        };
+                    } else {
+                        executionResultContent.message = `No handler found for action key: ${actionKey} derived from function ${functionName}`;
+                    }
+                } else {
+                    executionResultContent.message = `Unknown or unhandled function call: ${functionName}. No corresponding ChatAction.`;
+                    console.log(`Unsupported function call: ${functionName}`);
+                }
+                break;
+            }
+        }
+        
+        if (lastGrammarCheckResultsThisIteration) {
+            grammarResultsForFinalMessage = lastGrammarCheckResultsThisIteration;
+        }
+        
+        const toolResponseId = generateHistoryId(currentChat.history.length);
+        const toolMessageParts: Part[] = [{ functionResponse: { name: functionName, response: executionResultContent } }];
+        const toolMessageContent: Content = { role: 'tool', parts: toolMessageParts };
+        
+        await saveHistoryItem(chatObjectId, { content: { id: toolResponseId, ...toolMessageContent } });
+        currentChat = await getFreshChat(chatObjectId);
+        if (!currentChat) return { error: "Failed to refresh chat after saving tool response" };
 
-	return Object.assign(
-		{
-			message: 'success',
-			content: {
-				id: id,
-				role: response.content.role,
-				parts: [{ text: response.data.message }],
-			},
-		},
-		optionalValue,
-	);
+        currentAiResponse = await GenerateTextResponse<ChatModelSchema>(
+            "", 
+            currentChat.history.map(h => h.content as Content),
+            chatModelInstruction,
+            ModelLevel.Simple,
+            [[ChatModelSchema, ChatModelSchema], GChatModelSchema],
+            functionsToPass 
+        );
+    }
+
+    let finalAiData: ChatModelSchema;
+    const finalMessageId = generateHistoryId(currentChat.history.length);
+
+    if (currentAiResponse.type === 'functionCall' && loopCount >= maxLoops) {
+        console.log("Max function call loops reached.");
+        const maxLoopMessage = "I seem to be stuck in a loop trying to use my tools. Let's try something else. How can I help you now?";
+        finalAiData = { 
+            action: ChatAction.DoNothing, 
+            message: maxLoopMessage,
+            words: [],
+        };
+        grammarResultsForFinalMessage = undefined; 
+        const maxLoopMsgContent: Content = { role: 'model', parts: [{ text: finalAiData.message }] };
+        await saveHistoryItem(chatObjectId, { content: { id: finalMessageId, ...maxLoopMsgContent }, action: finalAiData });
+    } else if (currentAiResponse.type === 'data') {
+        finalAiData = currentAiResponse.data;
+        const finalAiContent: Content = { role: 'model', parts: [{ text: finalAiData.message }] };
+        await saveHistoryItem(chatObjectId, { 
+            content: { id: finalMessageId, ...finalAiContent }, 
+            action: finalAiData, 
+            grammarCheckResults: grammarResultsForFinalMessage 
+        });
+    } else {
+        console.error('Exited loop with unexpected AI response type or error:', currentAiResponse);
+        const errorMessage = "Sorry, I encountered an unexpected issue while processing your request.";
+        finalAiData = { 
+            action: ChatAction.DoNothing, 
+            message: errorMessage,
+            words: [],
+        };
+        grammarResultsForFinalMessage = undefined;
+        const errorMsgContent: Content = { role: 'model', parts: [{ text: finalAiData.message }] };
+        await saveHistoryItem(chatObjectId, { content: { id: finalMessageId, ...errorMsgContent }, action: finalAiData });
+    }
+    
+    if (finalAiData.action && 
+        finalAiData.action !== ChatAction.DoNothing &&
+        !(aiFeatures.useFunctionCalling && getChatActionFromString(finalAiData.action)) ) {
+        await chatActionFunctions[finalAiData.action as ChatAction](finalAiData, session);
+    }
+    
+    return {
+        message: 'success',
+        content: { id: finalMessageId, role: 'model', parts: [{ text: finalAiData.message }] },
+        action: finalAiData,
+        grammarCheckResults: grammarResultsForFinalMessage
+    };
 }
 
 const chatActionFunctions: Record<
@@ -391,85 +489,25 @@ const chatActionFunctions: Record<
 			}, index * 2.5 * 1_000);
 		});
 	},
+	[ChatAction.ChangeChatName]: async (data, userData) => {
+		const session = userData || (await auth()); 
+		if (!session) return { error: 'Not authenticated' };
+
+		const chatId = data.targetDeckId; 
+		const newName = data.changeChatName;
+
+		if (!chatId) return { error: 'No chat ID provided for changing name.' };
+		if (!newName) return { error: 'No new name provided for chat.' };
+		if (!ObjectId.isValid(chatId)) return { error: 'Invalid chat ID format.' };
+
+		return await changeChatName(chatId, newName);
+	},
+    [ChatAction.GrammarCheck]: async (data, userData) => {
+        console.log('GrammarCheck action called with data:', data);
+        return;
+    },
 };
 
-/*const chatActionFunctions: Record<
-	ChatAction,
-	(
-		session: Session,
-		...data: { [key: string]: string | string[] | number | boolean }[]
-	) => Promise<void | { error: string }> | void
-> = {
-	[ChatAction.DoNothing]: async () => {},
-	[ChatAction.ShowOuput]: async () => {},
-	[ChatAction.AddDeck]: async (userData, data) => {
-		const session = userData || (await auth());
-		if (!session) return { error: 'Not authenticated' };
-		if (!data.deckName || typeof data.deckName !== 'string')
-			return { error: 'No deck name provided' };
-		const deckId = (
-			await db.collection<DeckCollection>('deck').insertOne({
-				userId: session.user?.id || '',
-				name: data.deckName || '',
-				isPublic: false,
-				cards: [],
-			})
-		).insertedId.toString();
-		await addWords(data.words as string[], deckId, session);
-		return;
-	},
-	[ChatAction.RemoveDeck]: async (userData, data) => {
-		const session = userData || (await auth());
-		if (!session) return { error: 'Not authenticated' };
-		if (!data.deckId) return { error: 'No deck id provided' };
-		if (!ObjectId.isValid(data.deckId as string))
-			return { error: 'Invalid deck id' };
-		const deck = await db.collection<Deck>('deck').findOneAndDelete({
-			_id: new ObjectId(data.deckId as string),
-			userId: session.user?.id,
-		});
-		if (!deck) return { error: 'Deck not found' };
-		return;
-	},
-	[ChatAction.EditDeck]: async (userData, data) => {
-		const session = userData || (await auth());
-
-		const words = data.words as string[];
-		const deckId = data.deckId as string;
-		if (!session) return { error: 'Not authenticated' };
-		if (!deckId) return { error: 'No deck id provided' };
-		if (!ObjectId.isValid(deckId as string))
-			return { error: 'Invalid deck id' };
-
-		const currentDeckData = await db
-			.collection<Deck>('deck')
-			.findOne({ _id: new ObjectId(data.deckId as string) });
-		if (!currentDeckData) return { error: 'Deck not found' };
-
-		const originalDeckWords = currentDeckData.cards.map((card) => card.word);
-		const newWords = words.filter((word) => !originalDeckWords.includes(word));
-		const removedWords = originalDeckWords.filter(
-			(word) => !words.includes(word),
-		);
-
-		const deck = await db.collection<Deck>('deck').findOneAndUpdate(
-			{ _id: new ObjectId(deckId), userId: session.user?.id },
-			{
-				$set: {
-					name: (data.newDeckName as string) || '',
-					cards: currentDeckData.cards.filter((card) =>
-						removedWords.includes(card.word),
-					),
-				},
-			},
-		);
-		await addWords(newWords, deckId, session);
-
-		if (!deck) return { error: 'Deck not found' };
-		return;
-	},
-	[ChatAction.AddCard]: async () => {},
-}; */
 
 async function addWords(words: string[], deckId: string, session: Session) {
 	words.map((word, index) => {
