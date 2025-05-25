@@ -503,8 +503,17 @@ const chatActionFunctions: Record<
 		return await changeChatName(chatId, newName);
 	},
     [ChatAction.GrammarCheck]: async (data, userData) => {
-        console.log('GrammarCheck action called with data:', data);
-        return;
+        if (!data || !data.text) {
+            return { error: 'No text provided for grammar check.' };
+        }
+
+        try {
+            const grammarCheckResults = await checkTextGrammar(data.text);
+            return { grammarCheckResults };
+        } catch (error) {
+            console.error('Error during grammar check:', error);
+            return { error: 'Failed to perform grammar check.' };
+        }
     },
 };
 
