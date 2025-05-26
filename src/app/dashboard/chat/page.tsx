@@ -34,8 +34,9 @@ export default function Chat() {
 	>([]);
 	const [isSending, startSending] = useTransition();
 	const [loading, setLoading] = useState(true);
+	const isInitChat = useRef(false);
 	const chatRef = useRef<HTMLDivElement>(null);
-	useScrollToBottom(chatRef, [chatId]); // Assuming this hook doesn't need translation context
+	useScrollToBottom(chatRef, [chatId]);
 
 	useEffect(() => {
 		getChatList().then((data) => {
@@ -55,7 +56,16 @@ export default function Chat() {
 				currentId = chatList[0]._id;
 				setChatId(currentId);
 			} else {
-				return;
+				if (isInitChat.current) return;
+				isInitChat.current = true;
+				createChatSession().then((data) => {
+					if ('error' in data) {
+						console.error(data.error);
+						return setChatId('');
+					}
+					setChatId(data.id);
+					currentId = data.id;
+				});
 			}
 		}
 		getChatHistory
@@ -68,7 +78,7 @@ export default function Chat() {
 				}
 				setHistory(data);
 			});
-	}, [chatId, chatList]);
+	}, [chatId, chatList, isInitChat]);
 
 	return (
 		<div className='flex flex-row max-md:flex-col flex-grow md:*:m-4 max-md:*:m-1 items-center justify-center h-full *:md:h-full dark:bg-gray-700'>
@@ -130,18 +140,24 @@ export default function Chat() {
 				</button>
 			</div>
 			<div className='flex flex-col flex-grow bg-gray-200 dark:bg-gray-800 rounded-lg max-md:max-h-[80vh] max-md:w-full'>
-				<div ref={chatRef} className='flex flex-col flex-grow overflow-y-auto p-2 space-y-2'>
+				<div
+					ref={chatRef}
+					className='flex flex-col flex-grow overflow-y-auto p-2 space-y-2'
+				>
 					{history.map((content) => {
 						const { role, parts, action } = content;
 						const isUser = role === 'user';
-						const messageBgColor = isUser ? 'bg-blue-500 dark:bg-blue-600 text-white' : 'bg-gray-300 dark:bg-gray-600 text-black dark:text-white';
+						const messageBgColor = isUser
+							? 'bg-blue-500 dark:bg-blue-600 text-white'
+							: 'bg-gray-300 dark:bg-gray-600 text-black dark:text-white';
 						const messageAlign = isUser ? 'self-end' : 'self-start';
 						const partsDirection = isUser ? 'flex-row-reverse' : 'flex-row';
 
-
 						return (
 							<div
-								className={`flex w-full ${isUser ? 'justify-end' : 'justify-start'}`}
+								className={`flex w-full ${
+									isUser ? 'justify-end' : 'justify-start'
+								}`}
 								key={content.id}
 							>
 								<div className={`flex flex-col max-w-[70%]`}>
@@ -154,7 +170,9 @@ export default function Chat() {
 												>
 													{part.text}
 													{action && action.action === ChatAction.ShowOuput && (
-														<div className={`flex text-sm flex-wrap *:p-1 *:bg-yellow-200 dark:*:bg-yellow-700 *:rounded-lg *:m-1 ${partsDirection}`}>
+														<div
+															className={`flex text-sm flex-wrap *:p-1 *:bg-yellow-200 dark:*:bg-yellow-700 *:rounded-lg *:m-1 ${partsDirection}`}
+														>
 															{action.words.map((word) => (
 																<p key={word}>{word}</p>
 															))}
@@ -184,14 +202,22 @@ export default function Chat() {
 						disabled={isSending}
 						placeholder={t('dashboard.chat.inputPlaceholder')} // Translated
 						onChange={(e) => setMessage(e.target.value)}
-						onKeyPress={(e) => { // Added Enter key press functionality
-							if (e.key === 'Enter' && !e.shiftKey && message.trim() !== '' && !isSending) {
+						onKeyDown={(e) => {
+							// Added Enter key press functionality
+							if (
+								e.key === 'Enter' &&
+								!e.shiftKey &&
+								message.trim() !== '' &&
+								!isSending
+							) {
 								e.preventDefault(); // Prevents newline in some browsers
 								// Trigger send logic
 								setHistory((prev) => [
 									...prev,
 									{
-										id: Number(prev.length.toString() + Date.now()).toString(16),
+										id: Number(prev.length.toString() + Date.now()).toString(
+											16,
+										),
 										role: 'user',
 										parts: [{ text: message }],
 									},

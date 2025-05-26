@@ -2,20 +2,43 @@
 import List from '@/components/list';
 import Add from './add';
 import Search from './search';
-import { use, useCallback, useEffect, useState, useTransition } from 'react';
-import { DeckCollection } from '@/type';
+import {
+	use,
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+	useTransition,
+} from 'react';
+import { CardProps, DeckCollection } from '@/type';
 import { FileToBase64 } from '@/utils/base64';
-import { useTranslation } from '@/context/LanguageContext'; // Added
+import { useTranslation } from '@/context/LanguageContext';
+import { CallBackProps, Joyride, Status, STATUS, Step } from 'react-joyride';
+import { useLocalStorage } from '@/hooks/localstorage';
+import { useDevice } from '@/hooks/useDevice';
 
 export default function EditPage({
 	params,
 }: {
 	params: Promise<{ id: string }>;
 }) {
-	const { t } = useTranslation(); // Added
+	const { t } = useTranslation();
 	const { id } = use(params);
 	const [deck, setDeck] = useState<DeckCollection | null>();
 	const [isPending, startTransition] = useTransition();
+	const [, setProcessingWordTimestamp] = useState(0);
+	const file = useRef<HTMLInputElement>(null);
+	const cardProcessing: CardProps = useMemo(
+		() => ({
+			word: t('dashboard.deckEdit.processingWord'), // Translated
+			phonetic: '',
+			blocks: [],
+			flipped: true,
+		}),
+		[t],
+	);
+	const { isMobile } = useDevice();
 
 	const refresh = useCallback(() => {
 		fetch(`/api/deck?id=${id}`)
@@ -24,17 +47,57 @@ export default function EditPage({
 				if (data.error) {
 					return;
 				}
-				console.log(data);
-				setDeck(data);
+				setDeck(
+					Object.assign(data, {
+						cards: (data.cards || []).push(cardProcessing),
+					}),
+				);
 			});
-	}, [id]);
+	}, [id, cardProcessing]);
 
 	useEffect(() => {
 		refresh();
-	}, [refresh]);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []);
+
+	const [isGuideEdit, setIsGuideEdit] = useLocalStorage<boolean>(
+		'guideEdit',
+		false,
+	);
+
+	const [joyrideRun, setJoyrideRun] = useState(!isGuideEdit);
+	const steps: Array<Step> = [
+		{
+			target: '.add-area',
+			content: t('dashboard.deckEdit.joyride.step1Content'),
+			placement: isMobile ? 'center' : 'auto',
+		},
+		{
+			target: '.upload-area',
+			content: t('dashboard.deckEdit.joyride.step2Content'),
+			placement: 'top',
+		},
+		{
+			target: '.search-area',
+			content: t('dashboard.deckEdit.joyride.step3Content'),
+			placement: 'top',
+		},
+		{
+			target: '.list-area',
+			content: t('dashboard.deckEdit.joyride.step4Content'),
+			placement: isMobile ? 'center' : 'auto',
+		},
+	];
+	const handleJoyrideCallback = (data: CallBackProps) => {
+		const { status } = data;
+		if (([STATUS.FINISHED, STATUS.SKIPPED] as Array<Status>).includes(status)) {
+			setJoyrideRun(false);
+			setIsGuideEdit(true);
+		}
+	};
 
 	return (
-		<div className='flex flex-row h-full gap-2 max-md:flex-col *:max-md:w-full *:max-md:min-h-full dark:bg-gray-700'>
+		<div className='flex flex-row h-full max-md:flex-col *:max-md:w-full *:max-md:min-h-full dark:bg-gray-700'>
 			{isPending && (
 				<div className=' fixed z-10 inset-0 flex items-center justify-center bg-black bg-opacity-50 h-full w-full top-0 left-0'>
 					<svg
@@ -53,22 +116,29 @@ export default function EditPage({
 							fill='currentFill'
 						/>
 					</svg>
-					<span className='sr-only'>{t('common.loadingSrOnly')}</span> {/* Translated */}
+					<span className='sr-only'>{t('common.loadingSrOnly')}</span>
 				</div>
 			)}
+			<div className='hidden'>
+				<Joyride
+					steps={steps}
+					continuous
+					showProgress
+					showSkipButton
+					disableCloseOnEsc
+					run={joyrideRun}
+					callback={handleJoyrideCallback}
+				/>
+			</div>
 			<Add
-				className='max-w-2/5 w-2/5 dark:bg-gray-800'
+				className='md:max-w-[40vw] w-full md:flex-grow dark:bg-gray-800 add-area'
 				id={id}
 				onAdd={refresh}
 			/>
-			<List
-				cards={deck ? deck.cards : []}
-				className='max-h-full md:max-w-[20vw] w-1/5 max-md:w-full overflow-hidden dark:bg-gray-800'
-			/>
-			<div className='max-w-1/5 w-2/5 overflow-clip dark:bg-gray-800 p-2 rounded-lg'>
-				<div className='flex flex-row items-center justify-center bg-slate-200 dark:bg-slate-700 p-2 rounded-lg text-black dark:text-white'>
+			<div className='md:max-w-[40vw] xl:w-full overflow-clip dark:bg-gray-800 p-2 '>
+				<div className='flex flex-row items-center justify-center bg-slate-200 dark:bg-slate-700 p-2 rounded-lg text-black dark:text-white upload-area'>
 					<p className='flex-grow'>
-						{t('dashboard.deckEdit.uploadImagePrompt')} {/* Translated */}
+						{t('dashboard.deckEdit.uploadImagePrompt')}
 					</p>
 					<button
 						className='bg-blue-500 dark:bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-600 dark:hover:bg-blue-500'
@@ -87,6 +157,7 @@ export default function EditPage({
 						hidden
 						type='file'
 						accept='image/*'
+						ref={file}
 						onInput={async (e) => {
 							const target = e.target as HTMLInputElement;
 							const file = target.files?.[0];
@@ -125,7 +196,6 @@ export default function EditPage({
 											},
 										);
 									}
-
 									let res;
 									try {
 										res = await fetch(`/api/ocr/deck?deckId=${id}`, {
@@ -158,9 +228,26 @@ export default function EditPage({
 									try {
 										const json = await res.json();
 										if (!res.ok) {
-											alert(`${t('dashboard.deckEdit.alertErrorPrefix')}${json.error}`); // Translated
+											startTransition(() => {
+												alert(
+													`${t('dashboard.deckEdit.alertErrorPrefix')}${
+														json.error
+													}`,
+												);
+											});
 											return;
 										}
+										const timeoutFn = (time: number) => {
+											setProcessingWordTimestamp((prev) =>
+												prev === time ? 0 : prev,
+											);
+											refresh();
+										};
+										setTimeout(
+											timeoutFn.bind(null, new Date().getTime()),
+											(json.time || 2) * 1000,
+										);
+										setProcessingWordTimestamp(Date.now());
 									} catch (e) {
 										console.log(e);
 										startTransition(() => {
@@ -177,11 +264,17 @@ export default function EditPage({
 						}}
 					/>
 				</div>
-				<Search
-					deckid={id}
-					onAdd={refresh}
-				/>
+				<div className='search-area'>
+					<Search
+						deckid={id}
+						onAdd={refresh}
+					/>
+				</div>
 			</div>
+			<List
+				cards={deck ? deck.cards : []}
+				className='max-h-full md:max-w-[30vw] xl:min-w-[30vw] w-1/5 max-md:w-full overflow-hidden dark:bg-gray-800 list-area'
+			/>
 		</div>
 	);
 }

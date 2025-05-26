@@ -23,6 +23,7 @@ import {
 	getDefiniationFromRecognizedResultAndCardProps,
 	transfromToCardPropsFromRecognizedResult,
 } from '@/utils/dict/functions';
+import { FinishReason } from '@google/generative-ai';
 
 export async function POST(req: Request) {
 	const session = await auth();
@@ -110,7 +111,7 @@ export async function POST(req: Request) {
 			binaryData,
 			ExtenstionToMimeType.get(imageType) as string,
 		);
-		const response = await TextRecognizeModel.generateContent({
+		let response = await TextRecognizeModel.generateContent({
 			contents: [
 				{
 					role: 'user',
@@ -125,7 +126,56 @@ export async function POST(req: Request) {
 				},
 			],
 		});
-		const result = JSON.parse(response.response.text()) as textRecognizeSchema;
+		let part = '';
+		while (true) {
+			if (!response.response.candidates) {
+				return NextResponse.json(
+					{ error: 'Failed to recognize text' },
+					{ status: 500 },
+				);
+			}
+			if (response.response.candidates[0].finishReason !== FinishReason.STOP) {
+				part += response.response.text();
+				response = await TextRecognizeModel.generateContent({
+					contents: [
+						{
+							role: 'user',
+							parts: [
+								{
+									fileData: {
+										mimeType: fileData.file.mimeType,
+										fileUri: fileData.file.uri,
+									},
+								},
+							],
+						},
+						{
+							role: 'assistant',
+							parts: [
+								{
+									text: part,
+								},
+							],
+						},
+						{
+							role: 'user',
+							parts: [
+								{
+									text: 'Continue from where you left off. Do not repeat any previous content.',
+								},
+							],
+						},
+					],
+				});
+				continue;
+			}
+			part += response.response.text();
+			break;
+		}
+
+		const result: textRecognizeSchema = textRecognizeSchema.parse(
+			JSON.parse(part),
+		);
 
 		if (processType === OCRProcessType.OnlyFromImage) {
 			const words = transfromToCardPropsFromRecognizedResult(result);
@@ -151,7 +201,7 @@ export async function POST(req: Request) {
 				{ status: 200 },
 			);
 		}
-		result.words.map((word, index) => {
+		result.words.forEach((word, index) => {
 			setTimeout(async () => {
 				await GET(
 					new Request(`http://localhost:3000/api/word?word=${word.word}`),
@@ -159,7 +209,11 @@ export async function POST(req: Request) {
 				const wordData = await db
 					.collection<WithAvliable<Word>>('words')
 					.findOne({ word: word.word });
-				if (!wordData || wordData.available === false) return;
+				if (
+					(wordData?.available !== undefined && wordData.available !== true) ||
+					!wordData
+				)
+					return;
 				if (settings?.ocrProcessType === OCRProcessType.FromSource) {
 					await db.collection<Deck>('deck').findOneAndUpdate(
 						{ _id: new ObjectId(deckId), userId: session.user?.id },
@@ -173,7 +227,6 @@ export async function POST(req: Request) {
 							},
 						},
 					);
-					return;
 				}
 				if (
 					settings?.ocrProcessType ===
@@ -208,14 +261,18 @@ export async function POST(req: Request) {
 						},
 					);
 				}
-			}, index * 2.5 * 1_000);
+			}, index * 1.5 * 1_000);
+			return NextResponse.json(
+				{
+					message: 'Image uploaded successfully',
+					time: result.words.length * 2,
+				},
+				{ status: 200 },
+			);
 		});
-		return NextResponse.json(
-			{
-				message: 'Image uploaded successfully',
-			},
-			{ status: 200 },
-		);
+		return NextResponse.json({
+			error: 'No words found in the image',
+		});
 	} catch (e) {
 		console.log(e);
 		return NextResponse.json(

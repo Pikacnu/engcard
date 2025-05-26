@@ -102,7 +102,7 @@ export async function getWordFromEnWordNetAPI(
 							relation.rel_type,
 						)
 					) {
-						return relation.target;
+						return relation.trg_word;
 					}
 					return null;
 				})
@@ -110,7 +110,7 @@ export async function getWordFromEnWordNetAPI(
 			antonyms: item.relations
 				.map((relation) => {
 					if ([RelationType.Antonym].includes(relation.rel_type)) {
-						return relation.target;
+						return relation.trg_word;
 					}
 				})
 				.filter((item) => item !== null) as string[],

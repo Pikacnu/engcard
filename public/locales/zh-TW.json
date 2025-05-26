@@ -158,6 +158,7 @@
 			"uploadButton": "上傳",
 			"alertErrorPrefix": "錯誤：",
 			"alertUploadError": "上傳圖片時發生錯誤",
+			"processingWord": "正在處理單字",
 			"add": {
 				"wordLabel": "單字：",
 				"posLabel": "詞性",
@@ -179,6 +180,12 @@
 				"inputPlaceholder": "輸入單字進行搜索",
 				"searchButton": "搜索",
 				"addButton": "新增"
+			},
+			"joyride": {
+				"step1Content": "在這可以手動輸入單字後，由下面選擇意思填入，或純手動填入",
+				"step2Content": "這提供了上傳按鈕，可上傳圖片並提取其中單字",
+				"step3Content": "可以在此處搜尋單字並增加到欄位內",
+				"step4Content": "可以在頁面最下方瀏覽當前列表內單字"
 			}
 		},
 		"speedReview": {

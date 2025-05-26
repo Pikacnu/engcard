@@ -158,6 +158,7 @@
 			"uploadButton": "Upload",
 			"alertErrorPrefix": "Error: ",
 			"alertUploadError": "Error uploading image",
+			"processingWord": "Processing uploaded words",
 			"add": {
 				"wordLabel": "Word:",
 				"posLabel": "Part Of Speech",
@@ -179,6 +180,12 @@
 				"inputPlaceholder": "Type a word to search",
 				"searchButton": "Search",
 				"addButton": "Add"
+			},
+			"joyride": {
+				"step1Content": "Here you can manually input words and then select meanings from below to fill in, or fill in completely manually.",
+				"step2Content": "This provides an upload button to upload images and extract words from them.",
+				"step3Content": "You can search for words here and add them to the field.",
+				"step4Content": "You can browse the words in the current list at the bottom of the page."
 			}
 		},
 		"speedReview": {

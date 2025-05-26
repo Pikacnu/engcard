@@ -1,5 +1,4 @@
 'use client';
-import { SessionProvider } from 'next-auth/react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useState } from 'react';
@@ -117,150 +116,149 @@ export default function DashBoardLayout({
 				run={joyrideRun}
 				callback={handleJoyrideCallback}
 			/>
-			<SessionProvider>
-				{/* Navbar div (main-nav): bg-white dark:bg-gray-800 text-black dark:text-white */}
-				<div className='flex flex-col max-md:flex-row h-full bg-white dark:bg-gray-800 text-black dark:text-white md:left-0 md:top-0 max-md:h-16 max-md:bottom-0 max-md:w-full justify-between items-center keyboard:hidden main-nav delay-0'>
-					{isBiMenuOpen ? (
-						// Buttons: bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-700 dark:bg-opacity-40 dark:hover:bg-emerald-600
-						<div className='*:bg-emerald-100 *:hover:bg-emerald-200 dark:*:bg-emerald-700 dark:*:bg-opacity-40 dark:*:hover:bg-emerald-600 *:p-2 *:m-2 *:rounded-md *:text-center flex flex-col max-md:flex-row'>
-							<Link
-								href={'/tempword'}
-								className='w-10 break-words max-md:w-auto max-md:h-10 tempword text-black'
-							>
-								{t('dashboard.navigation.sevenThousandWords')}
-							</Link>
-							<button
-								onClick={() => redirect('/auth/logout')}
-								className='logout'
-							>
-								<Image
-									src='/icons/box-arrow-in-left.svg'
-									alt={t('dashboard.navigation.altLogout')}
-									width={24}
-									height={24}
-									className='cursor-pointer' // Icon color should adapt if parent text color changes and SVG uses currentColor
-								></Image>
-							</button>
-							<Link
-								href={'/dashboard/settings'}
-								className='settings'
-							>
-								<Image
-									src='/icons/gear.svg'
-									alt={t('dashboard.navigation.altSettings')}
-									width={24}
-									height={24}
-									className='cursor-pointer'
-								></Image>
-							</Link>
-							<button
-								className='more-options'
-								onClick={() => setIsBiMenuOpen(false)}
-							>
-								<Image
-									src='/icons/more.svg'
-									alt={t('dashboard.navigation.altMenu')}
-									width={24}
-									height={24}
-									className='cursor-pointer'
-								></Image>
-							</button>
-							<ThemeToggler></ThemeToggler>
-						</div>
-					) : (
-						<div className='*:bg-emerald-100 *:hover:bg-emerald-200 dark:*:bg-emerald-700 dark:*:bg-opacity-40 dark:*:hover:bg-emerald-600 *:p-2 *:m-2 *:rounded-md *:text-center flex flex-col max-md:flex-row'>
-							<Link
-								href='/dashboard'
-								className='home-link'
-							>
-								<Image
-									src='/icons/home.svg'
-									alt={t('dashboard.navigation.altLogo')}
-									width={24}
-									height={24}
-									className='cursor-pointer'
-								></Image>
-							</Link>
-							<Link
-								href='/dashboard/search'
-								className='search-link'
-							>
-								<Image
-									src='/icons/search.svg'
-									alt={t('dashboard.navigation.altSearch')}
-									width={24}
-									height={24}
-									className='cursor-pointer'
-								></Image>
-							</Link>
-							<Link
-								href='/dashboard/deck'
-								className='deck-link'
-							>
-								<Image
-									src='/icons/card.svg'
-									alt={t('dashboard.navigation.altDeck')}
-									width={24}
-									height={24}
-									className='cursor-pointer'
-								></Image>
-							</Link>
-							<Link
-								href='/dashboard/preview'
-								className='preview-link'
-							>
-								<Image
-									src='/icons/file-play.svg'
-									alt={t('dashboard.navigation.altPreview')}
-									width={24}
-									height={24}
-									className='cursor-pointer'
-								></Image>
-							</Link>
-							<Link
-								href='/dashboard/chat'
-								className='chat-link'
-							>
-								<Image
-									src='/icons/chat.svg'
-									alt={t('dashboard.navigation.altChat')}
-									width={24}
-									height={24}
-									className='cursor-pointer'
-								></Image>
-							</Link>
-							<Link
-								href='/market'
-								className='market-link'
-							>
-								<Image
-									src='/icons/shop.svg'
-									alt={t('dashboard.navigation.altMarket')}
-									width={24}
-									height={24}
-									className='cursor-pointer'
-								></Image>
-							</Link>
-							<button
-								className='more-options'
-								onClick={() => setIsBiMenuOpen(true)}
-							>
-								<Image
-									src='/icons/more.svg'
-									alt={t('dashboard.navigation.altMenu')}
-									width={24}
-									height={24}
-									className='cursor-pointer'
-								></Image>
-							</button>
-						</div>
-					)}
-				</div>
-				{/* The content area should inherit its background from the outer div's dark:bg-gray-700 */}
-				<div className='flex-grow w-full overflow-auto h-full relative content-area'>
-					{children}
-				</div>
-			</SessionProvider>
+
+			{/* Navbar div (main-nav): bg-white dark:bg-gray-800 text-black dark:text-white */}
+			<div className='flex flex-col max-md:flex-row h-full bg-white dark:bg-gray-800 text-black dark:text-white md:left-0 md:top-0 max-md:h-16 max-md:bottom-0 max-md:w-full justify-between items-center keyboard:hidden main-nav delay-0'>
+				{isBiMenuOpen ? (
+					// Buttons: bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-700 dark:bg-opacity-40 dark:hover:bg-emerald-600
+					<div className='*:bg-emerald-100 dark:*:bg-emerald-700 dark:*:bg-opacity-40 *:p-2 *:m-2 *:rounded-md *:text-center flex flex-col max-md:flex-row'>
+						<Link
+							href={'/tempword'}
+							className='w-10 break-words max-md:w-auto max-md:h-10 tempword text-black'
+						>
+							{t('dashboard.navigation.sevenThousandWords')}
+						</Link>
+						<button
+							onClick={() => redirect('/auth/logout')}
+							className='logout'
+						>
+							<Image
+								src='/icons/box-arrow-in-left.svg'
+								alt={t('dashboard.navigation.altLogout')}
+								width={24}
+								height={24}
+								className='cursor-pointer' // Icon color should adapt if parent text color changes and SVG uses currentColor
+							></Image>
+						</button>
+						<Link
+							href={'/dashboard/settings'}
+							className='settings'
+						>
+							<Image
+								src='/icons/gear.svg'
+								alt={t('dashboard.navigation.altSettings')}
+								width={24}
+								height={24}
+								className='cursor-pointer'
+							></Image>
+						</Link>
+						<ThemeToggler></ThemeToggler>
+						<button
+							className='more-options'
+							onClick={() => setIsBiMenuOpen(false)}
+						>
+							<Image
+								src='/icons/more.svg'
+								alt={t('dashboard.navigation.altMenu')}
+								width={24}
+								height={24}
+								className='cursor-pointer'
+							></Image>
+						</button>
+					</div>
+				) : (
+					<div className='*:bg-emerald-100 dark:*:bg-emerald-700 dark:*:bg-opacity-40 *:p-2 *:m-2 *:rounded-md *:text-center flex flex-col max-md:flex-row'>
+						<Link
+							href='/dashboard'
+							className='home-link'
+						>
+							<Image
+								src='/icons/home.svg'
+								alt={t('dashboard.navigation.altLogo')}
+								width={24}
+								height={24}
+								className='cursor-pointer'
+							></Image>
+						</Link>
+						<Link
+							href='/dashboard/search'
+							className='search-link'
+						>
+							<Image
+								src='/icons/search.svg'
+								alt={t('dashboard.navigation.altSearch')}
+								width={24}
+								height={24}
+								className='cursor-pointer'
+							></Image>
+						</Link>
+						<Link
+							href='/dashboard/deck'
+							className='deck-link'
+						>
+							<Image
+								src='/icons/card.svg'
+								alt={t('dashboard.navigation.altDeck')}
+								width={24}
+								height={24}
+								className='cursor-pointer'
+							></Image>
+						</Link>
+						<Link
+							href='/dashboard/preview'
+							className='preview-link'
+						>
+							<Image
+								src='/icons/file-play.svg'
+								alt={t('dashboard.navigation.altPreview')}
+								width={24}
+								height={24}
+								className='cursor-pointer'
+							></Image>
+						</Link>
+						<Link
+							href='/dashboard/chat'
+							className='chat-link'
+						>
+							<Image
+								src='/icons/chat.svg'
+								alt={t('dashboard.navigation.altChat')}
+								width={24}
+								height={24}
+								className='cursor-pointer'
+							></Image>
+						</Link>
+						<Link
+							href='/market'
+							className='market-link'
+						>
+							<Image
+								src='/icons/shop.svg'
+								alt={t('dashboard.navigation.altMarket')}
+								width={24}
+								height={24}
+								className='cursor-pointer'
+							></Image>
+						</Link>
+						<button
+							className='more-options'
+							onClick={() => setIsBiMenuOpen(true)}
+						>
+							<Image
+								src='/icons/more.svg'
+								alt={t('dashboard.navigation.altMenu')}
+								width={24}
+								height={24}
+								className='cursor-pointer'
+							></Image>
+						</button>
+					</div>
+				)}
+			</div>
+			{/* The content area should inherit its background from the outer div's dark:bg-gray-700 */}
+			<div className='flex-grow w-full overflow-auto h-full relative content-area'>
+				{children}
+			</div>
 		</div>
 	);
 }

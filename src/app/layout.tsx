@@ -39,7 +39,6 @@ export default function RootLayout({
 				<ThemeProvider>
 					<LanguageProvider>
 						<SessionProvider>
-							{/* Other providers or components like Navbar */}
 							<div className='flex flex-col items-center justify-center bg-gray-700 w-full h-full min-h-max '>
 								{children}
 							</div>

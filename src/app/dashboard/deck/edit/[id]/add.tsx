@@ -139,7 +139,7 @@ export default function Add({
 
 	return (
 		<div
-			className={`flex flex-col bg-white dark:bg-gray-800 p-4 rounded-lg shadow-lg text-black dark:text-white *:outline-none *:m-2 [&>*:not(h3):not(button)]:border-2 *:border-black dark:*:border-gray-600 *:rounded-lg overflow-auto ${className}`}
+			className={`flex flex-col bg-white dark:bg-gray-800 p-4 shadow-lg text-black dark:text-white *:outline-none *:m-2 [&>*:not(h3):not(button)]:border-2 *:border-black dark:*:border-gray-600 *:rounded-lg overflow-auto ${className}`}
 		>
 			<h3 className='text-lg font-semibold'>
 				{t('dashboard.deckEdit.add.wordLabel')}

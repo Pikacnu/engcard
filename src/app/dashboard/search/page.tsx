@@ -1,6 +1,12 @@
 'use client';
 import { CardProps } from '@/type';
-import { useCallback, useEffect, useState, useTransition } from 'react';
+import {
+	useCallback,
+	useEffect,
+	useMemo,
+	useState,
+	useTransition,
+} from 'react';
 import Card from '@/components/card';
 import List from '@/components/list';
 import { useTranslation } from '@/context/LanguageContext';
@@ -17,11 +23,17 @@ export default function Search() {
 	const [cards, setCards] = useState<CardProps[]>([]);
 	const [type, setType] = useState<Type>(Type.card);
 	const [isPending, startTransition] = useTransition();
+	const [isScearched, setIsSearched] = useState<boolean>(false);
+	const notFoundString = useMemo(
+		() => `${t('dashboard.search.noResults')}`.replace('{{word}}', word || ''),
+		[t, word],
+	);
 
 	const getWord = useCallback(() => {
 		if (!word) {
 			return;
 		}
+		setIsSearched(true);
 		startTransition(async () => {
 			const res = await fetch(`/api/word?word=${word}`);
 			const json = await res.json();
@@ -97,21 +109,21 @@ export default function Search() {
 					</p>
 				</div>
 			)) ||
-				(type === Type.card && card && (
-					<div className='mt-4'>
-						<Card card={card} />
-					</div>
-				)) ||
+				(type === Type.card && card && <Card card={card} />) ||
 				(type === Type.cards && cards && cards.length > 0 && (
 					<div className='mt-4 w-full max-w-2xl'>
 						<List cards={cards} />
 					</div>
 				))}
-			{!isPending && !card && (!cards || cards.length === 0) && word && (
-				<p className='mt-4 text-gray-500 dark:text-gray-400'>{`${t(
-					'dashboard.search.noResults',
-				)}`}</p>
-			)}
+			{!isPending &&
+				!card &&
+				(!cards || cards.length === 0) &&
+				word &&
+				isScearched && (
+					<p className='mt-4 text-gray-500 dark:text-gray-400'>
+						`${notFoundString}`
+					</p>
+				)}
 		</div>
 	);
 }

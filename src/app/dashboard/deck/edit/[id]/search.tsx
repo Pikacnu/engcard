@@ -98,12 +98,15 @@ export default function Search({ deckid, onAdd }: PageProps) {
 							fill='currentFill'
 						/>
 					</svg>
-					<span className='sr-only'>{t('common.loadingSrOnly')}</span> {/* Translated */}
-					<p className='text-lg text-gray-500 dark:text-gray-400'>{t('common.loadingText')}</p>
+					<span className='sr-only'>{t('common.loadingSrOnly')}</span>{' '}
+					{/* Translated */}
+					<p className='text-lg text-gray-500 dark:text-gray-400'>
+						{t('common.loadingText')}
+					</p>
 				</div>
 			)) ||
 				(card && (
-					<div className='flex flex-col items-center justify-center h-auto min-w-1/5 max-w-4/5 w-3/5 max-md:min-w-[90vw] mt-4'>
+					<div className='flex flex-col items-center justify-center h-auto min-w-1/5 max-w-4/5 w-3/5 max-md:min-w-[90vw] mt-4 overflow-auto'>
 						<Card card={card} />
 					</div>
 				))}
