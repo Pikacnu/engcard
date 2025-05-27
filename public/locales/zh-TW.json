@@ -174,7 +174,13 @@
 				"addAntonymButton": "新增反義詞",
 				"removeDefinitionBlockButton": "移除定義區塊",
 				"selectDefinitionHint": "選擇要新增的定義",
-				"addCardButton": "新增卡片"
+				"addCardButton": "新增卡片",
+				"alertIncomplete": "請完成所有必填項目，至少須有單字與一項意思",
+				"alertNoDefinition": "請至少新增一個定義",
+				"alertEmptyDefinition": "定義不能為空",
+				"examplesLabel": "範例：",
+				"examplePlaceholder": "範例",
+				"addExampleButton": "新增範例"
 			},
 			"search": {
 				"inputPlaceholder": "輸入單字進行搜索",

@@ -174,7 +174,13 @@
 				"addAntonymButton": "Add Antonym",
 				"removeDefinitionBlockButton": "Remove Definition Block",
 				"selectDefinitionHint": "Select a definition to add",
-				"addCardButton": "Add Card"
+				"addCardButton": "Add Card",
+				"alertIncomplete": "Please complete all required fields - word and at least one definition are required",
+				"alertNoDefinition": "No definition available",
+				"alertEmptyDefinition": "Definition cannot be empty",
+				"examplesLabel": "Examples:",
+				"examplePlaceholder": "Example",
+				"addExampleButton": "Add Example"
 			},
 			"search": {
 				"inputPlaceholder": "Type a word to search",

@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
 	PartOfSpeech,
 	PartOfSpeechShort,
@@ -7,6 +7,8 @@ import {
 	Lang,
 	CardProps,
 	Blocks,
+	DefinitionData,
+	Example,
 } from '@/type';
 import { addCard } from '@/actions/deck';
 import { Langs } from '@/types/lang';
@@ -38,21 +40,34 @@ export default function Add({
 		index: number,
 		nestedKey: keyof Definition,
 		subIndex: number,
-		subKey: string,
-		value: string | number | PartOfSpeech,
+		subKey: string | keyof DefinitionData | keyof Example,
+		value: string | number | object | string[], // Adjusted type to handle string arrays
 	) => {
 		setDefinitions((prev) => {
 			const updated = [...prev];
-			const nestedArray = updated[index][nestedKey] as (
-				| string
-				| number
-				| PartOfSpeech
-			)[];
-			nestedArray[subIndex] = value;
-			updated[index] = { ...updated[index], [nestedKey]: nestedArray };
+			const nestedArray = updated[index][nestedKey] as (object | string)[];
+
+			if (subKey === '') {
+				// For string arrays (synonyms, antonyms)
+				nestedArray[subIndex] = value as string;
+			} else {
+				// For object arrays (definition, example)
+				const item = nestedArray[subIndex] as object;
+				(item as Record<string, unknown>)[subKey] = value;
+			}
+
+			updated[index] = {
+				...updated[index],
+				[nestedKey]: nestedArray,
+			};
+
 			return updated;
 		});
 	};
+
+	useEffect(() => {
+		console.log('Definitions updated:', definitions);
+	}, [definitions]);
 
 	const addNestedItem = (
 		index: number,
@@ -109,7 +124,106 @@ export default function Add({
 		]);
 	};
 
+	const handleExampleAdd = useCallback((blockIndex: number) => {
+		setDefinitions((prev) => {
+			const updated = [...prev];
+			if (!updated[blockIndex]) return prev; // Check if block exists
+			const example: Example = {
+				lang: 'en' as Lang,
+				content: '',
+			};
+			updated[blockIndex].example = [
+				...(updated[blockIndex].example || []),
+				[example], // Add new example
+			];
+			return updated;
+		});
+	}, []);
+
+	const handleExampleChange = (
+		blockIndex: number,
+		exampleIndex: number,
+		NestexampleIndex = 0,
+		subKey: keyof Example,
+		value: string,
+	) => {
+		setDefinitions((prev) => {
+			const updated = [...prev];
+			if (!updated[blockIndex]) return updated; // Check if block exists
+			if (
+				!updated[blockIndex].example ||
+				!Array.isArray(updated[blockIndex].example)
+			) {
+				return updated;
+			}
+			const example = updated[blockIndex].example[exampleIndex];
+			if (example) {
+				(example[NestexampleIndex][subKey] as string) = value;
+			}
+			return updated;
+		});
+	};
+
+	const handleExampleRemove = (
+		blockIndex: number,
+		exampleIndex: number,
+		NestexampleIndex = 0,
+	) => {
+		setDefinitions((prev) => {
+			const updated = [...prev];
+			if (!updated[blockIndex]) return updated; // Check if block exists
+			if (
+				!updated[blockIndex].example ||
+				!Array.isArray(updated[blockIndex].example)
+			) {
+				return updated;
+			}
+			const example = updated[blockIndex].example[exampleIndex];
+			if (example && example.length > 1) {
+				example.splice(NestexampleIndex, 1);
+			} else {
+				updated[blockIndex].example.splice(exampleIndex, 1);
+			}
+			return updated;
+		});
+	};
+
+	const handleExampleAddNested = (blockIndex: number, exampleIndex: number) => {
+		setDefinitions((prev) => {
+			const updated = [...prev];
+			if (!updated[blockIndex]) return updated; // Check if block exists
+			if (
+				!updated[blockIndex].example ||
+				!Array.isArray(updated[blockIndex].example)
+			) {
+				return updated;
+			}
+			const example = updated[blockIndex].example[exampleIndex];
+			if (example) {
+				example.push({ lang: 'en' as Lang, content: '' });
+			}
+			return updated;
+		});
+	};
+
 	const handleAddCard = () => {
+		if (!word || definitions.length === 0) {
+			alert(t('dashboard.deckEdit.add.alertIncomplete')); // Translated
+			return;
+		}
+
+		// Check if any definition block has no definitions
+		if (definitions.some((d) => d.definition.length === 0)) {
+			alert(t('dashboard.deckEdit.add.alertNoDefinition')); // Translated
+			return;
+		}
+
+		// Check if any definition has empty content
+		if (definitions.some((d) => d.definition.some((def) => !def.content))) {
+			alert(t('dashboard.deckEdit.add.alertEmptyDefinition')); // Translated
+			return;
+		}
+
 		addCard(id, word, definitions, partOfSpeech).then(() => {
 			if (onAdd) onAdd();
 			setWord('');
@@ -344,6 +458,95 @@ export default function Add({
 							{/* Use blockIndex */}
 							{t('dashboard.deckEdit.add.addAntonymButton')} {/* Translated */}
 						</button>
+						{/* Examples */}
+						<h5 className='text-md font-semibold mt-2'>
+							{t('dashboard.deckEdit.add.examplesLabel')}
+						</h5>
+						{definitionBlock.example &&
+							definitionBlock.example.map((example, exampleIndex) => (
+								<div
+									key={exampleIndex}
+									className='flex gap-2 items-center flex-col'
+								>
+									{example.map((ex, nestedIndex) => (
+										<div
+											key={nestedIndex}
+											className='flex gap-2 items-center'
+										>
+											<input
+												type='text'
+												value={ex.content}
+												placeholder={t(
+													'dashboard.deckEdit.add.examplePlaceholder',
+												)} // Translated
+												className='flex-grow bg-white dark:bg-gray-600'
+												onChange={(e) =>
+													handleExampleChange(
+														blockIndex, // Use blockIndex
+														exampleIndex,
+														nestedIndex,
+														'content',
+														e.target.value,
+													)
+												}
+											/>
+											<select
+												value={ex.lang}
+												className='bg-white dark:bg-gray-600'
+												onChange={(e) =>
+													handleExampleChange(
+														blockIndex, // Use blockIndex
+														exampleIndex,
+														nestedIndex,
+														'lang',
+														e.target.value as Lang,
+													)
+												}
+											>
+												{Langs.map((lang) => (
+													<option
+														key={lang}
+														value={lang}
+													>
+														{lang}
+													</option>
+												))}
+											</select>
+											<button
+												className='bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded-lg'
+												onClick={() =>
+													handleExampleRemove(
+														blockIndex, // Use blockIndex
+														exampleIndex,
+														nestedIndex,
+													)
+												}
+											>
+												x
+											</button>
+										</div>
+									))}
+									<button
+										className='text-sm bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-500 text-white py-1 px-2 rounded self-start'
+										onClick={() =>
+											handleExampleAddNested(
+												blockIndex, // Use blockIndex
+												exampleIndex,
+											)
+										}
+									>
+										{t('dashboard.deckEdit.add.addExampleButton')}
+									</button>
+								</div>
+							))}
+
+						<button
+							className='text-sm bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-500 text-white py-1 px-2 rounded self-start'
+							onClick={() => handleExampleAdd(blockIndex)} // Use blockIndex
+						>
+							{t('dashboard.deckEdit.add.addExampleButton')} {/* Translated */}
+						</button>
+
 						<button
 							onClick={
 								() =>

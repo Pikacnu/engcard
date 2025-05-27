@@ -96,6 +96,21 @@ export async function addCard(
 	definition: Definition[],
 	partOfSpeech: PartOfSpeech,
 ) {
+	if (!word || word.trim().length === 0) {
+		return;
+	}
+	if (!definition || definition.length === 0) {
+		return;
+	}
+	// Check if any definition block has no definitions
+	if (definition.some((d) => d.definition.length === 0)) {
+		return;
+	}
+	// Check if any definition has empty content
+	if (definition.some((d) => d.definition.some((def) => !def.content))) {
+		return;
+	}
+
 	const session = await auth();
 	if (!session) {
 		return;
