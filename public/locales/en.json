@@ -120,7 +120,16 @@
 			"inputPlaceholder": "Type a message",
 			"sendButton": "Send",
 			"deleteChatButton": "Delete Chat",
-			"newChatButton": "New Chat"
+			"newChatButton": "New Chat",
+			"grammerFixLabel": "Grammar Fix",
+			"altSendButton": "Send Message",
+			"altDeleteChat": "Delete Chat",
+			"altNewChat": "New Chat",
+			"chatHistory": "Chat History",
+			"noMessages": "No messages yet",
+			"loading": "Loading...",
+			"errorSending": "Error sending message",
+			"confirmDelete": "Are you sure you want to delete this chat?"
 		},
 		"preview": {
 			"joyride": {

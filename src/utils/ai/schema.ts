@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { GArray, GEnum, GObject, GString } from './gemini/type';
+import { GArray, GEnum, GNumber, GObject, GString } from './gemini/type';
 import { ChatAction, PartOfSpeech } from '@/type';
 
 export const textRecognizeSchema = z.object({
@@ -47,6 +47,13 @@ export const ChatModelSchema = z.object({
 	targetDeckName: z.string().optional(),
 	targetDeckId: z.string().optional(),
 	deckId: z.string().optional(),
+	grammerFix: z.array(
+		z.object({
+			offsetWords: z.number(),
+			lengthWords: z.number(),
+			correctedText: z.string(),
+		}),
+	),
 });
 
 export const GChatModelSchema = new GObject('chatModelSchema', false, {
@@ -62,6 +69,17 @@ export const GChatModelSchema = new GObject('chatModelSchema', false, {
 		new GString('targetDeckName', false),
 		new GString('targetDeckId', false),
 		new GString('deckId', false),
+		new GArray(
+			'grammerFix',
+			true,
+			new GObject('grammerFixItem', true, {
+				properties: [
+					new GString('correctedText', true),
+					new GNumber('offsetWords', true),
+					new GNumber('lengthWords', true),
+				],
+			}),
+		),
 	],
 	showName: false,
 }).toSchema();

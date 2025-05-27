@@ -92,6 +92,7 @@ export async function getChatHistory(chatId: string) {
 					action: ChatAction.ShowOuput,
 					words: history.action.words,
 				},
+				grammerFix: history.grammerFix || [],
 			};
 		}
 		return history.content;
@@ -199,6 +200,7 @@ export async function sendMessage(chatId: string, message: string) {
 						...response.content,
 					},
 					action: response.data,
+					grammerFix: response.data.grammerFix || [],
 				},
 			},
 			$set: {
@@ -243,6 +245,7 @@ export async function sendMessage(chatId: string, message: string) {
 				role: response.content.role,
 				parts: [{ text: response.data.message }],
 			},
+			grammerFix: response.data.grammerFix || [],
 		},
 		optionalValue,
 	);

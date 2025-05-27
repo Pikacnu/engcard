@@ -9,7 +9,7 @@ import {
 } from '@/actions/chat';
 import { WithStringId, WithStringObjectId, ChatAction } from '@/type';
 import { Content } from '@google/generative-ai';
-import { useEffect, useRef, useState, useTransition } from 'react';
+import { useCallback, useEffect, useRef, useState, useTransition } from 'react';
 import { useScrollToBottom } from '@/hooks/scrollToBottom';
 import { useTranslation } from '@/context/LanguageContext'; // Added
 
@@ -23,6 +23,11 @@ export default function Chat() {
 					action: ChatAction;
 					words: string[];
 				};
+				grammerFix?: {
+					offsetWords: number;
+					lengthWords: number;
+					correctedText: string;
+				}[];
 			}
 		>[]
 	>([]);
@@ -34,51 +39,76 @@ export default function Chat() {
 	>([]);
 	const [isSending, startSending] = useTransition();
 	const [loading, setLoading] = useState(true);
-	const isInitChat = useRef(false);
+
 	const chatRef = useRef<HTMLDivElement>(null);
 	useScrollToBottom(chatRef, [chatId]);
 
 	useEffect(() => {
-		getChatList().then((data) => {
-			setLoading(false);
-			if (!Array.isArray(data)) {
-				console.error(data.error);
-				return setChatList([]);
+		(async () => {
+			let chatListData = await getChatList();
+			if (!Array.isArray(chatListData)) {
+				console.error(chatListData.error);
+				setChatList([]);
 			}
-			setChatList(data);
-		});
-	}, [chatId]);
+			chatListData = chatListData as WithStringObjectId<{
+				chatName: string;
+			}>[];
+			setChatList(chatListData);
+			if (chatListData.length > 0) {
+				setChatId(chatListData[0]._id);
+			} else {
+				const newChat = await createChatSession();
+				if ('error' in newChat) {
+					console.error(newChat.error);
+					return setChatId('');
+				}
+				setChatId(newChat.id);
+				setChatList([
+					...chatListData,
+					{ _id: newChat.id, chatName: 'New Chat' },
+				]);
+			}
+			setLoading(false);
+		})();
+	}, []);
 
 	useEffect(() => {
-		let currentId = chatId;
-		if (!currentId || currentId === '') {
-			if (chatList && chatList.length > 0) {
-				currentId = chatList[0]._id;
-				setChatId(currentId);
-			} else {
-				if (isInitChat.current) return;
-				isInitChat.current = true;
-				createChatSession().then((data) => {
+		(async () => {
+			if (!chatId) return;
+			setLoading(true);
+			const chatHistory = await getChatHistory(chatId);
+			if ('error' in chatHistory) {
+				setLoading(false);
+				console.error(chatHistory.error);
+				return;
+			}
+			console.log(chatHistory);
+			setLoading(false);
+			setHistory(chatHistory);
+		})();
+	}, [chatId]);
+
+	const handleSendMessage = useCallback(
+		(message: string) => {
+			sendMessage
+				.bind(null, chatId, message)()
+				.then((data) => {
 					if ('error' in data) {
 						console.error(data.error);
-						return setChatId('');
+						setHistory(history.slice(0, -1)); // Revert optimistic update
+						return;
 					}
-					setChatId(data.id);
-					currentId = data.id;
+					setHistory((prev) => [
+						...prev,
+						Object.assign(data.content, {
+							grammerFix: data.grammerFix,
+						}),
+					]);
+					setMessage('');
 				});
-			}
-		}
-		getChatHistory
-			.bind(null, currentId)()
-			.then((data) => {
-				if (!Array.isArray(data)) {
-					console.error(data.error);
-					setHistory([]);
-					return;
-				}
-				setHistory(data);
-			});
-	}, [chatId, chatList, isInitChat]);
+		},
+		[chatId, history],
+	);
 
 	return (
 		<div className='flex flex-row max-md:flex-col flex-grow md:*:m-4 max-md:*:m-1 items-center justify-center h-full *:md:h-full dark:bg-gray-700'>
@@ -133,6 +163,10 @@ export default function Chat() {
 							console.error(data.error);
 							return setChatId('');
 						}
+						setChatList((prev) => [
+							...prev,
+							{ _id: data.id, chatName: 'New Chat' },
+						]);
 						setChatId(data.id);
 					}}
 				>
@@ -144,7 +178,7 @@ export default function Chat() {
 					ref={chatRef}
 					className='flex flex-col flex-grow overflow-y-auto p-2 space-y-2'
 				>
-					{history.map((content) => {
+					{history.map((content, contentIndex) => {
 						const { role, parts, action } = content;
 						const isUser = role === 'user';
 						const messageBgColor = isUser
@@ -178,6 +212,69 @@ export default function Chat() {
 															))}
 														</div>
 													)}
+													{content.grammerFix &&
+														Array.isArray(content.grammerFix) &&
+														content.grammerFix?.length > 0 && (
+															<>
+																<p className='pt-2'>
+																	{t('dashboard.chat.grammerFixLabel')}:
+																</p>
+																{/* Translated */}
+																<p className=' text-gray-900 flex flex-wrap'>
+																	{
+																		history[contentIndex - 1].parts
+																			.map((part) => part.text)
+																			.join(' ')
+																			.split(' ')
+																			.reduce(
+																				(acc, word, idx) => {
+																					const fix = content.grammerFix?.find(
+																						(f) =>
+																							f.offsetWords <= idx &&
+																							f.offsetWords + f.lengthWords >
+																								idx,
+																					);
+																					if (idx <= acc.index) return acc;
+																					const nodes = acc.node;
+																					if (fix) {
+																						nodes.push(
+																							<span
+																								key={`${content.id}-fix-${idx}`}
+																								className='text-red-500'
+																							>
+																								{fix.correctedText}
+																							</span>,
+																						);
+																						acc.index +=
+																							fix.lengthWords + fix.offsetWords;
+																					} else {
+																						nodes.push(
+																							<span
+																								key={`${content.id}-word-${idx}`}
+																								className='text-black dark:text-white pl-2'
+																							>
+																								{word}
+																							</span>,
+																						);
+																						acc.index += 1;
+																					}
+																					return {
+																						index: acc.index,
+																						node: nodes,
+																					};
+																				},
+																				{
+																					index: 0,
+																					node: [],
+																				} as {
+																					index: number;
+																					node: React.ReactNode[];
+																				},
+																			).node
+																	}
+																</p>
+															</>
+														)}
 												</div>
 											);
 										}
@@ -222,19 +319,7 @@ export default function Chat() {
 										parts: [{ text: message }],
 									},
 								]);
-								startSending(() =>
-									sendMessage
-										.bind(null, chatId, message)()
-										.then((data) => {
-											if ('error' in data) {
-												console.error(data.error);
-												setHistory(history.slice(0, -1)); // Revert optimistic update
-												return;
-											}
-											setHistory((prev) => [...prev, data.content]);
-											setMessage('');
-										}),
-								);
+								startSending(() => handleSendMessage(message));
 							}
 						}}
 						className='flex-grow h-full px-4 text-lg bg-gray-300 dark:bg-gray-700 text-black dark:text-white p-1 border-2 border-gray-400 dark:border-gray-600 rounded-xl focus:ring-blue-500 focus:border-blue-500'
@@ -251,19 +336,7 @@ export default function Chat() {
 									parts: [{ text: message }],
 								},
 							]);
-							startSending(() =>
-								sendMessage
-									.bind(null, chatId, message)()
-									.then((data) => {
-										if ('error' in data) {
-											console.error(data.error);
-											setHistory(history.slice(0, -1)); // Revert optimistic update
-											return;
-										}
-										setHistory((prev) => [...prev, data.content]);
-										setMessage('');
-									}),
-							);
+							startSending(() => handleSendMessage(message));
 						}}
 					>
 						{t('dashboard.chat.sendButton')} {/* Translated */}

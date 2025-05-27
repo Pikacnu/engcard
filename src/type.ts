@@ -183,6 +183,11 @@ export type ChatSession = {
 		content: WithStringId<Content>;
 		action?: ChatModelSchema;
 		functionCall?: FunctionCall | undefined;
+		grammerFix?: {
+			offsetWords: number;
+			lengthWords: number;
+			correctedText: string;
+		}[];
 	}>;
 	chatName: string;
 };

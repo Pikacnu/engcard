@@ -120,7 +120,8 @@
 			"inputPlaceholder": "輸入訊息",
 			"sendButton": "傳送",
 			"deleteChatButton": "刪除聊天",
-			"newChatButton": "新增聊天"
+			"newChatButton": "新增聊天",
+			"grammerFixLabel": "文法修正"
 		},
 		"preview": {
 			"joyride": {
