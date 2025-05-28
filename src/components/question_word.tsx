@@ -82,7 +82,6 @@ export default function QuestionWord({
 		const questionOptions = shuffle(cardData.filter((_, i) => i !== index))
 			.slice(0, 3)
 			.map((c) => ({
-				// Changed card to c to avoid conflict
 				...c,
 				answer: false,
 			}));
@@ -174,7 +173,7 @@ export default function QuestionWord({
 					</div>
 				) : (
 					<div
-						className='w-full max-h-[70vh] md:max-h-[60vh] h-[70vh] relative cursor-pointer' // Added cursor-pointer
+						className='w-full min-w-[60vw] max-h-[70vh] md:max-h-[60vh] h-[70vh] relative cursor-pointer' // Added cursor-pointer
 						onClick={() => {
 							if (index === cardData.length - 1) {
 								setIsCorrect(false);

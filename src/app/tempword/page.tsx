@@ -157,9 +157,7 @@ export default function TempWordPage() {
 				run={joyrideRun}
 				callback={handleJoyrideCallback}
 			/>
-			<div className='display flex-grow flex items-center justify-center w-full p-4'>
-				{' '}
-				{/* Added p-4 for spacing */}
+			<div className='display flex-grow flex items-center justify-center p-4 w-full'>
 				{
 					{
 						[CardType.Card]: (
@@ -190,13 +188,11 @@ export default function TempWordPage() {
 							</div>
 						),
 						[CardType.Word]: (
-							<div className='w-full max-w-lg'>
-								<QuestionWord
-									cards={cards}
-									onFinishClick={() => fetchCards(wordStartWith, count)}
-									updateCurrentWord={setWord}
-								/>
-							</div>
+							<QuestionWord
+								cards={cards}
+								onFinishClick={() => fetchCards(wordStartWith, count)}
+								updateCurrentWord={setWord}
+							/>
 						),
 					}[type]
 				}
@@ -311,19 +307,17 @@ export default function TempWordPage() {
 				</button>
 				<button
 					onClick={() => setCards(markedWord)} // This might need adjustment if markedWord is empty
-					className='p-2 text-black dark:text-white bg-sky-300 dark:bg-sky-700 bg-opacity-30 dark:bg-opacity-30 rounded-md hover:bg-opacity-50 dark:hover:bg-opacity-50 transition-all delay-100 marked'
+					className='p-2 text-black dark:text-white bg-sky-300 dark:bg-sky-700 bg-opacity-30 dark:bg-opacity-30 rounded-md hover:bg-opacity-50 dark:hover:bg-opacity-50 transition-all delay-100 marked z-20'
 					title={t('tempword.altShowMarkedList')}
 				>
 					<Image
 						src={`/icons/star.svg`}
 						width={24}
 						height={24}
-						alt={t('tempword.altShowMarkedList')} // Translated
+						alt={t('tempword.altShowMarkedList')}
 					/>
 				</button>
 				<div className='flex flex-col max-md:flex-row items-center text-black dark:text-white mt-auto md:mt-0'>
-					{' '}
-					{/* Wrapper for selects */}
 					<Image
 						src={`/icons/search.svg`}
 						width={24}

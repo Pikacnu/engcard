@@ -260,7 +260,7 @@ export default function Content() {
 				}
 			</div>
 			<button
-				className='absolute top-4 right-4 m-4 p-2 bg-gray-300 dark:bg-gray-600 text-black dark:text-white rounded-lg hover:bg-gray-400 dark:hover:bg-gray-500 mark-button'
+				className='absolute top-4 right-4 m-4 p-2 bg-gray-300 dark:bg-gray-600 text-black dark:text-white rounded-lg hover:bg-gray-400 dark:hover:bg-gray-500 mark-button z-20'
 				onClick={() => {
 					if (isMarked) {
 						setMarkedWord((prev) =>

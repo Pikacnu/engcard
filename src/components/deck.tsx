@@ -94,9 +94,9 @@ export default function Deck({
 									updateCurrentWord?.(cards[Math.floor(newIndex)]);
 								}
 							}}
-							disabled={index === 0} // Disable if at the beginning
+							disabled={index === 0}
 						>
-							{t('components.deck.previousButton')} {/* Translated */}
+							{t('components.deck.previousButton')}
 						</button>
 						<div className='text-sm text-gray-600 dark:text-gray-400'>
 							{Math.floor(index) + 1} / {cards.length}
@@ -113,7 +113,7 @@ export default function Deck({
 								}
 							}}
 						>
-							{t('components.deck.nextButton')} {/* Translated */}
+							{t('components.deck.nextButton')}
 						</button>
 					</div>
 				)}
