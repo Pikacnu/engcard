@@ -30,7 +30,7 @@ export default function Card({ card }: { card: CardProps }) {
 		>
 			{!flipped && (
 				<div className='flex flex-col items-center justify-center flex-grow relative overflow-hidden w-full cursor-pointer'>
-					<h1 className='text-4xl text-wrap whitespace-break-spaces w-[90%] break-words text-center'>
+					<h1 className='text-4xl text-wrap whitespace-break-spaces max-md:min-w-[70vw] max-md:max-w-[80vw] break-words text-center'>
 						{word}
 					</h1>
 					<p className='text-xl text-gray-600 dark:text-gray-400'>{phonetic}</p>
@@ -43,7 +43,7 @@ export default function Card({ card }: { card: CardProps }) {
 			{flipped && (
 				<div className='flex-grow w-full relative h-min overflow-auto bg-inherit'>
 					<div className='flex flex-row items-center *:p-2 sticky -top-1 bg-white dark:bg-gray-800 bg-inherit z-10'>
-						<h1 className=' text-4xl whitespace-pre-wrap text-wrap w-[90%] break-words text-center'>
+						<h1 className=' text-4xl whitespace-pre-wrap text-wrap max-md:min-w-[70vw] max-md:max-w-[80vw] break-words text-center'>
 							{word}
 						</h1>
 						<p className='text-xl text-gray-600 dark:text-gray-400'>
@@ -114,30 +114,25 @@ export default function Card({ card }: { card: CardProps }) {
 												</p>
 											</div>
 										))}
-										{definition.example &&
-											definition.example.length > 0 && ( // Check length
-												<>
-													<h3 className='ml-0 mt-2 font-semibold text-gray-700 dark:text-gray-300'>
-														{t('components.card.examplesLabel')}
-													</h3>{' '}
-													<div className='flex flex-col *:ml-4 space-y-1'>
-														{' '}
-														{/* Added space-y */}
-														{definition.example.map(
-															(exampleSentences, exIdx) => (
-																<div
-																	key={exIdx}
-																	className='flex flex-col text-sm text-gray-600 dark:text-gray-400'
-																>
-																	{exampleSentences.map((sentence, sentIdx) => (
-																		<p key={sentIdx}>{sentence.content}</p>
-																	))}
-																</div>
-															),
-														)}
-													</div>
-												</>
-											)}
+										{definition.example && definition.example.length > 0 && (
+											<>
+												<h3 className='ml-0 mt-2 font-semibold text-gray-700 dark:text-gray-300'>
+													{t('components.card.examplesLabel')}
+												</h3>{' '}
+												<div className='flex flex-col *:ml-4 space-y-1'>
+													{definition.example.map((exampleSentences, exIdx) => (
+														<div
+															key={exIdx}
+															className='flex flex-col text-sm text-gray-600 dark:text-gray-400'
+														>
+															{exampleSentences.map((sentence, sentIdx) => (
+																<p key={sentIdx}>{sentence.content}</p>
+															))}
+														</div>
+													))}
+												</div>
+											</>
+										)}
 										{(definition.synonyms && definition.synonyms.length > 0) ||
 										(definition.antonyms && definition.antonyms.length > 0) ? (
 											<div className='grid grid-cols-1 md:grid-cols-2 gap-x-4 *:my-2 mt-2 pt-2 border-t border-gray-200 dark:border-gray-700'>

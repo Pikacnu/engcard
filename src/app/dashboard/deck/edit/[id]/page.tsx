@@ -27,7 +27,7 @@ export default function EditPage({
 	const { id } = use(params);
 	const [deck, setDeck] = useState<DeckCollection | null>();
 	const [isPending, startTransition] = useTransition();
-	const [, setProcessingWordTimestamp] = useState(0);
+	const [processingWordTimestamp, setProcessingWordTimestamp] = useState(0);
 	const file = useRef<HTMLInputElement>(null);
 	const cardProcessing: CardProps = useMemo(
 		() => ({
@@ -47,18 +47,13 @@ export default function EditPage({
 				if (data.error) {
 					return;
 				}
-				setDeck(
-					Object.assign(data, {
-						cards: (data.cards || []).push(cardProcessing),
-					}),
-				);
+				setDeck(data);
 			});
-	}, [id, cardProcessing]);
+	}, [id]);
 
 	useEffect(() => {
 		refresh();
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, []);
+	}, [refresh]);
 
 	const [isGuideEdit, setIsGuideEdit] = useLocalStorage<boolean>(
 		'guideEdit',
@@ -70,7 +65,7 @@ export default function EditPage({
 		{
 			target: '.add-area',
 			content: t('dashboard.deckEdit.joyride.step1Content'),
-			placement: isMobile ? 'center' : 'auto',
+			placement: isMobile ? 'center' : 'right',
 		},
 		{
 			target: '.upload-area',
@@ -96,6 +91,35 @@ export default function EditPage({
 		}
 	};
 
+	useEffect(() => {
+		const now = new Date().getTime();
+		if (processingWordTimestamp > 0 && now - processingWordTimestamp <= 0) {
+			setProcessingWordTimestamp(0);
+			refresh();
+			return;
+		}
+		setDeck((prev) => {
+			if (!prev) return prev;
+			if (prev.cards.some((card) => card.word === cardProcessing.word)) {
+				return {
+					...prev,
+					cards: prev.cards
+						.filter((card) => card.word !== cardProcessing.word)
+						.concat(cardProcessing),
+				};
+			}
+			return {
+				...prev,
+				cards: [...prev.cards, cardProcessing],
+			};
+		});
+	}, [processingWordTimestamp, refresh, cardProcessing]);
+
+	const [isClient, setIsClient] = useState(false);
+	useEffect(() => {
+		setIsClient(true);
+	}, []);
+
 	return (
 		<div className='flex flex-row h-full max-md:flex-col *:max-md:w-full *:max-md:min-h-full dark:bg-gray-700'>
 			{isPending && (
@@ -120,15 +144,17 @@ export default function EditPage({
 				</div>
 			)}
 			<div className='hidden'>
-				<Joyride
-					steps={steps}
-					continuous
-					showProgress
-					showSkipButton
-					disableCloseOnEsc
-					run={joyrideRun}
-					callback={handleJoyrideCallback}
-				/>
+				{isClient && (
+					<Joyride
+						steps={steps}
+						continuous
+						showProgress
+						showSkipButton
+						disableCloseOnEsc
+						run={joyrideRun}
+						callback={handleJoyrideCallback}
+					/>
+				)}
 			</div>
 			<Add
 				className='md:max-w-[40vw] w-full md:flex-grow dark:bg-gray-800 add-area'
@@ -169,7 +195,6 @@ export default function EditPage({
 									let uploadingFile = file;
 
 									if (file.size > 5 * 1024 * 1024) {
-										//compress image
 										const image = new Image();
 										image.src = URL.createObjectURL(file);
 										await new Promise((resolve) => {
@@ -245,7 +270,7 @@ export default function EditPage({
 										};
 										setTimeout(
 											timeoutFn.bind(null, new Date().getTime()),
-											(json.time || 2) * 1000,
+											(json.time || 4) * 1000,
 										);
 										setProcessingWordTimestamp(Date.now());
 									} catch (e) {

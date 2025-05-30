@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { redirect } from 'next/navigation';
 import Joyride, {
 	ACTIONS,
@@ -100,22 +100,29 @@ export default function DashBoardLayout({
 		}
 	};
 
+	const [isClient, setIsClient] = useState(false);
+	useEffect(() => {
+		setIsClient(true);
+	}, []);
+
 	return (
 		// Outer div: bg-gray-100 dark:bg-gray-700
 		<div
 			className={`flex flex-row max-md:flex-col-reverse w-full h-dvh bg-gray-100 dark:bg-gray-700 relative dashboard-layout ${theme}`}
 		>
-			<Joyride
-				steps={steps}
-				continuous
-				showProgress
-				showSkipButton
-				scrollToFirstStep
-				disableScrolling
-				disableCloseOnEsc
-				run={joyrideRun}
-				callback={handleJoyrideCallback}
-			/>
+			{isClient && (
+				<Joyride
+					steps={steps}
+					continuous
+					showProgress
+					showSkipButton
+					scrollToFirstStep
+					disableScrolling
+					disableCloseOnEsc
+					run={joyrideRun}
+					callback={handleJoyrideCallback}
+				/>
+			)}
 
 			{/* Navbar div (main-nav): bg-white dark:bg-gray-800 text-black dark:text-white */}
 			<div className='flex flex-col max-md:flex-row h-full bg-white dark:bg-gray-800 text-black dark:text-white md:left-0 md:top-0 max-md:h-16 max-md:bottom-0 max-md:w-full justify-between items-center keyboard:hidden main-nav delay-0'>

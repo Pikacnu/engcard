@@ -7,10 +7,8 @@ import { ThemeToggler } from './ThemeToggler';
 export function NavBar() {
 	const { t } = useTranslation();
 	return (
-		// Background: bg-white bg-opacity-30 dark:bg-gray-800 dark:bg-opacity-70 backdrop-blur-sm
-		<div className='sickey top-0 z-10 flex items-center justify-between w-full bg-white bg-opacity-30 dark:bg-gray-800 dark:bg-opacity-70 backdrop-blur-sm shadow-lg'>
-			{/* Link icon color: text-gray-700 dark:text-white */}
-			<div className='flex items-center justify-center text-gray-700 dark:text-white'>
+		<div className='sickey top-0 z-10 flex items-center justify-between w-full bg-white  bg-opacity-30 dark:bg-gray-800 dark:bg-opacity-70 backdrop-blur-sm shadow-lg'>
+			<div className='flex items-center justify-center text-gray-700 dark:text-white [&>a]:dark:bg-white '>
 				<Link
 					href={'/'}
 					className='flex items-center justify-center p-2 m-2 bg-white bg-opacity-0 hover:bg-black hover:bg-opacity-10 dark:hover:bg-white dark:hover:bg-opacity-10 transition-all duration-200 rounded-full'
@@ -63,7 +61,8 @@ export function NavBar() {
 				<Link
 					href={'/auth/login'}
 					className='self-center min-w-max
-								bg-white bg-opacity-0 hover:bg-black hover:bg-opacity-10 dark:hover:bg-white dark:hover:bg-opacity-10 transition-all duration-200 p-2 m-2 hover:shadow-xl shadow-white rounded-full'
+								bg-white bg-opacity-0 hover:bg-black hover:bg-opacity-10 dark:hover:bg-white dark:hover:bg-opacity-10 transition-all duration-200 p-2 m-2 hover:shadow-xl shadow-white rounded-full
+								dark:bg-white'
 				>
 					<Image
 						src={`/icons/box-arrow-in-left.svg`}

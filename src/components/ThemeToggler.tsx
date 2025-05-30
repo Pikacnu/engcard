@@ -10,7 +10,7 @@ export const ThemeToggler = () => {
 	return (
 		<button
 			onClick={toggleTheme}
-			className='p-2 m-2 rounded-full hover:bg-white hover:bg-opacity-20 transition-all duration-200'
+			className='p-2 m-2 rounded-full hover:bg-white hover:bg-opacity-20 transition-all duration-200 dark:bg-white'
 			aria-label={
 				theme === 'dark'
 					? t('common.theme.switchToLight')

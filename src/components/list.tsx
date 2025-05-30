@@ -14,7 +14,6 @@ export default function List({
 }) {
 	const { t } = useTranslation(); // Added
 
-	// Revised CardWhenEmpty definition using t()
 	const CardWhenEmpty: CardProps = useMemo(
 		() => ({
 			word: t('components.list.empty.word'),

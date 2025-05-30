@@ -191,9 +191,14 @@ export default function Content() {
 		}
 	}, [selectedDeck, wordStartWith, count, fetchCards]);
 
+	const [isClient, setIsClient] = useState(false);
+	useEffect(() => {
+		setIsClient(true);
+	}, []);
+
 	return (
 		<div className='flex flex-row-reverse max-md:flex-col items-center justify-center h-full w-full bg-gray-100 dark:bg-gray-700 text-black dark:text-white'>
-			{
+			{isClient && (
 				<Joyride
 					steps={steps}
 					continuous
@@ -203,7 +208,7 @@ export default function Content() {
 					callback={handleJoyrideCallback}
 					disableScrollParentFix
 				/>
-			}
+			)}
 			<div className='flex-grow flex items-center justify-center w-full display-area p-4'>
 				{
 					{
@@ -448,9 +453,8 @@ export default function Content() {
 				<div className='flex-col items-center justify-start flex-grow hidden md:flex text-black dark:text-white'>
 					<p className='self-center pt-2 pb-1'>
 						{t('dashboard.preview.selectedDeckLabel')}
-					</p>{' '}
-					<div className='flex flex-col items-center text-black dark:text-white flex-grow w-full overflow-y-auto max-h-[calc(100%-2rem)]'>
-						{' '}
+					</p>
+					<div className='flex flex-col items-center text-black dark:text-white flex-grow w-full overflow-y-auto max-h-[calc(100%-2rem)] overflow-x-hidden'>
 						{decks.map((deck) => (
 							<button
 								key={deck._id}

@@ -105,6 +105,8 @@ export async function POST(req: Request) {
 		processType = OCRProcessType.FromSource;
 	}
 
+	console.log('Process type:', processType);
+
 	try {
 		const binaryData = new Uint8Array(await imageData.arrayBuffer());
 		const fileData = await uploadFile(
@@ -127,6 +129,7 @@ export async function POST(req: Request) {
 			],
 		});
 		let part = '';
+		const processedPart: string[] = [];
 		while (true) {
 			if (!response.response.candidates) {
 				return NextResponse.json(
@@ -136,6 +139,7 @@ export async function POST(req: Request) {
 			}
 			if (response.response.candidates[0].finishReason !== FinishReason.STOP) {
 				part += response.response.text();
+				processedPart.push(jsonFix(part));
 				response = await TextRecognizeModel.generateContent({
 					contents: [
 						{
@@ -170,12 +174,47 @@ export async function POST(req: Request) {
 				continue;
 			}
 			part += response.response.text();
+			processedPart.push(jsonFix(part));
 			break;
 		}
 
-		const result: textRecognizeSchema = textRecognizeSchema.parse(
-			JSON.parse(part),
-		);
+		const test = processedPart
+			.map((part) => {
+				try {
+					return textRecognizeSchema.parse(JSON.parse(part));
+				} catch (e) {
+					console.error('Error parsing part:', e);
+				}
+				return null;
+			})
+			.filter((part) => part !== null)
+			.reduce((acc, part) => {
+				if (!part) return acc;
+				return Object.assign(acc, part);
+			}, {});
+
+		let result: textRecognizeSchema;
+		try {
+			result = textRecognizeSchema.parse(JSON.parse(part));
+		} catch (e) {
+			console.error('Error parsing text recognition result:', e);
+			try {
+				if (Object.keys(test).length > 0) {
+					result = textRecognizeSchema.parse(test);
+				} else {
+					return NextResponse.json(
+						{ error: 'Failed to recognize text' },
+						{ status: 500 },
+					);
+				}
+			} catch (e) {
+				console.error('Error parsing test result:', e);
+				return NextResponse.json(
+					{ error: 'Failed to recognize text' },
+					{ status: 500 },
+				);
+			}
+		}
 
 		if (processType === OCRProcessType.OnlyFromImage) {
 			const words = transfromToCardPropsFromRecognizedResult(result);
@@ -280,4 +319,92 @@ export async function POST(req: Request) {
 			{ status: 500 },
 		);
 	}
+}
+function jsonFix(data: string): string {
+	// Count characters in a single pass
+	let quoteCount = 0;
+	let openBracketCount = 0;
+	let closeBracketCount = 0;
+	let openBraceCount = 0;
+	let closeBraceCount = 0;
+	let openParenCount = 0;
+	let closeParenCount = 0;
+	let lastQuoteIndex = -1;
+
+	for (let i = 0; i < data.length; i++) {
+		const char = data[i];
+		const prevChar = i > 0 ? data[i - 1] : '';
+
+		switch (char) {
+			case '"':
+				// Skip escaped quotes
+				if (prevChar !== '\\') {
+					quoteCount++;
+					lastQuoteIndex = i;
+				}
+				break;
+			case '[':
+				openBracketCount++;
+				break;
+			case ']':
+				closeBracketCount++;
+				break;
+			case '{':
+				openBraceCount++;
+				break;
+			case '}':
+				closeBraceCount++;
+				break;
+			case '(':
+				openParenCount++;
+				break;
+			case ')':
+				closeParenCount++;
+				break;
+		}
+	}
+
+	let result = data;
+
+	// Fix unmatched quotes
+	if (quoteCount % 2 !== 0) {
+		if (lastQuoteIndex !== -1) {
+			result = data.slice(0, lastQuoteIndex) + '"' + data.slice(lastQuoteIndex);
+		} else {
+			result += '"';
+		}
+	}
+
+	// Fix unmatched brackets
+	const bracketDiff = openBracketCount - closeBracketCount;
+	if (bracketDiff > 0) {
+		result += ']'.repeat(bracketDiff);
+	} else if (bracketDiff < 0) {
+		result = '['.repeat(-bracketDiff) + result;
+	}
+
+	// Fix unmatched braces
+	const braceDiff = openBraceCount - closeBraceCount;
+	if (braceDiff > 0) {
+		result += '}'.repeat(braceDiff);
+	} else if (braceDiff < 0) {
+		result = '{'.repeat(-braceDiff) + result;
+	}
+
+	// Fix unmatched parentheses
+	const parenDiff = openParenCount - closeParenCount;
+	if (parenDiff > 0) {
+		result += ')'.repeat(parenDiff);
+	} else if (parenDiff < 0) {
+		result = '('.repeat(-parenDiff) + result;
+	}
+
+	// Fix trailing commas and incomplete values
+	result = result
+		.replace(/,\s*([}\]])/g, '$1') // Remove trailing commas
+		.replace(/:\s*$/, ': null') // Add null for incomplete values
+		.replace(/:\s*,/g, ': null,') // Add null for empty values
+		.replace(/,\s*$/, ''); // Remove trailing comma at end
+
+	return result;
 }

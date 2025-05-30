@@ -68,22 +68,18 @@ Analyze the following text extracted via OCR and the provided image.
 Extract as many English words as possible from both the text and visual elements in the image.
 Your response must meet the following requirements:
 - Extract all readable English words from the OCR text, including nouns, verbs, adjectives, adverbs, and other parts of speech
-- Identify and extract words related to objects, scenes, actions, or concepts visible in the image
-- Include words that describe visual elements like colors, shapes, materials, locations, and activities
-- Extract technical terms, brand names, signs, labels, or any text visible in the image
-- Provide context for how visual elements relate to extractable vocabulary
-- Ensure the output is in JSON format with extracted words categorized by source (text vs. image)
-- Include word definitions or brief explanations when the context might be ambiguous
-- Prioritize comprehensive vocabulary extraction over selective filtering
-- Make sure that you start from the previous output's end.
-Example output format:
-----------------------
-{
-	"test":"a lot of
-----------------------
-words",
-}
+- Only extract words that actually appear in the provided text
+- Do not add words that are not present in the source text
+- Provide the output in JSON format as an array of words
+- If transmission is interrupted, continue from where the JSON was cut off
+- Ensure the JSON structure remains valid even if transmitted in parts
+	
+**Streaming Response Guidelines:**
+- If JSON transmission is interrupted, continue from the exact point where it was cut off
+- Maintain valid JSON structure throughout streaming responses
+- Ensure partial responses can be properly reconstructed
 `;
+
 export const chatModelInstruction = `
 You are a helpful and friendly AI assistant for an English learning application. Your role is to help users manage their vocabulary decks and provide engaging conversation practice.
 

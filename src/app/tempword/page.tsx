@@ -24,7 +24,7 @@ export default function TempWordPage() {
 	// Renamed component for clarity
 	const { t } = useTranslation(); // Added
 	const [isGuideCard, setIsGuideCard] = useLocalStorage<boolean>(
-		'guideCard', // Consider renaming this localStorage key if it conflicts with dashboard's preview guide
+		'guideCard',
 		false,
 	);
 	const [joyrideRun, setJoyrideRun] = useState(!isGuideCard);
@@ -67,6 +67,7 @@ export default function TempWordPage() {
 	];
 
 	const handleJoyrideCallback = (data: CallBackProps) => {
+		console.log(data);
 		const { status, action, step } = data;
 		if (action === ACTIONS.UPDATE) {
 			console.log('Update step:', step.target);
@@ -87,6 +88,10 @@ export default function TempWordPage() {
 			setIsGuideCard(true);
 		}
 	};
+
+	useEffect(() => {
+		setIsGuideCard(true);
+	}, [joyrideRun, setIsGuideCard]);
 
 	const [type, setType] = useState<CardType>(CardType.Card);
 	const [cards, setCards] = useState<CardProps[]>([]);

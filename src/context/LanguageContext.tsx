@@ -33,7 +33,7 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
 		'languageCache',
 		'en',
 	);
-	const [currentLocale, setCurrentLocale] = useState<string>('en'); // Default locale
+	const [currentLocale, setCurrentLocale] = useState<string>('en');
 	const [loadedTranslations, setLoadedTranslations] = useState<Messages>({});
 	const [isLoadedCache, setIsLoadedCache] = useState(false);
 
@@ -76,8 +76,8 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
 		},
 		[setCookie, setLanguageCache, setLanguageDataCache],
 	);
+
 	useEffect(() => {
-		// Load translations when locale changes
 		const loadTranslations = async () => {
 			if (currentLocale && isLoadedCache) {
 				try {
@@ -100,7 +100,6 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
 						`Could not load translations for ${currentLocale}`,
 						error,
 					);
-					// Fallback to English if current locale's translations are missing
 					getLanguageData('en');
 				}
 			}

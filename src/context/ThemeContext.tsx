@@ -25,11 +25,10 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
 		null,
 		'string',
 	);
-	const [theme, setThemeState] = useState<Theme>(cachedTheme || 'light'); // Default theme
+	const [theme, setThemeState] = useState<Theme>(cachedTheme || 'light');
 
 	useEffect(() => {
 		if (!cachedTheme) {
-			// Check system preference if no theme is stored
 			const prefersDark = window.matchMedia(
 				'(prefers-color-scheme: dark)',
 			).matches;
@@ -41,7 +40,6 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
 	}, []);
 
 	useEffect(() => {
-		// Apply theme to documentElement and save to localStorage
 		if (theme === 'dark') {
 			document.documentElement.classList.add('dark');
 		} else {
@@ -58,9 +56,16 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
 		setThemeState((prevTheme) => (prevTheme === 'light' ? 'dark' : 'light'));
 	};
 
+	const [isClient, setIsClient] = useState(false);
+	useEffect(() => {
+		setIsClient(true);
+	}, []);
+
 	return (
 		<ThemeContext.Provider value={{ theme, setTheme, toggleTheme }}>
-			{children}
+			<div className={`w-full h-full relative ${isClient ? theme : 'light'}`}>
+				{children}
+			</div>
 		</ThemeContext.Provider>
 	);
 };
