@@ -50,14 +50,13 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
 			setIsLoadedCache(true);
 			return;
 		}
-		if (languageCache && languageCache !== 'null') {
+		if (languageCache && languageCache !== 'null' && languageCache !== '') {
 			setCurrentLocale(languageCache);
 			setLanguageCache(languageCache);
 			setIsLoadedCache(true);
 			return;
 		}
 		setCurrentLocale('en'); // Default to English if no cookie or cache
-		setLanguageCache('en');
 		setIsLoadedCache(true);
 	}, [languageCache, getCookie, setCookie, setLanguageCache]);
 
