@@ -43,7 +43,7 @@ export default function Card({ card }: { card: CardProps }) {
 			{flipped && (
 				<div className='flex-grow w-full relative h-min overflow-auto bg-inherit'>
 					<div className='flex flex-row items-center *:p-2 sticky -top-1 bg-white dark:bg-gray-800 bg-inherit z-10'>
-						<h1 className=' text-4xl whitespace-pre-wrap text-wrap max-md:min-w-[70vw] max-md:max-w-[80vw] break-words text-center'>
+						<h1 className=' text-4xl whitespace-pre-wrap text-wrap max-md:min-w-[50vw] max-md:max-w-[60vw] md:max-w-64 break-words'>
 							{word}
 						</h1>
 						<p className='text-xl text-gray-600 dark:text-gray-400'>

@@ -45,12 +45,18 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
 	useEffect(() => {
 		const cookieLocale = getCookie('language');
 		if (cookieLocale) {
-			setCurrentLocale(cookieLocale);
-			setLanguageCache(cookieLocale);
+			const cookieLocaleValue = cookieLocale.replaceAll('"', '');
+			setCurrentLocale(cookieLocaleValue);
+			setLanguageCache(cookieLocaleValue);
 			setIsLoadedCache(true);
 			return;
 		}
-		if (languageCache && languageCache !== 'null' && languageCache !== '') {
+		if (
+			languageCache &&
+			languageCache !== 'null' &&
+			languageCache !== '' &&
+			languageCache !== 'undefined'
+		) {
 			setCurrentLocale(languageCache);
 			setLanguageCache(languageCache);
 			setIsLoadedCache(true);
@@ -120,18 +126,13 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
 			if (result && typeof result === 'object' && k in result) {
 				result = result[k];
 			} else {
-				return key; // Return key if not found
+				return key;
 			}
 		}
 		return typeof result === 'string' ? result : key;
 	};
 
-	// The setLocale function here is more for future direct locale changes if needed,
-	// but primary navigation will be through Next.js router.
 	const handleSetLocale = (newLocale: string) => {
-		// Actual locale change should be handled by router.push to a new path
-		// This is a placeholder if we need to manage locale state directly for some reason
-		// For now, it just updates context state, but won't change URL
 		setCurrentLocale(newLocale);
 	};
 
