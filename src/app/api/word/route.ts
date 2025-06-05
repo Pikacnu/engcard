@@ -95,15 +95,29 @@ async function newWord(word: string): Promise<CardProps | null> {
 	return await getAIResponse(sourceDataList);
 }
 
-function CheckData(apidata: CardProps, aidata: CardProps) {
+async function CheckData(
+	apidata: CardProps | CardProps[] | string,
+	aidata: CardProps,
+) {
 	let result = aidata;
+	if (!isHaveAllTranslatedDefiniation(result)) {
+		return await getAIResponse(apidata);
+	}
+
+	if (typeof apidata === 'string') {
+		return result;
+	}
+
+	const isDataArray = Array.isArray(apidata);
+	const phonetic = isDataArray ? apidata[0].phonetic : apidata.phonetic;
+	const audio = isDataArray ? apidata[0].audio : apidata.audio;
 	if (
 		aidata.phonetic === '' ||
 		aidata.phonetic === undefined ||
 		aidata.phonetic === 'string'
 	) {
 		result = Object.assign(result, {
-			phonetic: apidata.phonetic,
+			phonetic: phonetic,
 		});
 	}
 	if (
@@ -112,10 +126,22 @@ function CheckData(apidata: CardProps, aidata: CardProps) {
 		aidata.audio === 'string'
 	) {
 		result = Object.assign(result, {
-			audio: apidata.audio,
+			audio: audio,
 		});
 	}
 	return result;
+}
+
+function isHaveAllTranslatedDefiniation(data: CardProps): boolean {
+	return data.blocks.every((block) =>
+		block.definitions.every((definition) =>
+			['tw', 'en'].some(
+				(lang) =>
+					definition.definition.some((d) => d.lang === lang) &&
+					definition.definition.length > 0,
+			),
+		),
+	);
 }
 
 async function getAIResponse(
@@ -166,14 +192,7 @@ async function getAIResponse(
 		const result: CardProps = AIResponse.choices[0].message
 			?.parsed as CardProps;
 		console.log('OpenAI SDK Success');
-		if (isProvidedData) {
-			if (Array.isArray(processedData)) {
-				return CheckData(processedData[0], result);
-			}
-			processedData = processedData as CardProps;
-			return CheckData(processedData, result);
-		}
-		return result;
+		return await CheckData(processedData, result);
 	} catch (error) {
 		console.error('OpenAI SDK Error :', error);
 		console.log('trying by google AI SDK');
@@ -184,14 +203,7 @@ async function getAIResponse(
 			AIResponse = await chat.sendMessage(prompt);
 			const result: CardProps = JSON.parse(AIResponse.response.text());
 			console.log('Google AI SDK Success');
-			if (isProvidedData) {
-				if (Array.isArray(processedData)) {
-					return CheckData(processedData[0], result);
-				}
-				processedData = processedData as CardProps;
-				return CheckData(processedData, result);
-			}
-			return result;
+			return await CheckData(processedData, result);
 		} catch (error) {
 			console.error('Error parsing AI response:', error);
 		}
