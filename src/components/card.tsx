@@ -81,7 +81,7 @@ export default function Card({ card }: { card: CardProps }) {
 								key={index}
 								className='flex flex-col my-4 mt-6' // Increased top margin
 							>
-								<div className='inline-flex flex-row-reverse sticky self-end top-12 z-10'>
+								<div className='inline-flex flex-row-reverse sticky self-end top-0 z-10'>
 									{block.partOfSpeech && (
 										<h2 className='text-lg p-1 bg-opacity-40 bg-blue-500 dark:bg-blue-700 border-2 border-blue-600 dark:border-blue-500 rounded text-white'>
 											{PartOfSpeechShort[block.partOfSpeech]}
@@ -123,10 +123,20 @@ export default function Card({ card }: { card: CardProps }) {
 													{definition.example.map((exampleSentences, exIdx) => (
 														<div
 															key={exIdx}
-															className='flex flex-col text-sm text-gray-600 dark:text-gray-400'
+															className='flex flex-col text-sm text-gray-600 dark:text-gray-400 border-l-2 border-blue-500 dark:border-blue-700 pl-2 my-1'
 														>
 															{exampleSentences.map((sentence, sentIdx) => (
-																<p key={sentIdx}>{sentence.content}</p>
+																<div
+																	key={sentIdx}
+																	className='flex flex-row pl-4 my-1'
+																>
+																	<p className='mr-3 border-2 border-gray-300 dark:border-gray-600 min-w-8 text-center self-start px-1 rounded text-xs text-gray-500 dark:text-gray-400'>
+																		{sentence.lang}
+																	</p>
+																	<p className='text-gray-800 dark:text-gray-200'>
+																		{sentence.content}
+																	</p>
+																</div>
 															))}
 														</div>
 													))}
