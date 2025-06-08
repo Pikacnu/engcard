@@ -10,6 +10,7 @@ import React, {
 } from 'react';
 import useCookie from '@/hooks/cookie';
 import { useLocalStorage } from '@/hooks/localstorage';
+import { useBroswerLanguage } from '@/hooks/useLanguage';
 
 // Define the shape of your translation messages
 interface Messages {
@@ -29,11 +30,14 @@ const LanguageContext = createContext<LanguageContextType | undefined>(
 
 export const LanguageProvider = ({ children }: { children: ReactNode }) => {
 	const { getCookie, setCookie } = useCookie();
+	const defaultBroswerLanguage = useBroswerLanguage();
 	const [languageCache, setLanguageCache] = useLocalStorage<string>(
 		'languageCache',
-		'en',
+		defaultBroswerLanguage,
 	);
-	const [currentLocale, setCurrentLocale] = useState<string>('en');
+	const [currentLocale, setCurrentLocale] = useState<string>(
+		defaultBroswerLanguage,
+	);
 	const [loadedTranslations, setLoadedTranslations] = useState<Messages>({});
 	const [isLoadedCache, setIsLoadedCache] = useState(false);
 
@@ -45,29 +49,37 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
 	useEffect(() => {
 		const cookieLocale = getCookie('language');
 		if (cookieLocale) {
-			const cookieLocaleValue = cookieLocale.replaceAll('"', '');
+			const cookieLocaleValue = cookieLocale.replaceAll(/["\\]/g, '');
 			setCurrentLocale(cookieLocaleValue);
 			setLanguageCache(cookieLocaleValue);
 			setIsLoadedCache(true);
 			return;
 		}
+		const languageCacheString = languageCache.replaceAll(/["\\]/g, '');
 		if (
-			languageCache &&
-			languageCache !== 'null' &&
-			languageCache !== '' &&
-			languageCache !== 'undefined'
+			languageCacheString &&
+			languageCacheString !== 'null' &&
+			languageCacheString !== '' &&
+			languageCacheString !== 'undefined'
 		) {
-			setCurrentLocale(languageCache);
-			setLanguageCache(languageCache);
+			setCurrentLocale(languageCacheString);
+			setLanguageCache(languageCacheString);
 			setIsLoadedCache(true);
 			return;
 		}
-		setCurrentLocale('en'); // Default to English if no cookie or cache
+		setCurrentLocale(defaultBroswerLanguage); // Default to English if no cookie or cache
 		setIsLoadedCache(true);
-	}, [languageCache, getCookie, setCookie, setLanguageCache]);
+	}, [
+		languageCache,
+		getCookie,
+		setCookie,
+		setLanguageCache,
+		defaultBroswerLanguage,
+	]);
 
 	const getLanguageData = useCallback(
 		async (locale: string) => {
+			locale = locale.replaceAll(/["\\]/g, '');
 			try {
 				const res = await fetch(`/locales/${locale}.json`, {
 					headers: {
@@ -112,12 +124,18 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
 						`Could not load translations for ${currentLocale}`,
 						error,
 					);
-					getLanguageData('en');
+					getLanguageData(defaultBroswerLanguage);
 				}
 			}
 		};
 		loadTranslations();
-	}, [currentLocale, LanguageDataCache, getLanguageData, isLoadedCache]);
+	}, [
+		currentLocale,
+		LanguageDataCache,
+		getLanguageData,
+		isLoadedCache,
+		defaultBroswerLanguage,
+	]);
 
 	const translate = (key: string): string => {
 		const keys = key.split('.');

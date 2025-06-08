@@ -5,7 +5,7 @@ import useCookie from '@/hooks/cookie';
 import { useLocalStorage } from '@/hooks/localstorage';
 
 export const LanguageSwitcher = ({ short = false }: { short?: boolean }) => {
-	const { t, locale } = useTranslation(); // Assuming 'locale' is available from context
+	const { t, locale } = useTranslation();
 
 	const { setCookie } = useCookie();
 	const [, setLocalStorage] = useLocalStorage<string>('languageCache', 'en');

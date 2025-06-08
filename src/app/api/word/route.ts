@@ -1,5 +1,5 @@
 import DB from '@/lib/db';
-import { CardProps } from '@/type';
+import { CardProps, Lang, PartOfSpeech } from '@/type';
 import {
 	isChinese,
 	isEnglish,
@@ -100,9 +100,6 @@ async function CheckData(
 	aidata: CardProps,
 ) {
 	let result = aidata;
-	if (!isHaveAllTranslatedDefiniation(result)) {
-		return await getAIResponse(apidata);
-	}
 
 	if (typeof apidata === 'string') {
 		return result;
@@ -130,18 +127,6 @@ async function CheckData(
 		});
 	}
 	return result;
-}
-
-function isHaveAllTranslatedDefiniation(data: CardProps): boolean {
-	return data.blocks.every((block) =>
-		block.definitions.every((definition) =>
-			['tw', 'en'].some(
-				(lang) =>
-					definition.definition.some((d) => d.lang === lang) &&
-					definition.definition.length > 0,
-			),
-		),
-	);
 }
 
 async function getAIResponse(
@@ -174,7 +159,7 @@ async function getAIResponse(
 
 	try {
 		AIResponse = await OpenAIClient.beta.chat.completions.parse({
-			model: 'gpt-4.1-nano',
+			model: 'gpt-4.1-mini',
 			messages: [
 				{
 					role: 'system',
@@ -189,8 +174,28 @@ async function getAIResponse(
 			response_format: zodResponseFormat(wordSchema, 'data'),
 		});
 		console.log(AIResponse.usage);
-		const result: CardProps = AIResponse.choices[0].message
-			?.parsed as CardProps;
+		const tempResult = AIResponse.choices[0].message?.parsed as wordSchema;
+		const result: CardProps = {
+			word: tempResult.word,
+			phonetic: tempResult.phonetic,
+			blocks: tempResult.blocks.map((block) => ({
+				partOfSpeech: block.partOfSpeech as PartOfSpeech,
+				definitions: block.definitions.map((definition) => ({
+					definition: Object.values(definition.definition) as {
+						lang: Lang;
+						content: string;
+					}[],
+					synonyms: definition.synonyms,
+					antonyms: definition.antonyms,
+					example: definition.example.map((ex) =>
+						ex.map((item) => ({
+							lang: item.lang,
+							content: item.content,
+						})),
+					),
+				})),
+			})),
+		};
 		console.log('OpenAI SDK Success');
 		return await CheckData(processedData, result);
 	} catch (error) {

@@ -1,6 +1,7 @@
 import { z } from 'zod';
-import { GArray, GEnum, GNumber, GObject, GString } from './gemini/type';
+import { G } from './gemini/type';
 import { ChatAction, PartOfSpeech } from '@/type';
+import { Langs } from '@/types/lang';
 
 export const textRecognizeSchema = z.object({
 	words: z.array(
@@ -17,19 +18,19 @@ export const textRecognizeSchema = z.object({
 	),
 });
 
-export const GTextRecognizeSchema = new GObject('textRecognizeSchema', false, {
+export const GTextRecognizeSchema = G.object('textRecognizeSchema', false, {
 	properties: [
-		new GArray(
+		G.array(
 			'words',
 			true,
-			new GObject('wordItem', true, {
+			G.object('wordItem', true, {
 				properties: [
-					new GString('word', true),
-					new GArray('translations', true, new GString('translation', true)),
-					new GArray('definitions', true, new GString('definition', true)),
-					new GArray('examples', true, new GString('example', true)),
-					new GString('phonetic', false),
-					new GEnum('partOfSpeech', Object.values(PartOfSpeech), false),
+					G.string('word', true),
+					G.array('translations', true, G.string('translation', true)),
+					G.array('definitions', true, G.string('definition', true)),
+					G.array('examples', true, G.string('example', true)),
+					G.string('phonetic', false),
+					G.enum('partOfSpeech', Object.values(PartOfSpeech), false),
 				],
 			}),
 		),
@@ -56,27 +57,23 @@ export const ChatModelSchema = z.object({
 	),
 });
 
-export const GChatModelSchema = new GObject('chatModelSchema', false, {
+export const GChatModelSchema = G.object('chatModelSchema', false, {
 	properties: [
-		new GArray('words', true, new GString('word', true)),
-		new GEnum(
-			'action',
-			Object.values(ChatAction) as [string, ...string[]],
-			true,
-		),
-		new GString('message', true),
-		new GString('changeChatName', false),
-		new GString('targetDeckName', false),
-		new GString('targetDeckId', false),
-		new GString('deckId', false),
-		new GArray(
+		G.array('words', true, G.string('word', true)),
+		G.enum('action', Object.values(ChatAction) as [string, ...string[]], true),
+		G.string('message', true),
+		G.string('changeChatName', false),
+		G.string('targetDeckName', false),
+		G.string('targetDeckId', false),
+		G.string('deckId', false),
+		G.array(
 			'grammerFix',
 			true,
-			new GObject('grammerFixItem', true, {
+			G.object('grammerFixItem', true, {
 				properties: [
-					new GString('correctedText', true),
-					new GNumber('offsetWords', true),
-					new GNumber('lengthWords', true),
+					G.string('correctedText', true),
+					G.number('offsetWords', true),
+					G.number('lengthWords', true),
 				],
 			}),
 		),
@@ -84,3 +81,125 @@ export const GChatModelSchema = new GObject('chatModelSchema', false, {
 	showName: false,
 }).toSchema();
 export type ChatModelSchema = z.infer<typeof ChatModelSchema>;
+
+export type wordSchema = z.infer<typeof wordSchema>;
+
+export const wordSchema = z.object({
+	word: z.string(),
+	phonetic: z.string(),
+	zh: z.array(z.string()),
+	blocks: z.array(
+		z.object({
+			partOfSpeech: z.enum([
+				'noun',
+				'verb',
+				'adjective',
+				'adverb',
+				'pronoun',
+				'preposition',
+				'conjunction',
+				'interjection',
+				'exclamation',
+				'abbreviation',
+				'phrase',
+			]),
+			definitions: z.array(
+				z.object({
+					definition: z.object(
+						Object.fromEntries(
+							Langs.map((lang) => [
+								lang,
+								z.object({
+									lang: z.enum(['en', 'tw', 'ja']),
+									content: z.string(),
+								}),
+							]),
+						),
+					),
+					synonyms: z.array(z.string()),
+					antonyms: z.array(z.string()),
+					example: z.array(
+						z.array(
+							z.object({
+								lang: z.enum(['en', 'tw']),
+								content: z.string(),
+							}),
+						),
+					),
+				}),
+			),
+		}),
+	),
+});
+
+export const GwordSchema = G.object('wordSchema', false, {
+	properties: [
+		G.string('word', true),
+		G.string('phonetic', true),
+		G.array('zh', true, G.string('zhItem', true)),
+		G.array(
+			'blocks',
+			true,
+			G.object('block', true, {
+				properties: [
+					G.enum(
+						'partOfSpeech',
+						[
+							'noun',
+							'verb',
+							'adjective',
+							'adverb',
+							'pronoun',
+							'preposition',
+							'conjunction',
+							'interjection',
+							'exclamation',
+							'abbreviation',
+							'phrase',
+						],
+						true,
+					),
+					G.array(
+						'definitions',
+						true,
+						G.object('definition', true, {
+							properties: [
+								G.array(
+									'definition',
+									true,
+									G.object('definitionItem', true, {
+										properties: Langs.map((lang) =>
+											G.object(lang, true, {
+												properties: [
+													G.enum('lang', ['en', 'tw', 'ja'], true),
+													G.string('content', true),
+												],
+											}),
+										),
+									}),
+								),
+								G.array('synonyms', true, G.string('synonym', true)),
+								G.array('antonyms', true, G.string('antonym', true)),
+								G.array(
+									'example',
+									true,
+									G.array(
+										'exampleItem',
+										true,
+										G.object('exampleObject', true, {
+											properties: [
+												G.enum('lang', ['en', 'tw'], true),
+												G.string('content', true),
+											],
+										}),
+									),
+								),
+							],
+						}),
+					),
+				],
+			}),
+		),
+	],
+	showName: false,
+});

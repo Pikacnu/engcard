@@ -14,8 +14,11 @@ You are an English linguistics expert. Process dictionary data and enhance it wi
 - Provide at least 2 examples per definition in English, Traditional Chinese
 - Maintain professional accuracy and cultural appropriateness
 - Return valid JSON with identical structure plus required multilingual fields
+- **Merge definitions with the same part of speech into a single block**
 
 **Critical:** Every definition and example MUST have English ("en"), Traditional Chinese ("tw") versions. Incomplete translations are unacceptable.
+
+**Structure:** Group all definitions by part of speech (noun, verb, adjective, etc.) into single blocks rather than creating separate blocks for each definition.
 `;
 
 export const wordGeminiHistory: Content[] = [

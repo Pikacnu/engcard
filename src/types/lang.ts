@@ -1,3 +1,8 @@
-export type Lang = 'en' | 'tw' | 'ja';
-export type LangEnum = { [key in Lang]: string };
-export const Langs = ['en', 'tw', 'ja'];
+export enum LangEnum {
+	EN = 'en',
+	TW = 'tw',
+}
+
+export type Lang = `${LangEnum}`;
+
+export const Langs = Object.values(LangEnum);

@@ -26,6 +26,24 @@ class value {
 	}
 }
 
+/**
+ * Represents an object schema with properties and validation rules.
+ * Extends the base value class to provide object-specific functionality.
+ *
+ * @class GObject
+ * @extends value
+ *
+ * @example
+ * ```typescript
+ * const userObject = new GObject('user', true, {
+ *   properties: [
+ *     new GString('name', true),
+ *     new GNumber('age', false)
+ *   ],
+ *   showName: true
+ * });
+ * ```
+ */
 export class GObject extends value {
 	type = Types.Object;
 	properties: value[];
@@ -146,6 +164,11 @@ export class GBoolean extends value {
 export class GEnum extends value {
 	type = Types.Enum;
 	values: string[];
+	/*
+	 * @param name - The name of the enum.
+	 * @param values - The values of the enum.
+	 * @param required - Whether the enum is required or not.
+	 */
 	constructor(name: string, values: string[], required?: boolean) {
 		super(name, required, true);
 		this.values = values;
@@ -173,6 +196,11 @@ export class functionDeclaration {
 	name: string;
 	parameters: value[];
 	description: string;
+	/*
+	 * @param name - The name of the function.
+	 * @param description - A brief description of the function.
+	 * @param parameters - An array of parameters for the function.
+	 */
 	constructor(name: string, description: string, parameters?: value[]) {
 		this.name = name;
 
@@ -210,5 +238,34 @@ export class functionDeclaration {
 		}`;
 		const functionDeclaration: FunctionDeclaration = JSON.parse(data);
 		return functionDeclaration;
+	}
+}
+
+export class G {
+	static object(...args: ConstructorParameters<typeof GObject>) {
+		return new GObject(...args);
+	}
+	static array(...args: ConstructorParameters<typeof GArray>) {
+		return new GArray(...args);
+	}
+	static string(...args: ConstructorParameters<typeof GString>) {
+		return new GString(...args);
+	}
+	static number(...args: ConstructorParameters<typeof GNumber>) {
+		return new GNumber(...args);
+	}
+	static int(...args: ConstructorParameters<typeof GInt>) {
+		return new GInt(...args);
+	}
+	static boolean(...args: ConstructorParameters<typeof GBoolean>) {
+		return new GBoolean(...args);
+	}
+	static enum(...args: ConstructorParameters<typeof GEnum>) {
+		return new GEnum(...args);
+	}
+	static functionDeclaration(
+		...args: ConstructorParameters<typeof functionDeclaration>
+	) {
+		return new functionDeclaration(...args);
 	}
 }

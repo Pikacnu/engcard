@@ -23,7 +23,7 @@ export function useLocalStorage<T>(
 					if (item === null) {
 						return '';
 					}
-					return item || '';
+					return item.replaceAll(/["\\]/g, '') || '';
 				case 'number':
 					if (item === null) {
 						return 0;
