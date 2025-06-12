@@ -6,11 +6,26 @@ import Image from 'next/image';
 import { useTranslation } from '@/context/LanguageContext'; // Added
 import { LanguageSwitcher } from './../../../components/client/LanguageSwitcher';
 import { ThemeToggler } from './../../../components/ThemeToggler';
+import { useLocalStorage } from '@/hooks/localstorage';
 
 export default function Settings() {
 	const { t } = useTranslation(); // Added
 	const [isLoading, setIsLoading] = useState(true);
 	const [settings, setSettings] = useState<UserSettingsCollection | null>(null);
+
+	const [, setGuideCard] = useLocalStorage(
+		'guideCard',
+		false, // Default value
+	);
+	const [, setGuideDashboard] = useLocalStorage(
+		'guideDashboard',
+		false, // Default value
+	);
+
+	const [, setGuidePreview] = useLocalStorage(
+		'guideDashboardPreview',
+		false, // Default value
+	);
 
 	useEffect(() => {
 		(async () => {
@@ -169,6 +184,41 @@ export default function Settings() {
 							</label>
 							<ThemeToggler />
 						</div>
+					</div>
+					<div className='flex flex-col m-4 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg shadow'>
+						{(
+							[
+								[
+									'dashboard.settings.resetGuideCard',
+									() => setGuideCard(false),
+								],
+								[
+									'dashboard.settings.resetGuideDashboard',
+									() => setGuideDashboard(false),
+								],
+								[
+									'dashboard.settings.resetGuidePreview',
+									() => setGuidePreview(false),
+								],
+							] as [string, () => void][]
+						).map(([label, action]: [string, () => void]) => (
+							<div
+								className='flex flex-row items-center justify-between mb-2'
+								key={label}
+							>
+								<label className='text-gray-700 dark:text-gray-200'>
+									{t(label)}
+								</label>
+								<button
+									className='bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded'
+									onClick={() => {
+										action();
+									}}
+								>
+									{t('dashboard.settings.resetButton')}
+								</button>
+							</div>
+						))}
 					</div>
 				</div>
 			)}

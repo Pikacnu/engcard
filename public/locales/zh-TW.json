@@ -100,7 +100,11 @@
 			"ocrOptionFullySource": "完全來自來源",
 			"alertLoadFailed": "載入設定失敗：",
 			"languageLabel": "語言",
-			"themeToggle": "樣式切換"
+			"themeToggle": "樣式切換",
+			"resetGuideCard": "重置卡片指南",
+			"resetGuideDashboard": "重置儀表板指南",
+			"resetGuidePreview": "重置預覽指南",
+			"resetButton": "重製"
 		},
 		"deck": {
 			"altLoading": "載入中...",

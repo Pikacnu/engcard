@@ -1,4 +1,4 @@
-import { Content, FunctionCall } from '@google/generative-ai';
+import { Content, FunctionCall } from '@google/genai';
 import { ChatModelSchema } from './utils';
 import { Lang } from './types/lang';
 

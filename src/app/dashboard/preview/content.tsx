@@ -183,7 +183,7 @@ export default function Content() {
 			}
 		})();
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [fetchCards]);
+	}, []);
 
 	useEffect(() => {
 		if (selectedDeck) {

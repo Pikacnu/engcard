@@ -1,5 +1,5 @@
 import { ExtenstionTable } from '@/type';
-import { Content } from '@google/generative-ai';
+import { Content } from '@google/genai';
 import {
 	GoogleAIFileManager,
 	UploadFileResponse,
@@ -19,8 +19,8 @@ export const OpenAIHistoryTranscriber = (
 ): ChatCompletionMessageParam[] => {
 	const result = content.map((item) => {
 		const { role, parts } = item;
-		const text = parts.map((part) => part.text).join('\n');
-		return { role: roleWarpMap.get(role) || role, content: text } as
+		const text = (parts || []).map((part) => part.text).join('\n');
+		return { role: roleWarpMap.get(role || '') || role, content: text } as
 			| ChatCompletionDeveloperMessageParam
 			| ChatCompletionSystemMessageParam
 			| ChatCompletionUserMessageParam

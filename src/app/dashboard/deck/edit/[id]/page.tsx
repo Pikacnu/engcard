@@ -47,9 +47,18 @@ export default function EditPage({
 				if (data.error) {
 					return;
 				}
-				setDeck(data);
+				let deckData: DeckCollection = data as DeckCollection;
+				if (processingWordTimestamp > 0) {
+					deckData = {
+						...data,
+						cards: data.cards.filter(
+							(card: CardProps) => card.word !== cardProcessing.word,
+						),
+					};
+				}
+				setDeck(deckData);
 			});
-	}, [id]);
+	}, [id, processingWordTimestamp, cardProcessing.word]);
 
 	useEffect(() => {
 		refresh();
@@ -94,26 +103,12 @@ export default function EditPage({
 	useEffect(() => {
 		const now = new Date().getTime();
 		if (processingWordTimestamp > 0 && now - processingWordTimestamp <= 0) {
+			console.log('Processing word completed or cancelled');
 			setProcessingWordTimestamp(0);
 			refresh();
 			return;
 		}
-		setDeck((prev) => {
-			if (!prev) return prev;
-			if (prev.cards.some((card) => card.word === cardProcessing.word)) {
-				return {
-					...prev,
-					cards: prev.cards
-						.filter((card) => card.word !== cardProcessing.word)
-						.concat(cardProcessing),
-				};
-			}
-			return {
-				...prev,
-				cards: [...prev.cards, cardProcessing],
-			};
-		});
-	}, [processingWordTimestamp, refresh, cardProcessing]);
+	}, [processingWordTimestamp, refresh]);
 
 	const [isClient, setIsClient] = useState(false);
 	useEffect(() => {
@@ -262,6 +257,7 @@ export default function EditPage({
 											});
 											return;
 										}
+										console.log(json);
 										const timeoutFn = (time: number) => {
 											setProcessingWordTimestamp((prev) =>
 												prev === time ? 0 : prev,
@@ -297,7 +293,9 @@ export default function EditPage({
 				</div>
 			</div>
 			<List
-				cards={deck ? deck.cards : []}
+				cards={(deck ? deck.cards : []).concat(
+					processingWordTimestamp > 0 ? [cardProcessing] : [],
+				)}
 				className='max-h-full md:max-w-[30vw] xl:min-w-[30vw] w-1/5 max-md:w-full overflow-hidden dark:bg-gray-800 list-area'
 			/>
 		</div>

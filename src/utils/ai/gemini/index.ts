@@ -1,50 +1,19 @@
-import {
-	Content,
-	FunctionCall,
-	GoogleGenerativeAI,
-} from '@google/generative-ai';
+import { Content, FunctionCall, GoogleGenAI } from '@google/genai';
 import { DeckCollection } from '@/type';
 import db from '@/lib/db';
 import {
 	chatModelInstruction,
 	ChatModelSchema,
 	GChatModelSchema,
-	GTextRecognizeSchema,
-	GwordSchema,
-	textRecognizeModelInstruction,
-	wordSystemInstruction,
 } from '../../ai';
 
 const googleAIKey = process.env.GEMINI_API_KEY || '';
 
-export const GenerativeAI = new GoogleGenerativeAI(googleAIKey);
-export const TextModel = GenerativeAI.getGenerativeModel({
-	model: 'gemini-2.0-flash',
+export const GenerativeAI = new GoogleGenAI({
+	apiKey: googleAIKey,
 });
 
-export const WordModel = GenerativeAI.getGenerativeModel({
-	model: 'gemini-2.0-flash',
-	generationConfig: {
-		responseMimeType: 'application/json',
-		responseSchema: GwordSchema.toSchema(),
-	},
-	systemInstruction: wordSystemInstruction,
-});
-
-export const TextRecognizeModel = GenerativeAI.getGenerativeModel({
-	model: 'gemini-2.0-flash',
-	generationConfig: {
-		responseMimeType: 'application/json',
-		responseSchema: GTextRecognizeSchema,
-	},
-	systemInstruction: textRecognizeModelInstruction,
-});
-
-export const ChatModel = GenerativeAI.getGenerativeModel({
-	model: 'gemini-2.0-flash',
-	systemInstruction: chatModelInstruction,
-	//tools: [{ googleSearch: {} }],
-});
+export const Models = GenerativeAI.models;
 
 async function PrepareTheDataForGenerate(userId: string): Promise<string> {
 	const userDecks = await db
@@ -84,16 +53,14 @@ export async function GenerateTextResponse(
 	data: ChatModelSchema;
 	functionCall?: FunctionCall[];
 }> {
-	const ChatModel = GenerativeAI.getGenerativeModel({
+	const response = await Models.generateContent({
 		model: 'gemini-2.0-flash',
-		systemInstruction: `
-		prompt : ${chatModelInstruction} 
-		data : ${await PrepareTheDataForGenerate(userId)}`,
-	});
-
-	const response = await ChatModel.generateContent({
 		contents: [...history, { role: 'user', parts: [{ text: message }] }],
-		generationConfig: {
+		config: {
+			systemInstruction: `
+			prompt : ${chatModelInstruction} 
+			data : ${await PrepareTheDataForGenerate(userId)}`,
+
 			responseMimeType: 'application/json',
 			responseSchema: GChatModelSchema,
 		},
@@ -109,15 +76,16 @@ export async function GenerateTextResponse(
 			},
 		},*/
 	});
-	const resultText = response.response.text();
+	const resultText = response.text;
+	if (!resultText) {
+		throw new Error('No response text from Gemini AI');
+	}
 	const result = JSON.parse(resultText) as ChatModelSchema;
-	const functionCall = response.response.functionCalls();
 	return {
 		content: {
 			role: 'model',
 			parts: [{ text: result.message }],
 		},
 		data: result,
-		functionCall,
 	};
 }

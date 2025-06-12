@@ -1,7 +1,9 @@
 import {
 	auth,
 	Base64ToFile,
-	TextRecognizeModel,
+	GTextRecognizeSchema,
+	Models,
+	textRecognizeModelInstruction,
 	textRecognizeSchema,
 	uploadFile,
 } from '@/utils';
@@ -113,7 +115,13 @@ export async function POST(req: Request) {
 			binaryData,
 			ExtenstionToMimeType.get(imageType) as string,
 		);
-		let response = await TextRecognizeModel.generateContent({
+		let response = await Models.generateContent({
+			model: 'gemini-2.0-flash',
+			config: {
+				responseMimeType: 'application/json',
+				responseSchema: GTextRecognizeSchema,
+				systemInstruction: textRecognizeModelInstruction,
+			},
 			contents: [
 				{
 					role: 'user',
@@ -131,16 +139,22 @@ export async function POST(req: Request) {
 		let part = '';
 		const processedPart: string[] = [];
 		while (true) {
-			if (!response.response.candidates) {
+			if (!response.candidates) {
 				return NextResponse.json(
 					{ error: 'Failed to recognize text' },
 					{ status: 500 },
 				);
 			}
-			if (response.response.candidates[0].finishReason !== FinishReason.STOP) {
-				part += response.response.text();
+			if (response.candidates[0].finishReason !== FinishReason.STOP) {
+				part += response.text;
 				processedPart.push(jsonFix(part));
-				response = await TextRecognizeModel.generateContent({
+				response = await Models.generateContent({
+					model: 'gemini-2.0-flash',
+					config: {
+						responseMimeType: 'application/json',
+						responseSchema: GTextRecognizeSchema,
+						systemInstruction: textRecognizeModelInstruction,
+					},
 					contents: [
 						{
 							role: 'user',
@@ -173,7 +187,7 @@ export async function POST(req: Request) {
 				});
 				continue;
 			}
-			part += response.response.text();
+			part += response.text;
 			processedPart.push(jsonFix(part));
 			break;
 		}
@@ -301,17 +315,14 @@ export async function POST(req: Request) {
 					);
 				}
 			}, index * 1.5 * 1_000);
-			return NextResponse.json(
-				{
-					message: 'Image uploaded successfully',
-					time: result.words.length * 2,
-				},
-				{ status: 200 },
-			);
 		});
-		return NextResponse.json({
-			error: 'No words found in the image',
-		});
+		return NextResponse.json(
+			{
+				message: 'Image uploaded successfully',
+				time: result.words.length * 2,
+			},
+			{ status: 200 },
+		);
 	} catch (e) {
 		console.log(e);
 		return NextResponse.json(

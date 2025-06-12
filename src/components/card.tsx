@@ -30,7 +30,7 @@ export default function Card({ card }: { card: CardProps }) {
 		>
 			{!flipped && (
 				<div className='flex flex-col items-center justify-center flex-grow relative overflow-hidden w-full cursor-pointer'>
-					<h1 className='text-4xl text-wrap whitespace-break-spaces max-md:min-w-[70vw] max-md:max-w-[80vw] break-words text-center'>
+					<h1 className='text-4xl text-wrap whitespace-break-spaces max-md:min-w-[50vw] max-md:max-w-[60vw] md:max-w-64 break-words text-center font-semibold mb-2'>
 						{word}
 					</h1>
 					<p className='text-xl text-gray-600 dark:text-gray-400'>{phonetic}</p>
@@ -46,34 +46,35 @@ export default function Card({ card }: { card: CardProps }) {
 						<h1 className=' text-4xl whitespace-pre-wrap text-wrap max-md:min-w-[50vw] max-md:max-w-[60vw] md:max-w-64 break-words'>
 							{word}
 						</h1>
+					</div>
+					<div className='flex flex-col'>
 						<p className='text-xl text-gray-600 dark:text-gray-400'>
 							{phonetic}
 						</p>
+						{audio && (
+							<div className='flex flex-row items-center justify-start my-2'>
+								<button
+									className='bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-500 text-white p-2 rounded-lg flex items-center justify-center'
+									disabled={isPlaying as boolean}
+									onClick={(e) => {
+										// Added stopPropagation
+										e.stopPropagation();
+										if (typeof toggle === 'function') {
+											toggle();
+										}
+									}}
+								>
+									<Image
+										src='/icons/volume-up.svg'
+										alt={t('components.card.altPlayAudio')} // Translated
+										width={16} // Adjusted size for button
+										height={16}
+										className='object-cover' // Consider filter: invert(1) for dark mode if icon is dark
+									></Image>
+								</button>
+							</div>
+						)}
 					</div>
-
-					{audio && (
-						<div className='flex flex-row items-center justify-start my-2'>
-							<button
-								className='bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-500 text-white p-2 rounded-lg flex items-center justify-center'
-								disabled={isPlaying as boolean}
-								onClick={(e) => {
-									// Added stopPropagation
-									e.stopPropagation();
-									if (typeof toggle === 'function') {
-										toggle();
-									}
-								}}
-							>
-								<Image
-									src='/icons/volume-up.svg'
-									alt={t('components.card.altPlayAudio')} // Translated
-									width={16} // Adjusted size for button
-									height={16}
-									className='object-cover' // Consider filter: invert(1) for dark mode if icon is dark
-								></Image>
-							</button>
-						</div>
-					)}
 
 					{blocks.length > 0 &&
 						blocks.map((block, index) => (

@@ -1,6 +1,7 @@
 import DB from '@/lib/db';
 import { CardProps, Lang, PartOfSpeech } from '@/type';
 import {
+	GwordSchema,
 	isChinese,
 	isEnglish,
 	isJapanese,
@@ -10,7 +11,7 @@ import {
 import {
 	wordGeminiHistory,
 	wordSystemInstruction,
-	WordModel,
+	Models,
 	wordSchema,
 } from '@/utils';
 import {
@@ -202,11 +203,25 @@ async function getAIResponse(
 		console.error('OpenAI SDK Error :', error);
 		console.log('trying by google AI SDK');
 		try {
-			const chat = WordModel.startChat({
-				history: wordGeminiHistory,
+			const response = await Models.generateContent({
+				model: 'gemini-2.0-flash',
+				config: {
+					responseMimeType: 'application/json',
+					responseSchema: GwordSchema.toSchema(),
+					systemInstruction: wordSystemInstruction,
+				},
+				contents: [
+					...wordGeminiHistory,
+					{
+						role: 'user',
+						parts: [{ text: prompt }],
+					},
+				],
 			});
-			AIResponse = await chat.sendMessage(prompt);
-			const result: CardProps = JSON.parse(AIResponse.response.text());
+			if (!response || !response.text) {
+				throw new Error('No response from Google AI SDK');
+			}
+			const result: CardProps = JSON.parse(response.text);
 			console.log('Google AI SDK Success');
 			return await CheckData(processedData, result);
 		} catch (error) {

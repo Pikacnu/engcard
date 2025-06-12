@@ -100,7 +100,11 @@
 			"ocrOptionFullySource": "Fully From Source",
 			"alertLoadFailed": "Failed to load settings: ",
 			"languageLabel": "Language",
-			"themeToggle": "Theme Mode"
+			"themeToggle": "Theme Mode",
+			"resetGuideCard": "Reset Card Guide",
+			"resetGuideDashboard": "Reset Dashboard Guide",
+			"resetGuidePreview": "Reset Preview Guide",
+			"resetButton": "Reset"
 		},
 		"deck": {
 			"altLoading": "Loading...",

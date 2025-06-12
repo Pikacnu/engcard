@@ -1,9 +1,6 @@
 import { ChatAction } from '@/type';
-import {
-	Content,
-	FunctionDeclaration,
-	SchemaType,
-} from '@google/generative-ai';
+import { FunctionDeclaration, SchemaType } from '@google/generative-ai';
+import { Content } from '@google/genai';
 export const wordSystemInstruction = `
 You are an English linguistics expert. Process dictionary data and enhance it with complete multilingual translations.
 
