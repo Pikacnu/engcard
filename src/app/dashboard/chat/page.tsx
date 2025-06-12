@@ -8,7 +8,7 @@ import {
 	sendMessage,
 } from '@/actions/chat';
 import { WithStringId, WithStringObjectId, ChatAction } from '@/type';
-import { Content } from '@google/generative-ai';
+import { Content } from '@google/genai';
 import { useCallback, useEffect, useRef, useState, useTransition } from 'react';
 import { useScrollToBottom } from '@/hooks/scrollToBottom';
 import { useTranslation } from '@/context/LanguageContext'; // Added
@@ -195,7 +195,7 @@ export default function Chat() {
 								key={content.id}
 							>
 								<div className={`flex flex-col max-w-[70%]`}>
-									{parts.map((part, index) => {
+									{parts?.map((part, index) => {
 										if (part.text) {
 											return (
 												<div
@@ -222,11 +222,11 @@ export default function Chat() {
 																{/* Translated */}
 																<p className=' text-gray-900 flex flex-wrap'>
 																	{
-																		history[contentIndex - 1].parts
-																			.map((part) => part.text)
-																			.join(' ')
-																			.split(' ')
-																			.reduce(
+																		history[contentIndex - 1]?.parts
+																			?.map((part) => part.text)
+																			?.join(' ')
+																			?.split(' ')
+																			?.reduce(
 																				(acc, word, idx) => {
 																					const fix = content.grammerFix?.find(
 																						(f) =>
@@ -270,7 +270,7 @@ export default function Chat() {
 																					index: number;
 																					node: React.ReactNode[];
 																				},
-																			).node
+																			)?.node
 																	}
 																</p>
 															</>
