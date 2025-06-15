@@ -101,14 +101,49 @@ async function CheckData(
 	aidata: CardProps,
 ) {
 	let result = aidata;
-
+	let audio;
 	if (typeof apidata === 'string') {
+		const res = await fetch((process.env.AUDIO_API_URL as string) || '', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				'User-Agent': process.env.AUDIO_API_UA || '',
+				Authorization: `Bearer ${process.env.AUDIO_API_KEY || ''}`,
+			},
+			body: JSON.stringify({
+				word: apidata,
+			}),
+		});
+		console.log(`Audio API Response: ${res.status} ${res.statusText}`);
+		if (res.ok) {
+			result = Object.assign(result, {
+				audio: `${process.env.AUDIO_API_URL}?word=${apidata}`,
+			});
+		}
 		return result;
 	}
-
 	const isDataArray = Array.isArray(apidata);
 	const phonetic = isDataArray ? apidata[0].phonetic : apidata.phonetic;
-	const audio = isDataArray ? apidata[0].audio : apidata.audio;
+	audio = isDataArray ? apidata[0].audio : apidata.audio;
+	if (audio === undefined || audio === '') {
+		const res = await fetch((process.env.AUDIO_API_URL as string) || '', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				'User-Agent': process.env.AUDIO_API_UA || '',
+				Authorization: `Bearer ${process.env.AUDIO_API_KEY || ''}`,
+			},
+			body: JSON.stringify({
+				word: isDataArray ? apidata[0].word : apidata.word,
+			}),
+		});
+		console.log(`Audio API Response: ${res.status} ${res.statusText}`);
+		if (res.ok) {
+			audio = `${process.env.AUDIO_API_URL}?word=${
+				isDataArray ? apidata[0].word : apidata.word
+			}`;
+		}
+	}
 	if (
 		aidata.phonetic === '' ||
 		aidata.phonetic === undefined ||

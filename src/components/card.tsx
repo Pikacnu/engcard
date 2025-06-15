@@ -84,7 +84,7 @@ export default function Card({ card }: { card: CardProps }) {
 							>
 								<div className='inline-flex flex-row-reverse sticky self-end top-0 z-10'>
 									{block.partOfSpeech && (
-										<h2 className='text-lg p-1 bg-opacity-40 bg-blue-500 dark:bg-blue-700 border-2 border-blue-600 dark:border-blue-500 rounded text-white'>
+										<h2 className='text-lg p-1 bg-opacity-40 bg-blue-500 dark:bg-blue-700 border-2 border-blue-600 dark:border-blue-500 rounded text-black dark:text-white mr-1'>
 											{PartOfSpeechShort[block.partOfSpeech]}
 										</h2>
 									)}

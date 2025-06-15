@@ -1,6 +1,6 @@
-import { Content, Schema } from '@google/generative-ai';
+import { Content, Schema } from '@google/genai';
 import { Model, model, OpenAIClient } from './openai';
-import { GenerativeAI } from './gemini';
+import { Models } from './gemini';
 import { OpenAIHistoryTranscriber } from './functions';
 import { z } from 'zod';
 import { zodResponseFormat } from 'openai/helpers/zod';
@@ -53,15 +53,7 @@ export async function getParseResponse<T>(
 	}
 	try {
 		console.log('try Google AI SDK And Gemini Model :');
-		const Model = GenerativeAI.getGenerativeModel({
-			model: geminiModel,
-			systemInstruction: systemInstruction,
-			generationConfig: {
-				responseMimeType: 'application/json',
-				responseSchema: GeminiAISchema,
-			},
-		});
-		const response = await Model.generateContent({
+		const response = await Models.generateContent({
 			contents: [
 				...history,
 				{
@@ -69,8 +61,14 @@ export async function getParseResponse<T>(
 					parts: [{ text: prompt }],
 				},
 			],
+			model: geminiModel,
+			config: {
+				systemInstruction: systemInstruction,
+				responseMimeType: 'application/json',
+				responseSchema: GeminiAISchema,
+			},
 		});
-		const result = response.response.text();
+		const result = response.text as string;
 		const parsedResult = JSON.parse(result) as z.infer<typeof zodOpenAISchema>;
 		console.log('Google AI SDK Success');
 		return parsedResult as T;
