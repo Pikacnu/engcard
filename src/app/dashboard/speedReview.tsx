@@ -24,9 +24,12 @@ export default function SpeedReview() {
 	return (
 		<div className='flex flex-col items-center justify-center w-full h-full dark:bg-gray-700 dark:text-white'>
 			<div className='flex flex-col items-center justify-center w-full h-full p-4 text-center'>
-				<p className="text-3xl mb-4">
+				<p className='text-3xl mb-4 dark:text-gray-200 text-gray-500'>
 					<span>
-						{words.length > 0 ? words[index] : t('dashboard.speedReview.noWords')} {/* Translated */}
+						{words.length > 0
+							? words[index]
+							: t('dashboard.speedReview.noWords')}{' '}
+						{/* Translated */}
 					</span>
 				</p>
 				{words.length > 0 && (
@@ -40,7 +43,8 @@ export default function SpeedReview() {
 							}
 						}}
 					>
-						<span>{t('dashboard.speedReview.nextWordButton')}</span> {/* Translated */}
+						<span>{t('dashboard.speedReview.nextWordButton')}</span>{' '}
+						{/* Translated */}
 					</button>
 				)}
 			</div>

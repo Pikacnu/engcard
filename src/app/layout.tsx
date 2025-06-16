@@ -39,7 +39,7 @@ export default function RootLayout({
 				<ThemeProvider>
 					<LanguageProvider>
 						<SessionProvider>
-							<div className='flex flex-col items-center justify-center bg-gray-700 w-full h-full min-h-max '>
+							<div className='flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-700 w-full h-full min-h-max '>
 								{children}
 							</div>
 						</SessionProvider>

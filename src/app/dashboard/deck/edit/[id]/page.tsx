@@ -116,9 +116,16 @@ export default function EditPage({
 	}, []);
 
 	return (
-		<div className='flex flex-row h-full max-md:flex-col *:max-md:w-full *:max-md:min-h-full dark:bg-gray-700'>
+		<div
+			className='flex flex-row h-full max-md:flex-col *:max-md:w-full *:max-md:min-h-full dark:bg-gray-700'
+			style={{
+				scrollSnapStop: 'always',
+				scrollSnapType: 'y mandatory',
+				overflowY: 'auto',
+			}}
+		>
 			{isPending && (
-				<div className=' fixed z-10 inset-0 flex items-center justify-center bg-black bg-opacity-50 h-full w-full top-0 left-0'>
+				<div className=' fixed z-40 inset-0 flex items-center justify-center bg-black bg-opacity-50 h-full w-full top-0 left-0'>
 					<svg
 						aria-hidden='true'
 						className='w-16 h-16 animate-spin text-gray-600 dark:text-gray-400 fill-blue-600'
@@ -151,13 +158,25 @@ export default function EditPage({
 					/>
 				)}
 			</div>
-			<Add
-				className='md:max-w-[40vw] w-full md:flex-grow dark:bg-gray-800 add-area'
-				id={id}
-				onAdd={refresh}
-			/>
-			<div className='md:max-w-[40vw] xl:w-full overflow-clip dark:bg-gray-800 p-2 '>
-				<div className='flex flex-row items-center justify-center bg-slate-200 dark:bg-slate-700 p-2 rounded-lg text-black dark:text-white upload-area'>
+			<div
+				className='flex flex-grow relative w-full'
+				style={{
+					scrollSnapAlign: 'start',
+				}}
+			>
+				<Add
+					className='md:max-w-[40vw] w-full md:flex-grow dark:bg-gray-800 add-area'
+					id={id}
+					onAdd={refresh}
+				/>
+			</div>
+			<div className='md:max-w-[40vw] xl:w-full overflow-clip dark:bg-gray-800 p-2 w-full'>
+				<div
+					className='flex flex-row items-center justify-center bg-slate-200 dark:bg-slate-700 p-2 rounded-lg text-black dark:text-white upload-area'
+					style={{
+						scrollSnapAlign: 'start',
+					}}
+				>
 					<p className='flex-grow'>
 						{t('dashboard.deckEdit.uploadImagePrompt')}
 					</p>
@@ -285,19 +304,26 @@ export default function EditPage({
 						}}
 					/>
 				</div>
-				<div className='search-area'>
+				<div className='search-area overflow-y-auto max-h-[100vh]'>
 					<Search
 						deckid={id}
 						onAdd={refresh}
 					/>
 				</div>
 			</div>
-			<List
-				cards={(deck ? deck.cards : []).concat(
-					processingWordTimestamp > 0 ? [cardProcessing] : [],
-				)}
-				className='max-h-full md:max-w-[30vw] xl:min-w-[30vw] w-1/5 max-md:w-full overflow-hidden dark:bg-gray-800 list-area'
-			/>
+			<div
+				className='flex flex-grow relative w-full itemcenter justify-center overflow-y-auto max-h-[100vh] dark:bg-gray-800'
+				style={{
+					scrollSnapAlign: 'start',
+				}}
+			>
+				<List
+					cards={(deck ? deck.cards : []).concat(
+						processingWordTimestamp > 0 ? [cardProcessing] : [],
+					)}
+					className='max-h-full md:max-w-[30vw] xl:min-w-[30vw] w-1/5 max-md:w-full overflow-hidden dark:bg-gray-800 list-area'
+				/>
+			</div>
 		</div>
 	);
 }

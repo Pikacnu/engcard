@@ -48,8 +48,8 @@ export default function Search({ deckid, onAdd }: PageProps) {
 	}, [word, getWord]);
 
 	return (
-		<div className='flex flex-col items-center justify-start pt-5 h-full bg-white dark:bg-gray-800 w-full text-black dark:text-white rounded-lg shadow'>
-			<div className='flex flex-row max-md:text-md mb-4'>
+		<div className='flex flex-col items-center justify-start pt-5 h-full bg-white dark:bg-gray-800 w-full text-black dark:text-white rounded-lg shadow max-md:pb-32'>
+			<div className='flex flex-row max-md:text-md mb-4 sticky top-0 z-20 bg-white dark:bg-gray-800 w-full justify-center'>
 				<input
 					className='p-2 m-2 rounded-md text-black dark:text-white bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 focus:ring-blue-500 focus:border-blue-500'
 					type='text'
@@ -106,7 +106,7 @@ export default function Search({ deckid, onAdd }: PageProps) {
 				</div>
 			)) ||
 				(card && (
-					<div className='flex flex-col items-center justify-center h-auto min-w-1/5 max-w-4/5 w-3/5 max-md:min-w-[90vw] mt-4 overflow-auto'>
+					<div className='flex flex-col items-center justify-center h-auto min-w-1/5 max-w-4/5 w-4/5 max-md:min-w-[90vw] mt-4 overflow-y-auto'>
 						<Card card={card} />
 					</div>
 				))}
