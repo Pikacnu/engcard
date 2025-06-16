@@ -256,7 +256,28 @@ async function getAIResponse(
 			if (!response || !response.text) {
 				throw new Error('No response from Google AI SDK');
 			}
-			const result: CardProps = JSON.parse(response.text);
+			const tempResult: CardProps = JSON.parse(response.text);
+			const result: CardProps = {
+				word: tempResult.word,
+				phonetic: tempResult.phonetic,
+				blocks: tempResult.blocks.map((block) => ({
+					partOfSpeech: block.partOfSpeech as PartOfSpeech,
+					definitions: block.definitions.map((definition) => ({
+						definition: Object.values(definition.definition) as {
+							lang: Lang;
+							content: string;
+						}[],
+						synonyms: definition.synonyms,
+						antonyms: definition.antonyms,
+						example: definition.example?.map((ex) =>
+							ex.map((item) => ({
+								lang: item.lang,
+								content: item.content,
+							})),
+						),
+					})),
+				})),
+			};
 			console.log('Google AI SDK Success');
 			return await CheckData(processedData, result);
 		} catch (error) {
