@@ -24,6 +24,7 @@ english-card/
 │   ├── ui/           # Shared UI component library
 ├── [`turbo.json`](turbo.json )        # Turborepo configuration
 ├── [`package.json`](package.json )      # Project dependencies and scripts
+├── [`.env.local`](example.env )     # Environment variables template (Need Change)
 └── [`README.md`](README.md )         # Project documentation
 ```
 
