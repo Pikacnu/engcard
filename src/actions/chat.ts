@@ -323,7 +323,6 @@ const chatActionFunctions: Record<
 			{ _id: new ObjectId(data.deckId), userId: session.user?.id },
 			{
 				$set: {
-					name: data.targetDeckName,
 					cards: currentDeckData.cards.filter((card) =>
 						removedWords.includes(card.word),
 					),
@@ -459,7 +458,6 @@ const chatActionFunctions: Record<
 			{ _id: new ObjectId(deckId), userId: session.user?.id },
 			{
 				$set: {
-					name: (data.newDeckName as string) || '',
 					cards: currentDeckData.cards.filter((card) =>
 						removedWords.includes(card.word),
 					),

@@ -30,9 +30,9 @@ export default function Deck({
 	}, [cards, updateCurrentWord]);
 
 	return (
-		<div className='flex flex-col h-full max-md:w-[80vw] md:w-[60%] md:min-w-96 pb-16 flex-grow'>
+		<div className='flex flex-col h-full max-md:w-[80vw] md:w-[60%] md:min-w-96 pb-16 flex-grow items-center'>
 			<div
-				className='flex flex-grow w-full md:h-[80vh] h-[60vh] pb-8 cursor-pointer' // Added cursor-pointer for clarity
+				className='flex flex-grow w-full md:h-[80vh] h-[60vh] pb-8 cursor-pointer [&>*]:p-0 [&>*]:m-0' // Added cursor-pointer for clarity
 				onClick={() => {
 					if (deckType === DeckType.AutoChangeToNext) {
 						// Ensure cards array is not empty before proceeding
