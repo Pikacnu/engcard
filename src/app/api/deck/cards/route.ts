@@ -86,3 +86,45 @@ export async function GET(request: NextRequest) {
 		},
 	);
 }
+
+export async function DELETE(request: NextRequest) {
+	const user = await auth();
+	if (!user) {
+		return NextResponse.json({ error: 'Not authorized' }, { status: 401 });
+	}
+	const {
+		id, // deck id
+		word, // word to delete
+	} = await request.json();
+
+	if (!id || !word) {
+		return NextResponse.json(
+			{ error: 'Please provide deck id and word to delete' },
+			{ status: 400 },
+		);
+	}
+	const deck = await db.collection<DeckCollection>('deck').findOneAndUpdate(
+		{
+			_id: new ObjectId(id),
+			userId: user.user?.id,
+		},
+		{
+			$pull: { cards: { word } },
+		},
+		{
+			returnDocument: 'after',
+		},
+	);
+	if (deck) {
+		return NextResponse.json(
+			{
+				message: 'Card deleted successfully',
+			},
+			{ status: 200 },
+		);
+	}
+	return NextResponse.json(
+		{ error: 'Deck not found or you are not the owner' },
+		{ status: 404 },
+	);
+}

@@ -340,3 +340,7 @@ export const EnWordPartOfSpeechToPartOfSpeech: Record<
 	[EnWordPartOfSpeech.Adjective]: PartOfSpeech.Adjective,
 	[EnWordPartOfSpeech.Error]: PartOfSpeech.Error,
 };
+
+export enum ListAdditionButtonIcon {
+	Delete,
+}

@@ -8,7 +8,7 @@ You are an English linguistics expert. Process dictionary data and enhance it wi
 - Preserve ALL original data structure and content
 - Add "tw" field with Traditional Chinese translations of the word
 - Translate ALL definitions and examples to Traditional Chinese (Taiwan)
-- Provide at least 2 examples per definition in English, Traditional Chinese
+- Provide at least 2 examples per definition in English, Traditional Chinese with Both languages
 - Maintain professional accuracy and cultural appropriateness
 - Return valid JSON with identical structure plus required multilingual fields
 - **Merge definitions with the same part of speech into a single block**
@@ -52,21 +52,21 @@ export const wordGeminiHistory: Content[] = [
 		],
 	},
 ];
+
 export const textRecognizeModelInstruction = `
-Analyze the following text extracted via OCR and the provided image. 
-Extract as many English words as possible from both the text and visual elements in the image.
-Your response must meet the following requirements:
-- Extract all readable English words from the OCR text, including nouns, verbs, adjectives, adverbs, and other parts of speech
-- Only extract words that actually appear in the provided text
-- Do not add words that are not present in the source text
-- Provide the output in JSON format as an array of words
-- If transmission is interrupted, continue from where the JSON was cut off
-- Ensure the JSON structure remains valid even if transmitted in parts
-	
-**Streaming Response Guidelines:**
-- If JSON transmission is interrupted, continue from the exact point where it was cut off
-- Maintain valid JSON structure throughout streaming responses
-- Ensure partial responses can be properly reconstructed
+Analyze the provided text and image to extract English vocabulary words.
+
+**Requirements:**
+- Extract all meaningful English words from OCR text and image content
+- Include words from definitions, explanations, captions, labels, and headings
+- Exclude common function words (the, a, an, and, or, but, in, on, at, to, for, of, with, by, etc.)
+- Focus on content words suitable for vocabulary learning
+- Include technical terms and specialized vocabulary
+- Only extract words actually present in the source
+
+**Output:** JSON array of words
+
+If transmission is interrupted, continue from where JSON was cut off while maintaining valid structure.
 `;
 
 export const chatModelInstruction = `

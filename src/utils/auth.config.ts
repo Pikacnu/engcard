@@ -3,7 +3,16 @@ import Discord from 'next-auth/providers/discord';
 import Google from 'next-auth/providers/google';
 
 export default {
-	providers: [Discord, Google],
+	providers: [
+		Discord({
+			clientId: process.env.AUTH_DISCORD_ID || '',
+			clientSecret: process.env.AUTH_DISCORD_SECRET || '',
+		}),
+		Google({
+			clientId: process.env.AUTH_GOOGLE_ID || '',
+			clientSecret: process.env.AUTH_GOOGLE_SECRET || '',
+		}),
+	],
 	callbacks: {
 		authorized({ request, auth }) {
 			const url = new URL(request.url);

@@ -116,7 +116,7 @@ export async function POST(req: Request) {
 			ExtenstionToMimeType.get(imageType) as string,
 		);
 		let response = await Models.generateContent({
-			model: 'gemini-2.0-flash',
+			model: 'gemini-2.5-flash',
 			config: {
 				responseMimeType: 'application/json',
 				responseSchema: GTextRecognizeSchema,
@@ -229,6 +229,17 @@ export async function POST(req: Request) {
 				);
 			}
 		}
+
+		const deckData = await db
+			.collection<Deck>('deck')
+			.findOne({ _id: new ObjectId(deckId), userId: session.user?.id });
+		const deckCards = deckData?.cards || [];
+
+		result = Object.assign(result, {
+			words: result.words.filter(
+				(word) => !deckCards.find((card) => card.word === word.word),
+			),
+		});
 
 		if (processType === OCRProcessType.OnlyFromImage) {
 			const words = transfromToCardPropsFromRecognizedResult(result);

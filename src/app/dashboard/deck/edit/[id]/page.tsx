@@ -11,7 +11,7 @@ import {
 	useState,
 	useTransition,
 } from 'react';
-import { CardProps, DeckCollection } from '@/type';
+import { CardProps, DeckCollection, ListAdditionButtonIcon } from '@/type';
 import { FileToBase64 } from '@/utils/base64';
 import { useTranslation } from '@/context/LanguageContext';
 import { CallBackProps, Joyride, Status, STATUS, Step } from 'react-joyride';
@@ -322,6 +322,27 @@ export default function EditPage({
 						processingWordTimestamp > 0 ? [cardProcessing] : [],
 					)}
 					className='max-h-full md:max-w-[30vw] xl:min-w-[30vw] w-1/5 max-md:w-full overflow-hidden dark:bg-gray-800 list-area'
+					addition={{
+						functionOnCard: async (card: CardProps) => {
+							const res = await fetch(`/api/deck/cards?deckId=${id}`, {
+								method: 'DELETE',
+								headers: {
+									'Content-Type': 'application/json',
+								},
+								body: JSON.stringify({
+									word: card.word,
+									id: id,
+								}),
+							});
+
+							if (res.status === 200) {
+								startTransition(() => {
+									refresh();
+								});
+							}
+						},
+						button: ListAdditionButtonIcon.Delete,
+					}}
 				/>
 			</div>
 		</div>
