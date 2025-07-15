@@ -32,55 +32,44 @@ export default function Deck({
 	return (
 		<div className='flex flex-col h-full max-md:w-[80vw] md:w-[60%] md:min-w-96 pb-16 flex-grow items-center'>
 			<div
-				className='flex flex-grow w-full md:h-[80vh] h-[60vh] pb-8 cursor-pointer [&>*]:p-0 [&>*]:m-0' // Added cursor-pointer for clarity
+				className='flex flex-grow w-full md:h-[80vh] h-[60vh] pb-8 cursor-pointer'
 				onClick={() => {
 					if (deckType === DeckType.AutoChangeToNext) {
-						// Ensure cards array is not empty before proceeding
 						if (!cards || cards.length === 0) return;
 
-						// Calculate the next potential index.
-						// The logic of index + 0.5 seems intended for flipping halfway through the last card.
-						// This might need to be re-evaluated for clarity, but preserving current logic.
 						const nextIndexCandidate = index + 0.5;
 
 						if (nextIndexCandidate < cards.length) {
 							updateCurrentWord?.(cards[Math.floor(nextIndexCandidate)]);
 							setIndex(nextIndexCandidate);
 						} else if (nextIndexCandidate === cards.length) {
-							// If it's exactly at the end
-							updateCurrentWord?.(cards[cards.length - 1]); // ensure current word is the last one
-							setIndex(nextIndexCandidate); // allow to reach the point of onFinishClick
+							updateCurrentWord?.(cards[cards.length - 1]);
+							setIndex(nextIndexCandidate);
 						}
-
-						// The original logic for onFinishClick:
-						// if (index === cards.length - 0.5) return onFinishClick?.();
-						// This means after showing the last card and attempting one more "half-click"
 						if (index >= cards.length - 0.5 && index < cards.length) {
-							// Adjusted condition
 							if (onFinishClick) onFinishClick();
 						}
 					}
 				}}
 			>
-				{cards && cards.length > 0 && cards[Math.floor(index)] ? ( // Check if cards exist and index is valid
+				{cards && cards.length > 0 && cards[Math.floor(index)] ? (
 					<Card card={cards[Math.floor(index)]} />
 				) : (
-					<Card card={CardWhenEmpty} /> // Fallback if no cards or index out of bounds
+					<Card card={CardWhenEmpty} />
 				)}
 			</div>
-			{cards &&
-				cards.length > 0 && ( // Only show progress bar if there are cards
-					<div className='w-full rounded-full h-2.5 bg-gray-300 dark:bg-gray-700 select-none'>
-						<div
-							className='bg-blue-600 dark:bg-blue-500 rounded-full h-2.5 transition-all duration-100 text-xs font-medium text-blue-100 text-end p-0.5 leading-none'
-							style={{
-								width: `${Math.min(100, ((index + 1) / cards.length) * 100)}%`,
-							}}
-						>
-							{/* Text can be added here if needed, but it's very small */}
-						</div>
+			{cards && cards.length > 0 && (
+				<div className='w-full rounded-full h-2.5 bg-gray-300 dark:bg-gray-700 select-none'>
+					<div
+						className='bg-blue-600 dark:bg-blue-500 rounded-full h-2.5 transition-all duration-100 text-xs font-medium text-blue-100 text-end p-0.5 leading-none'
+						style={{
+							width: `${Math.min(100, ((index + 1) / cards.length) * 100)}%`,
+						}}
+					>
+						{/* Text can be added here if needed, but it's very small */}
 					</div>
-				)}
+				</div>
+			)}
 			{deckType === DeckType.ChangeByButton &&
 				cards &&
 				cards.length > 0 && ( // Only show buttons if there are cards

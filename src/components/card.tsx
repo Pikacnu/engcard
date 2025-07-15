@@ -42,15 +42,15 @@ export default function Card({ card }: { card: CardProps }) {
 			)}
 			{flipped && (
 				<div className='flex-grow w-full relative h-min overflow-auto bg-inherit'>
-					<div className='flex flex-row items-center *:p-2 sticky -top-1 bg-white dark:bg-gray-800 bg-inherit z-10'>
+					<div className='flex flex-row items-center *:p-2 sticky -top-1 bg-white dark:bg-gray-800 bg-inherit z-10 flex-wrap'>
 						<h1 className=' text-4xl whitespace-pre-wrap text-wrap max-md:min-w-[50vw] max-md:max-w-[60vw] md:max-w-64 break-words'>
 							{word}
 						</h1>
-					</div>
-					<div className='flex flex-col'>
 						<p className='text-xl text-gray-600 dark:text-gray-400'>
 							{phonetic}
 						</p>
+					</div>
+					<div className='flex flex-col'>
 						{audio && (
 							<div className='flex flex-row items-center justify-start my-2'>
 								<button
@@ -99,7 +99,7 @@ export default function Card({ card }: { card: CardProps }) {
 										key={defIdx} // Changed key
 										className='flex flex-col pb-4 mb-2 border-b border-gray-200 dark:border-gray-700 last:border-b-0 last:pb-0 last:mb-0' // Added border for separation
 									>
-										<h2 className='font-semibold text-gray-700 dark:text-gray-300'>
+										<h2 className='font-semibold text-gray-700 dark:text-gray-300 self-start'>
 											{t('components.card.definitionLabel')}
 										</h2>{' '}
 										{definition.definition.map((def, subDefIdx) => (
@@ -117,7 +117,7 @@ export default function Card({ card }: { card: CardProps }) {
 										))}
 										{definition.example && definition.example.length > 0 && (
 											<>
-												<h3 className='ml-0 mt-2 font-semibold text-gray-700 dark:text-gray-300'>
+												<h3 className='ml-0 mt-2 font-semibold text-gray-700 dark:text-gray-300 self-start'>
 													{t('components.card.examplesLabel')}
 												</h3>{' '}
 												<div className='flex flex-col *:ml-4 space-y-1'>

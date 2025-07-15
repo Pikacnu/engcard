@@ -7,7 +7,7 @@ export default function Info() {
 	const { t } = useTranslation(); // Added
 
 	return (
-		<div className='flex flex-col items-center justify-center min-h-screen py-2 bg-gray-100 dark:bg-gray-700 w-full'>
+		<div className='flex flex-col items-center justify-center flex-grow py-2 bg-gray-100 dark:bg-gray-700 w-full'>
 			<h1 className='text-2xl font-bold text-gray-800 dark:text-white'>
 				{t('info.title')} {/* Translated */}
 			</h1>

@@ -14,7 +14,12 @@ import QuestionWord from '@/components/question_word';
 import Questions from '@/components/questions';
 import { useSearchParams } from 'next/navigation';
 import List from '@/components/list';
-import { saveHistory } from '@/utils/user-data';
+import {
+	saveHistory,
+	getMarkWords,
+	addMarkWord,
+	removeMarkWord,
+} from '@/utils/user-data';
 import Joyride, {
 	ACTIONS,
 	CallBackProps,
@@ -135,6 +140,15 @@ export default function Content() {
 		[selectedDeck],
 	);
 
+	const fetchMarkedWords = useCallback(async () => {
+		const markedWords = await getMarkWords(selectedDeck);
+		if (markedWords && markedWords.words) {
+			setMarkedWord(markedWords.words);
+		} else {
+			setMarkedWord([]);
+		}
+	}, [selectedDeck]);
+
 	useEffect(() => {
 		(async () => {
 			const response = await fetch('/api/settings');
@@ -188,8 +202,9 @@ export default function Content() {
 	useEffect(() => {
 		if (selectedDeck) {
 			fetchCards(wordStartWith, count, selectedDeck); // Pass params explicitly
+			fetchMarkedWords(); // Fetch marked words when deck changes
 		}
-	}, [selectedDeck, wordStartWith, count, fetchCards]);
+	}, [selectedDeck, wordStartWith, count, fetchCards, fetchMarkedWords]);
 
 	const [isClient, setIsClient] = useState(false);
 	useEffect(() => {
@@ -269,10 +284,14 @@ export default function Content() {
 				onClick={() => {
 					if (isMarked) {
 						setMarkedWord((prev) =>
-							prev.filter((word) => word.word !== currentWord?.word),
+							prev.filter(
+								(markedWord) => markedWord.word !== currentWord?.word,
+							),
 						);
+						removeMarkWord(currentWord?.word || '', selectedDeck || '');
 					} else {
 						if (currentWord) setMarkedWord((prev) => [...prev, currentWord!]);
+						addMarkWord(currentWord?.word || '', selectedDeck || '');
 					}
 					setIsMarked((prev) => !prev);
 				}}

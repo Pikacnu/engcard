@@ -27,8 +27,8 @@ export default async function DashBoard() {
 		.slice(0, 5);
 
 	return (
-		<div className='h-full p-4 flex flex-row overflow-auto max-md:flex-col items-center dark:bg-gray-700 gap-8'>
-			<div className='w-full max-w-4xl flex flex-col space-y-4 *:flex-grow max-h-[100vh]'>
+		<div className='h-full p-4 flex flex-row overflow-auto max-md:flex-col items-center dark:bg-gray-700 gap-8 justify-between'>
+			<div className='w-full max-w-4xl flex flex-col space-y-4 *:flex-grow max-h-[100vh] mt-4'>
 				<div className='mb-6 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg text-black dark:text-white'>
 					<input
 						type='checkbox'
@@ -133,7 +133,7 @@ export default async function DashBoard() {
 					</div>
 				</div>
 			</div>
-			<div className='w-[40vw] *:[h-1/2] flex flex-col space-y-4 *:flex-grow *:overflow-auto items-center'>
+			<div className='md:w-[40vw] w-full *:[h-1/2] flex flex-col space-y-4 *:flex-grow *:overflow-auto items-center'>
 				<Suspense
 					fallback={
 						<div className='text-black dark:text-white'>

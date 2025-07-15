@@ -228,8 +228,13 @@ export const ExtenstionToMimeType = new Map([
 	['svg', 'image/svg+xml'],
 ]);
 
-export type MarkAsNeedReview = {
+export type MarkWordData = {
 	word: string;
+	deckId: string;
+};
+
+export type MarkAsNeedReview = {
+	word: MarkWordData[];
 	count: number;
 	userId: string;
 };
