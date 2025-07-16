@@ -166,21 +166,7 @@ export default function Settings() {
 						</div>
 					</div>
 					<div className='flex flex-col m-4 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg shadow'>
-						<div className='flex flex-row flex-wrap items-center justify-between'>
-							<label
-								htmlFor='languageSwitcher'
-								className='text-gray-700 dark:text-gray-200'
-							>
-								{t('dashboard.settings.targetLanguageLabel')}
-							</label>
-							<SettingLanguageSwitcher
-								targetName='targetLang'
-								originalLang={settings.targetLang}
-							/>
-						</div>
-					</div>
-					<div className='flex flex-col m-4 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg shadow'>
-						<div className='flex flex-row flex-wrap items-center justify-between'>
+						<div className='flex flex-row flex-wrap items-center justify-between relative'>
 							<label
 								htmlFor='languageSwitcher'
 								className='text-gray-700 dark:text-gray-200'
@@ -190,6 +176,17 @@ export default function Settings() {
 							<SettingLanguageSwitcher
 								targetName='usingLang'
 								originalLang={settings.usingLang}
+							/>
+							<div className=' border-black dark:border-white border-opacity-60 rounded-md border-x-2 h-full'></div>
+							<label
+								htmlFor='languageSwitcher'
+								className='text-gray-700 dark:text-gray-200'
+							>
+								{t('dashboard.settings.targetLanguageLabel')}
+							</label>
+							<SettingLanguageSwitcher
+								targetName='targetLang'
+								originalLang={settings.targetLang}
 							/>
 						</div>
 					</div>
