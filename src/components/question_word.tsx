@@ -35,7 +35,6 @@ export default function QuestionWord({
 	const { t } = useTranslation(); // Added
 
 	const { settings } = useSettings();
-	console.log('Settings in QuestionWord:', settings);
 
 	// Define CardWhenEmpty using translations
 	const CardWhenEmpty: CardProps = useMemo(

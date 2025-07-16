@@ -152,10 +152,17 @@ export async function GET(request: Request): Promise<Response> {
 	} else {
 		const newWordData = await newWord(word, sourceLang, targetLang);
 		if (!newWordData) {
+			await db.insertOne({
+				word,
+				available: false,
+				sourceLang,
+				targetLang,
+			});
 			return NextResponse.json({ error: 'Word not found' }, { status: 404 });
 		}
 		data = newWordData;
 	}
+
 	if (!data) {
 		await db.insertOne({
 			word,
@@ -199,7 +206,7 @@ async function newWord(
 		(data) => data !== null && data !== undefined,
 	) as CardProps[];
 	if (sourceDataList.length < 1) {
-		return await getAIResponse(word, sourceLang, targetLang);
+		return null;
 	}
 	return await getAIResponse(sourceDataList, sourceLang, targetLang);
 }
