@@ -212,7 +212,7 @@ export function transfromToCardPropsFromRecognizedResult(
 export function getDefiniationFromRecognizedResultAndCardProps(
 	cardProps: CardProps,
 	result: textRecognizeSchema,
-	targetLang: LangEnum = LangEnum.TW,
+	targetLang: LangEnum,
 ): CardProps | undefined {
 	if (!result.words.length) return undefined;
 

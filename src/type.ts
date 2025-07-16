@@ -169,12 +169,11 @@ export type WordCollection = {
 	word: string;
 	sourceLang: LangEnum;
 	targetLang: LangEnum;
-} & (
-	| Pick<CardProps, 'word'>
-	| (CardProps & {
-			availableSearchTarget: string[];
-	  })
-);
+} & Partial<
+	CardProps & {
+		availableSearchTarget: string[];
+	}
+>;
 
 export type WordCollectionWith<T> = T & {
 	available: boolean;
@@ -289,10 +288,6 @@ export type UserSettingsCollection = {
 	ocrProcessType: OCRProcessType;
 	targetLang: LangEnum;
 	usingLang: LangEnum;
-};
-
-export type WithAvliable<T> = T & {
-	available: boolean;
 };
 
 export type EnWordDefinition = {

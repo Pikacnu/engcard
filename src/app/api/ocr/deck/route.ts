@@ -11,13 +11,14 @@ import { NextResponse } from 'next/server';
 import { GET } from '@/app/api/word/route';
 import {
 	allowedImageExtension,
+	CardProps,
 	Deck,
 	ExtenstionTable,
 	ExtenstionToMimeType,
+	LangEnum,
 	OCRProcessType,
 	UserSettingsCollection,
-	WithAvliable,
-	Word,
+	WordCollection,
 } from '@/type';
 import db from '@/lib/db';
 import { ObjectId } from 'mongodb';
@@ -106,6 +107,9 @@ export async function POST(req: Request) {
 	if (processType === undefined || processType === null) {
 		processType = OCRProcessType.FromSource;
 	}
+
+	const sourceLang = settings?.usingLang || LangEnum.EN;
+	const targetLang = settings?.targetLang || LangEnum.EN;
 
 	console.log('Process type:', processType);
 
@@ -265,66 +269,88 @@ export async function POST(req: Request) {
 				{ status: 200 },
 			);
 		}
-		result.words.forEach((word, index) => {
+
+		const cachedWords = await db
+			.collection<WordCollection>('words')
+			.find({
+				word: { $in: result.words.map((word) => word.word) },
+				sourceLang,
+				targetLang,
+			})
+			.toArray();
+
+		const withoutCachedWords = result.words.filter((word) => {
+			return !cachedWords.find((cachedWord) => cachedWord.word === word.word);
+		});
+
+		const saveCardToDeck = async (wordData: CardProps) => {
+			if (settings?.ocrProcessType === OCRProcessType.FromSource) {
+				// Get All Definitions From Processed Result
+				await db.collection<Deck>('deck').findOneAndUpdate(
+					{ _id: new ObjectId(deckId), userId: session.user?.id },
+					{
+						$push: {
+							cards: {
+								word: wordData.word,
+								phonetic: wordData.phonetic || '',
+								blocks: wordData.blocks || [],
+							},
+						},
+					},
+				);
+			}
+			if (
+				settings?.ocrProcessType ===
+				OCRProcessType.FromSourceButOnlyDefinitionFromImage
+			) {
+				const porcessedWordData =
+					getDefiniationFromRecognizedResultAndCardProps(
+						{
+							word: wordData.word,
+							phonetic: wordData.phonetic || '',
+							blocks: wordData.blocks || [],
+							audio: '',
+						},
+						result,
+						targetLang,
+					);
+				if (!porcessedWordData) return;
+				if (
+					!Array.isArray(porcessedWordData.blocks) ||
+					porcessedWordData.blocks.length <= 0
+				)
+					return;
+				await db.collection<Deck>('deck').findOneAndUpdate(
+					{ _id: new ObjectId(deckId), userId: session.user?.id },
+					{
+						$push: {
+							cards: {
+								word: porcessedWordData.word,
+								phonetic: porcessedWordData.phonetic,
+								blocks: porcessedWordData.blocks,
+							},
+						},
+					},
+				);
+			}
+		};
+
+		cachedWords.forEach((wordData) => saveCardToDeck(wordData as CardProps));
+
+		withoutCachedWords.forEach((word, index) => {
 			setTimeout(async () => {
 				await GET(
 					new Request(`http://localhost:3000/api/word?word=${word.word}`),
 				);
 				const wordData = await db
-					.collection<WithAvliable<Word>>('words')
+					.collection<WordCollection>('words')
 					.findOne({ word: word.word });
 				if (
 					(wordData?.available !== undefined && wordData.available !== true) ||
 					!wordData
 				)
 					return;
-				if (settings?.ocrProcessType === OCRProcessType.FromSource) {
-					await db.collection<Deck>('deck').findOneAndUpdate(
-						{ _id: new ObjectId(deckId), userId: session.user?.id },
-						{
-							$push: {
-								cards: {
-									word: wordData.word,
-									phonetic: wordData.phonetic,
-									blocks: wordData.blocks,
-								},
-							},
-						},
-					);
-				}
-				if (
-					settings?.ocrProcessType ===
-					OCRProcessType.FromSourceButOnlyDefinitionFromImage
-				) {
-					const porcessedWordData =
-						getDefiniationFromRecognizedResultAndCardProps(
-							{
-								word: wordData.word,
-								phonetic: wordData.phonetic,
-								blocks: wordData.blocks,
-								audio: '',
-							},
-							result,
-						);
-					if (!porcessedWordData) return;
-					if (
-						!Array.isArray(porcessedWordData.blocks) ||
-						porcessedWordData.blocks.length <= 0
-					)
-						return;
-					await db.collection<Deck>('deck').findOneAndUpdate(
-						{ _id: new ObjectId(deckId), userId: session.user?.id },
-						{
-							$push: {
-								cards: {
-									word: porcessedWordData.word,
-									phonetic: porcessedWordData.phonetic,
-									blocks: porcessedWordData.blocks,
-								},
-							},
-						},
-					);
-				}
+				saveCardToDeck(wordData as CardProps);
 			}, index * 1.5 * 1_000);
 		});
 		return NextResponse.json(
@@ -342,6 +368,7 @@ export async function POST(req: Request) {
 		);
 	}
 }
+
 function jsonFix(data: string): string {
 	// Count characters in a single pass
 	let quoteCount = 0;
