@@ -1,16 +1,24 @@
 import DB from '@/lib/db';
-import { CardProps, Lang, PartOfSpeech } from '@/type';
 import {
-	GwordSchema,
-	isChinese,
-	isEnglish,
-	isJapanese,
+	CardProps,
+	Lang,
+	LangEnum,
+	PartOfSpeech,
+	UserSettingsCollection,
+	WordCollection,
+	WordCollectionWith,
+} from '@/type';
+import {
+	auth,
+	GwordSchemaCreator,
+	LangVailderCreator,
 	OpenAIClient,
 	OpenAIHistoryTranscriber,
+	wordSchemaCreator,
 } from '@/utils';
 import {
 	wordGeminiHistory,
-	wordSystemInstruction,
+	wordSystemInstructionCreator,
 	Models,
 	wordSchema,
 } from '@/utils';
@@ -18,28 +26,43 @@ import {
 	getWordFromDictionaryAPI,
 	getWordFromEnWordNetAPI,
 } from '@/utils/dict/functions';
+import { WithId } from 'mongodb';
 import { NextResponse } from 'next/server';
 import { zodResponseFormat } from 'openai/helpers/zod.mjs';
 
 export async function GET(request: Request): Promise<Response> {
 	const { searchParams } = new URL(request.url);
 	let word = searchParams.get('word');
-	if (!word) {
+	if (!word || word.trim() === '') {
 		return NextResponse.json({ error: 'Word is required' }, { status: 400 });
 	}
 
-	if (!(isChinese(word.trim()) || isEnglish(word.trim()))) {
-		return NextResponse.json({ error: 'Word is not valid' }, { status: 400 });
+	const session = await auth();
+	if (!session) {
+		return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 	}
 
-	const db = DB.collection('words');
+	const settings = await DB.collection<UserSettingsCollection>(
+		'settings',
+	).findOne({
+		userId: session.user?.id || '',
+	});
+
+	const sourceLang = settings?.usingLang || LangEnum.EN;
+	const targetLang = settings?.targetLang || LangEnum.TW;
+
+	const db = DB.collection<WordCollection>('words');
+	/*
+	zh-tw only code
 	if (isChinese(word)) {
-		const result = await db.find({ zh: { $in: [word] } }).toArray();
+		const result = await db
+			.find({ availableSearchTarget: { $in: [word] } })
+			.toArray();
 		if (result.length < 0) {
 			return NextResponse.json({ error: 'Word not found' }, { status: 404 });
 		}
 		const words = result.filter(
-			(word) => word.avliable !== false || !word.avliable,
+			(word) => word.available !== false || !word.available,
 		);
 		if (words.length < 1) {
 			return NextResponse.json({ error: 'Word not found' }, { status: 404 });
@@ -48,7 +71,63 @@ export async function GET(request: Request): Promise<Response> {
 			return NextResponse.json(result[0], { status: 200 });
 		}
 		return NextResponse.json(words, { status: 200 });
+	}*/
+	const vailder = LangVailderCreator(sourceLang);
+	if (vailder(word)) {
+		const result = await db
+			.find({
+				availableSearchTarget: { $in: [word] },
+				targetLang: targetLang,
+				sourceLang: sourceLang,
+			})
+			.toArray();
+		if (result.length < 0) {
+			return NextResponse.json({ error: 'Word not found' }, { status: 404 });
+		}
+
+		const simpleFilter =
+			(targetLang: Lang | Lang[]) =>
+			<T>(array: Array<T & { lang: Lang }>) =>
+				array.filter((data) =>
+					Array.isArray(targetLang)
+						? targetLang.includes(data.lang)
+						: data.lang === targetLang,
+				);
+		const filter = simpleFilter([sourceLang, targetLang]);
+		const words: WordCollectionWith<CardProps>[] = result
+			.filter((word) => word.available !== false || !word.available)
+			.filter(
+				(word): word is WithId<WordCollectionWith<CardProps>> =>
+					'blocks' in word,
+			)
+			.map((word) => ({
+				...word,
+				blocks: word.blocks.map((block) => ({
+					...block,
+					definitions: block.definitions.map((definition) => ({
+						...definition,
+						definition: filter(definition.definition),
+						synonyms: definition.synonyms,
+						antonyms: definition.antonyms,
+						example: definition.example?.map((ex) =>
+							ex.map((item) => ({
+								lang: item.lang,
+								content: item.content,
+							})),
+						),
+					})),
+				})),
+			}));
+
+		if (words.length < 1) {
+			return NextResponse.json({ error: 'Word not found' }, { status: 404 });
+		}
+		if (result.length === 1) {
+			return NextResponse.json(result[0], { status: 200 });
+		}
+		return NextResponse.json(words, { status: 200 });
 	}
+	// for english phrase currently disabled
 	/*
 	if (isHavingSpace(word)) {
 		fetch(`https://api.us.app.phrase.com/v2`, {
@@ -62,27 +141,56 @@ export async function GET(request: Request): Promise<Response> {
 	word = word.trimEnd().trimStart().toLowerCase();
 	const result = await db.findOne({ word });
 	if (result) {
-		if (result.avliable === false) {
+		if (result.available === false) {
 			return NextResponse.json({ error: 'Word not found' }, { status: 404 });
 		}
 		return NextResponse.json(result, { status: 200 });
 	}
-	let data;
-	if (isJapanese(word)) {
-		data = await getAIResponse(word);
+	let data: CardProps;
+	if (![LangEnum.EN].includes(targetLang)) {
+		data = await getAIResponse(word, sourceLang, targetLang);
 	} else {
-		data = await newWord(word);
+		const newWordData = await newWord(word, sourceLang, targetLang);
+		if (!newWordData) {
+			return NextResponse.json({ error: 'Word not found' }, { status: 404 });
+		}
+		data = newWordData;
 	}
 	if (!data) {
-		await db.insertOne({ word, available: false });
+		await db.insertOne({
+			word,
+			available: false,
+			sourceLang,
+			targetLang,
+		});
 		return NextResponse.json({ error: 'Word not found' }, { status: 404 });
 	}
 
-	await db.insertOne(data);
+	const wordData: WordCollection = {
+		available: true,
+		...data,
+		sourceLang,
+		targetLang,
+		availableSearchTarget: data.blocks
+			.map((block) =>
+				block.definitions
+					.map((def) => def.definition)
+					.flat()
+					.filter((def) => def.lang === settings?.targetLang)
+					.map((def) => def.content),
+			)
+			.flat(),
+	};
+
+	await db.insertOne(wordData);
 	return NextResponse.json(data, { status: 200 });
 }
 
-async function newWord(word: string): Promise<CardProps | null> {
+async function newWord(
+	word: string,
+	sourceLang: LangEnum,
+	targetLang: LangEnum,
+): Promise<CardProps | null> {
 	const sourceDataPromiseList = [
 		getWordFromDictionaryAPI(word),
 		getWordFromEnWordNetAPI(word),
@@ -91,9 +199,9 @@ async function newWord(word: string): Promise<CardProps | null> {
 		(data) => data !== null && data !== undefined,
 	) as CardProps[];
 	if (sourceDataList.length < 1) {
-		return await getAIResponse(word);
+		return await getAIResponse(word, sourceLang, targetLang);
 	}
-	return await getAIResponse(sourceDataList);
+	return await getAIResponse(sourceDataList, sourceLang, targetLang);
 }
 
 async function CheckData(
@@ -167,6 +275,8 @@ async function CheckData(
 
 async function getAIResponse(
 	processedData: CardProps | CardProps[] | string,
+	sourceLang: LangEnum,
+	targetLang: LangEnum,
 ): Promise<CardProps> {
 	let AIResponse;
 	let prompt;
@@ -199,7 +309,7 @@ async function getAIResponse(
 			messages: [
 				{
 					role: 'system',
-					content: wordSystemInstruction,
+					content: wordSystemInstructionCreator(sourceLang, targetLang),
 				},
 				...OpenAIHistoryTranscriber(wordGeminiHistory),
 				{
@@ -207,7 +317,10 @@ async function getAIResponse(
 					content: prompt,
 				},
 			],
-			response_format: zodResponseFormat(wordSchema, 'data'),
+			response_format: zodResponseFormat(
+				wordSchemaCreator([sourceLang, targetLang]),
+				'data',
+			),
 		});
 		console.log(AIResponse.usage);
 		const tempResult = AIResponse.choices[0].message?.parsed as wordSchema;
@@ -225,7 +338,7 @@ async function getAIResponse(
 					antonyms: definition.antonyms,
 					example: definition.example.map((ex) =>
 						ex.map((item) => ({
-							lang: item.lang,
+							lang: item.lang as Lang,
 							content: item.content,
 						})),
 					),
@@ -239,11 +352,17 @@ async function getAIResponse(
 		console.log('trying by google AI SDK');
 		try {
 			const response = await Models.generateContent({
-				model: 'gemini-2.0-flash',
+				model: 'gemini-2.5-flash',
 				config: {
 					responseMimeType: 'application/json',
-					responseSchema: GwordSchema.toSchema(),
-					systemInstruction: wordSystemInstruction,
+					responseSchema: GwordSchemaCreator([
+						sourceLang,
+						targetLang,
+					]).toSchema(),
+					systemInstruction: wordSystemInstructionCreator(
+						sourceLang,
+						targetLang,
+					),
 				},
 				contents: [
 					...wordGeminiHistory,

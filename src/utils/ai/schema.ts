@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { G } from './gemini/type';
 import { ChatAction, PartOfSpeech } from '@/type';
-import { Langs } from '@/types/lang';
+import { Lang, Langs } from '@/types/lang';
 
 export const textRecognizeSchema = z.object({
 	words: z.array(
@@ -84,10 +84,10 @@ export type ChatModelSchema = z.infer<typeof ChatModelSchema>;
 
 export type wordSchema = z.infer<typeof wordSchema>;
 
-export const wordSchema = z.object({
+const wordSchema = z.object({
 	word: z.string(),
 	phonetic: z.string(),
-	zh: z.array(z.string()),
+	availableSearchTarget: z.array(z.string()),
 	blocks: z.array(
 		z.object({
 			partOfSpeech: z.enum([
@@ -110,7 +110,7 @@ export const wordSchema = z.object({
 							Langs.map((lang) => [
 								lang,
 								z.object({
-									lang: z.enum(['en', 'tw', 'ja']),
+									lang: z.enum(Langs as [string, ...string[]]),
 									content: z.string(),
 								}),
 							]),
@@ -121,7 +121,7 @@ export const wordSchema = z.object({
 					example: z.array(
 						z.array(
 							z.object({
-								lang: z.enum(['en', 'tw']),
+								lang: z.enum(Langs as [string, ...string[]]),
 								content: z.string(),
 							}),
 						),
@@ -132,74 +132,128 @@ export const wordSchema = z.object({
 	),
 });
 
-export const GwordSchema = G.object('wordSchema', false, {
-	properties: [
-		G.string('word', true),
-		G.string('phonetic', true),
-		G.array('zh', true, G.string('zhItem', true)),
-		G.array(
-			'blocks',
-			true,
-			G.object('block', true, {
-				properties: [
-					G.enum(
-						'partOfSpeech',
-						[
-							'noun',
-							'verb',
-							'adjective',
-							'adverb',
-							'pronoun',
-							'preposition',
-							'conjunction',
-							'interjection',
-							'exclamation',
-							'abbreviation',
-							'phrase',
-						],
-						true,
-					),
-					G.array(
-						'definitions',
-						true,
-						G.object('definition', true, {
-							properties: [
-								G.array(
-									'definition',
-									true,
-									G.object('definitionItem', true, {
-										properties: Langs.map((lang) =>
-											G.object(lang, true, {
+export const wordSchemaCreator = (Langs: Lang[]) =>
+	z.object({
+		word: z.string(),
+		phonetic: z.string(),
+		availableSearchTarget: z.array(z.string()),
+		blocks: z.array(
+			z.object({
+				partOfSpeech: z.enum([
+					'noun',
+					'verb',
+					'adjective',
+					'adverb',
+					'pronoun',
+					'preposition',
+					'conjunction',
+					'interjection',
+					'exclamation',
+					'abbreviation',
+					'phrase',
+				]),
+				definitions: z.array(
+					z.object({
+						definition: z.object(
+							Object.fromEntries(
+								Langs.map((lang) => [
+									lang,
+									z.object({
+										lang: z.enum(Langs as [string, ...string[]]),
+										content: z.string(),
+									}),
+								]),
+							),
+						),
+						synonyms: z.array(z.string()),
+						antonyms: z.array(z.string()),
+						example: z.array(
+							z.array(
+								z.object({
+									lang: z.enum(Langs as [string, ...string[]]),
+									content: z.string(),
+								}),
+							),
+						),
+					}),
+				),
+			}),
+		),
+	});
+
+export const GwordSchemaCreator = (Langs: Lang[]) =>
+	G.object('wordSchema', false, {
+		properties: [
+			G.string('word', true),
+			G.string('phonetic', true),
+			G.array(
+				'availableSearchTarget',
+				true,
+				G.string('availableSearchItems', true),
+			),
+			G.array(
+				'blocks',
+				true,
+				G.object('block', true, {
+					properties: [
+						G.enum(
+							'partOfSpeech',
+							[
+								'noun',
+								'verb',
+								'adjective',
+								'adverb',
+								'pronoun',
+								'preposition',
+								'conjunction',
+								'interjection',
+								'exclamation',
+								'abbreviation',
+								'phrase',
+							],
+							true,
+						),
+						G.array(
+							'definitions',
+							true,
+							G.object('definition', true, {
+								properties: [
+									G.array(
+										'definition',
+										true,
+										G.object('definitionItem', true, {
+											properties: Langs.map((lang) =>
+												G.object(lang, true, {
+													properties: [
+														G.enum('lang', Langs, true),
+														G.string('content', true),
+													],
+												}),
+											),
+										}),
+									),
+									G.array('synonyms', true, G.string('synonym', true)),
+									G.array('antonyms', true, G.string('antonym', true)),
+									G.array(
+										'example',
+										true,
+										G.array(
+											'exampleItem',
+											true,
+											G.object('exampleObject', true, {
 												properties: [
-													G.enum('lang', ['en', 'tw', 'ja'], true),
+													G.enum('lang', Langs, true),
 													G.string('content', true),
 												],
 											}),
 										),
-									}),
-								),
-								G.array('synonyms', true, G.string('synonym', true)),
-								G.array('antonyms', true, G.string('antonym', true)),
-								G.array(
-									'example',
-									true,
-									G.array(
-										'exampleItem',
-										true,
-										G.object('exampleObject', true, {
-											properties: [
-												G.enum('lang', ['en', 'tw'], true),
-												G.string('content', true),
-											],
-										}),
 									),
-								),
-							],
-						}),
-					),
-				],
-			}),
-		),
-	],
-	showName: false,
-});
+								],
+							}),
+						),
+					],
+				}),
+			),
+		],
+		showName: false,
+	});

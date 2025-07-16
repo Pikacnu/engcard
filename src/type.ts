@@ -1,8 +1,8 @@
 import { Content, FunctionCall } from '@google/genai';
 import { ChatModelSchema } from './utils';
-import { Lang } from './types/lang';
+import { Lang, LangEnum } from './types/lang';
 
-export { type Lang, type LangEnum } from './types/lang';
+export { type Lang, LangEnum } from './types/lang';
 
 export type CardProps = {
 	word: string;
@@ -157,19 +157,30 @@ export type ShareLink = {
 	allows?: string[];
 };
 
-export type Word = {
-	word: string;
-	zh: string[];
-	phonetic: string;
-	phonetics: Phonetic[];
-	blocks: Blocks[];
-};
-
 export type WordHistory = {
 	userId: string;
 	deckId: string;
 	words: string[];
 	date: Date;
+};
+
+export type WordCollection = {
+	available: boolean;
+	word: string;
+	sourceLang: LangEnum;
+	targetLang: LangEnum;
+} & (
+	| Pick<CardProps, 'word'>
+	| (CardProps & {
+			availableSearchTarget: string[];
+	  })
+);
+
+export type WordCollectionWith<T> = T & {
+	available: boolean;
+	word: string;
+	sourceLang: LangEnum;
+	targetLang: LangEnum;
 };
 
 export type WithStringId<T> = T & { id: string };
@@ -276,6 +287,8 @@ export type UserSettingsCollection = {
 	userId: string;
 	deckActionType: DeckType;
 	ocrProcessType: OCRProcessType;
+	targetLang: LangEnum;
+	usingLang: LangEnum;
 };
 
 export type WithAvliable<T> = T & {

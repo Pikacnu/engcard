@@ -1,31 +1,22 @@
 'use client';
 
-import { DeckType, UserSettingsCollection } from '@/type';
+import { DeckType, Lang, UserSettingsCollection } from '@/type';
 import { useCallback, useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useTranslation } from '@/context/LanguageContext'; // Added
 import { LanguageSwitcher } from './../../../components/client/LanguageSwitcher';
 import { ThemeToggler } from './../../../components/ThemeToggler';
 import { useLocalStorage } from '@/hooks/localstorage';
+import { LangNames, Langs } from '@/types/lang';
 
 export default function Settings() {
 	const { t } = useTranslation(); // Added
 	const [isLoading, setIsLoading] = useState(true);
 	const [settings, setSettings] = useState<UserSettingsCollection | null>(null);
 
-	const [, setGuideCard] = useLocalStorage(
-		'guideCard',
-		false, // Default value
-	);
-	const [, setGuideDashboard] = useLocalStorage(
-		'guideDashboard',
-		false, // Default value
-	);
-
-	const [, setGuidePreview] = useLocalStorage(
-		'guideDashboardPreview',
-		false, // Default value
-	);
+	const [, setGuideCard] = useLocalStorage('guideCard', false);
+	const [, setGuideDashboard] = useLocalStorage('guideDashboard', false);
+	const [, setGuidePreview] = useLocalStorage('guideDashboardPreview', false);
 
 	useEffect(() => {
 		(async () => {
@@ -40,10 +31,10 @@ export default function Settings() {
 					`${t('dashboard.settings.alertLoadFailed')}${res.status} ${
 						res.statusText
 					}`,
-				); // Translated
+				);
 			}
 		})();
-	}, [t]); // Added t to dependency array
+	}, [t]);
 
 	const updateSettings = useCallback(
 		async (
@@ -175,6 +166,34 @@ export default function Settings() {
 						</div>
 					</div>
 					<div className='flex flex-col m-4 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg shadow'>
+						<div className='flex flex-row flex-wrap items-center justify-between'>
+							<label
+								htmlFor='languageSwitcher'
+								className='text-gray-700 dark:text-gray-200'
+							>
+								{t('dashboard.settings.targetLanguageLabel')}
+							</label>
+							<SettingLanguageSwitcher
+								targetName='targetLang'
+								originalLang={settings.targetLang}
+							/>
+						</div>
+					</div>
+					<div className='flex flex-col m-4 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg shadow'>
+						<div className='flex flex-row flex-wrap items-center justify-between'>
+							<label
+								htmlFor='languageSwitcher'
+								className='text-gray-700 dark:text-gray-200'
+							>
+								{t('dashboard.settings.usingLanguageLabel')}
+							</label>
+							<SettingLanguageSwitcher
+								targetName='usingLang'
+								originalLang={settings.usingLang}
+							/>
+						</div>
+					</div>
+					<div className='flex flex-col m-4 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg shadow'>
 						<div className='flex flex-row items-center justify-between'>
 							<label
 								htmlFor='darkModeToggle'
@@ -222,6 +241,59 @@ export default function Settings() {
 					</div>
 				</div>
 			)}
+		</div>
+	);
+}
+
+function SettingLanguageSwitcher({
+	targetName,
+	originalLang,
+}: {
+	targetName: keyof Pick<UserSettingsCollection, 'targetLang' | 'usingLang'>;
+	originalLang: Lang;
+}) {
+	const [selectedLang, setSelectedLang] = useState<Lang>(originalLang as Lang);
+	const [previousLang, setPreviousLang] = useState<Lang>(originalLang as Lang);
+
+	const fn = async (value: Lang) => {
+		const data = await fetch('/api/settings', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({
+				name: targetName,
+				value: value,
+			}),
+		});
+		if (!data.ok) {
+			setSelectedLang(previousLang);
+			alert('Failed to update language');
+			return;
+		}
+	};
+
+	return (
+		<div className='flex items-center space-x-2 p-2 text-black dark:text-white border-0 rounded-lg bg-gray-200 dark:bg-gray-800 shadow-md hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors duration-200'>
+			<select
+				className='bg-transparent outline-none text-sm'
+				value={selectedLang}
+				onChange={(e) => {
+					setPreviousLang(selectedLang);
+					setSelectedLang(e.target.value as Lang);
+					fn(e.target.value as Lang);
+				}}
+			>
+				{Langs.map((lang) => (
+					<option
+						className='hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors duration-200'
+						key={lang}
+						value={lang}
+					>
+						{LangNames[lang]}
+					</option>
+				))}
+			</select>
 		</div>
 	);
 }

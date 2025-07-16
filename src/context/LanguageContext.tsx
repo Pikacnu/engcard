@@ -11,6 +11,7 @@ import React, {
 import useCookie from '@/hooks/cookie';
 import { useLocalStorage } from '@/hooks/localstorage';
 import { useBroswerLanguage } from '@/hooks/useLanguage';
+import { Lang } from '@/type';
 
 // Define the shape of your translation messages
 interface Messages {
@@ -79,7 +80,7 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
 
 	const getLanguageData = useCallback(
 		async (locale: string) => {
-			locale = locale.replaceAll(/["\\]/g, '');
+			locale = locale.replaceAll(/["\\]/g, '') as Lang;
 			try {
 				const res = await fetch(`/locales/${locale}.json`, {
 					headers: {

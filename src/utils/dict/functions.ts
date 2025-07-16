@@ -2,16 +2,16 @@ import {
 	CardProps,
 	DictionaryAPIData,
 	PartOfSpeech,
-	Lang,
 	EnWordDefinition,
 	RelationType,
 	Definition,
 	EnWordPartOfSpeech,
 	EnWordPartOfSpeechToPartOfSpeech,
 	Blocks,
+	LangEnum,
 } from '@/type';
 import { textRecognizeSchema } from '../ai/schema';
-import { isChinese } from '../functions';
+import { isChinese, isEnglish } from '../functions';
 
 export async function getWordFromDictionaryAPI(
 	word: string,
@@ -39,7 +39,7 @@ export async function getWordFromDictionaryAPI(
 				const data = {
 					definition: [
 						{
-							lang: 'en' as Lang,
+							lang: LangEnum.EN,
 							content: definition.definition,
 						},
 					],
@@ -51,7 +51,7 @@ export async function getWordFromDictionaryAPI(
 						example: [
 							[
 								{
-									lang: 'en',
+									lang: LangEnum.EN,
 									content: definition.example,
 								},
 							],
@@ -84,14 +84,14 @@ export async function getWordFromEnWordNetAPI(
 		const definition = {
 			definition: [
 				{
-					lang: 'en' as Lang,
+					lang: LangEnum.EN,
 					content: item.definition,
 				},
 			],
 			example:
 				item.examples?.map((example) => [
 					{
-						lang: 'en' as Lang,
+						lang: LangEnum.EN,
 						content: example,
 					},
 				]) || [],
@@ -159,6 +159,7 @@ export async function getWordFromEnWordNetAPI(
 
 export function transfromToCardPropsFromRecognizedResult(
 	result: textRecognizeSchema,
+	targetLang: LangEnum = LangEnum.TW,
 ): CardProps[] {
 	const words: CardProps[] = result.words.map((word) => {
 		const result: CardProps = {
@@ -173,12 +174,12 @@ export function transfromToCardPropsFromRecognizedResult(
 							definition: word.definitions.map((definition) => {
 								if (isChinese(definition)) {
 									return {
-										lang: 'zh' as Lang,
+										lang: targetLang,
 										content: definition,
 									};
 								}
 								return {
-									lang: 'en' as Lang,
+									lang: LangEnum.EN,
 									content: definition,
 								};
 							}),
@@ -186,14 +187,14 @@ export function transfromToCardPropsFromRecognizedResult(
 								if (isChinese(example)) {
 									return [
 										{
-											lang: 'zh' as Lang,
+											lang: targetLang,
 											content: example,
 										},
 									];
 								}
 								return [
 									{
-										lang: 'en' as Lang,
+										lang: LangEnum.EN,
 										content: example,
 									},
 								];
@@ -211,6 +212,7 @@ export function transfromToCardPropsFromRecognizedResult(
 export function getDefiniationFromRecognizedResultAndCardProps(
 	cardProps: CardProps,
 	result: textRecognizeSchema,
+	targetLang: LangEnum = LangEnum.TW,
 ): CardProps | undefined {
 	if (!result.words.length) return undefined;
 
@@ -230,11 +232,11 @@ export function getDefiniationFromRecognizedResultAndCardProps(
 		// 處理每個定義
 		block.definitions = block.definitions.map((def) => {
 			// 尋找英文定義
-			const engDef = def.definition.find((item) => item.lang === 'en');
+			const engDef = def.definition.find((item) => item.lang === LangEnum.EN);
 			if (!engDef) return def;
 
 			// 檢查是否已有中文定義
-			const hasZhDef = def.definition.some((item) => item.lang === 'tw');
+			const hasZhDef = def.definition.some((item) => item.lang === targetLang);
 			if (hasZhDef) return def;
 
 			// 尋找最匹配的定義
@@ -242,20 +244,15 @@ export function getDefiniationFromRecognizedResultAndCardProps(
 			let bestMatchZhDef = '';
 
 			for (const wordData of matchingWords) {
-				// 分別獲取英文和中文定義
-				const enDefinitions = wordData.definitions.filter((d) => !isChinese(d));
-				const zhDefinitions = wordData.definitions.filter((d) => isChinese(d));
+				const enDefinitions = wordData.definitions.filter((d) => isEnglish(d));
+				const zhDefinitions = wordData.definitions.filter((d) => !isEnglish(d));
 
-				// 如果沒有中文定義，跳過此 wordData
 				if (!zhDefinitions.length) continue;
 
-				// 計算英文定義的相似度
 				for (const enDef of enDefinitions) {
 					const score = similarity(engDef.content, enDef);
 					if (score > bestMatchScore && score > 60) {
-						// 設定相似度閾值
 						bestMatchScore = score;
-						// 取對應的中文定義 (如果有多個，取第一個)
 						bestMatchZhDef = zhDefinitions[0];
 					}
 				}
@@ -264,7 +261,7 @@ export function getDefiniationFromRecognizedResultAndCardProps(
 			// 如果找到足夠匹配的中文定義，將其加入
 			if (bestMatchZhDef) {
 				def.definition.push({
-					lang: 'tw',
+					lang: targetLang,
 					content: bestMatchZhDef,
 				});
 				hasUpdated = true;

@@ -1,16 +1,23 @@
 'use client';
 
-import { useTranslation } from '@/context/LanguageContext';
 import useCookie from '@/hooks/cookie';
 import { useLocalStorage } from '@/hooks/localstorage';
+import { Lang, LangNames, Langs } from '@/types/lang';
+import { useEffect } from 'react';
 
 export const LanguageSwitcher = ({ short = false }: { short?: boolean }) => {
-	const { t, locale } = useTranslation();
-
 	const { setCookie } = useCookie();
-	const [, setLocalStorage] = useLocalStorage<string>('languageCache', 'en');
+	const [languageCache, setLocalStorage] = useLocalStorage<string>(
+		'languageCache',
+		'en',
+	);
+	const [selectedLanguage, setSelectedLanguage] = useLocalStorage<Lang>(
+		'language',
+		languageCache as Lang,
+	);
 
-	async function changeLanguage(newLocale: string) {
+	async function changeLanguage(newLocale: Lang) {
+		console.log('Changing language to:', newLocale);
 		setLocalStorage(newLocale);
 		setCookie('language', newLocale, 200);
 		if (typeof window !== 'undefined') {
@@ -18,32 +25,28 @@ export const LanguageSwitcher = ({ short = false }: { short?: boolean }) => {
 		}
 	}
 
+	useEffect(() => {
+		setSelectedLanguage(languageCache as Lang);
+	}, [languageCache, setSelectedLanguage]);
+
 	return (
-		<div className='flex items-center space-x-2 p-2'>
-			<button
-				onClick={() => changeLanguage('en')}
-				className={`px-3 py-1 rounded-md text-sm font-medium
-                    ${
-											locale === 'en'
-												? 'bg-blue-500 text-white'
-												: 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-										}`}
-				aria-pressed={locale === 'en'}
+		<div className='flex items-center space-x-2 p-2 text-black dark:text-white border-0 rounded-lg bg-gray-200 dark:bg-gray-800 shadow-md hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors duration-200'>
+			<select
+				className='bg-transparent outline-none text-sm'
+				value={selectedLanguage}
+				onChange={(e) => changeLanguage(e.target.value as Lang)}
 			>
-				{short ? t('common.language.english') : 'en'}
-			</button>
-			<button
-				onClick={() => changeLanguage('zh-TW')}
-				className={`px-3 py-1 rounded-md text-sm font-medium
-                    ${
-											locale === 'zh-TW'
-												? 'bg-blue-500 text-white'
-												: 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-										}`}
-				aria-pressed={locale === 'zh-TW'}
-			>
-				{short ? t('common.language.chinese') : 'zh-TW'}
-			</button>
+				{Langs.map((lang) => (
+					<option
+						className='hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors duration-200'
+						key={lang}
+						value={lang}
+						onSelect={() => setSelectedLanguage(lang)}
+					>
+						{short ? lang : LangNames[lang]}
+					</option>
+				))}
+			</select>
 		</div>
 	);
 };

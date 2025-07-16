@@ -133,7 +133,7 @@ export default async function DashBoard() {
 					</div>
 				</div>
 			</div>
-			<div className='md:w-[40vw] w-full *:[h-1/2] flex flex-col space-y-4 *:flex-grow *:overflow-auto items-center'>
+			<div className='md:w-[40vw] w-full *:[h-1/2] flex flex-col space-y-4 *:flex-grow *:overflow-auto items-center md:sticky top-8'>
 				<Suspense
 					fallback={
 						<div className='text-black dark:text-white'>

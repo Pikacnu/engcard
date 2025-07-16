@@ -1,0 +1,381 @@
+{
+	"common": {
+		"greeting": "こんにちは！",
+		"submit": "送信",
+		"cancel": "キャンセル",
+		"language": {
+			"english": "English",
+			"traditionalChinese": "繁體中文"
+		},
+		"theme": {
+			"switchToLight": "ライトモードに切り替え",
+			"switchToDark": "ダークモードに切り替え"
+		},
+		"loading": "読み込み中",
+		"loadingText": "読み込み中...",
+		"loadingSrOnly": "読み込み中..."
+	},
+	"navbar": {
+		"home": "ホーム",
+		"dashboard": "ダッシュボード",
+		"settings": "設定",
+		"login": "ログイン",
+		"logout": "ログアウト",
+		"altHome": "ホーム",
+		"altInfo": "情報",
+		"altMarket": "マーケット",
+		"altDownload": "ダウンロード",
+		"altLogin": "ログイン"
+	},
+	"page": {
+		"home": {
+			"title": "Cardlisher",
+			"subtitle": "英語をより効果的に学習しましょう。",
+			"description": "Cardlisherは語彙学習のために設計されたフラッシュカードアプリで、画像認識とインタラクティブな練習機能を備え、英単語の効率的な記憶と復習をサポートします。",
+			"feature1": {
+				"title": "カード管理",
+				"description": "フラッシュカードの作成、編集、削除により、学習コンテンツを柔軟に管理できます。"
+			},
+			"feature2": {
+				"title": "画像インポート",
+				"description": "単語やテキストの画像をアップロードし、OCR技術を使って自動的にフラッシュカードを生成します。"
+			},
+			"feature3": {
+				"title": "AI単語処理",
+				"description": "高度なAIが単語を分析し、定義や例文を提供し、関連する練習問題を生成します。"
+			},
+			"feature4": {
+				"title": "進捗追跡",
+				"description": "詳細な分析とパフォーマンスの洞察により学習の軌跡を監視し、学習戦略を最適化します。"
+			},
+			"getStartedButton": "始める",
+			"githubButton": "GitHub"
+		}
+	},
+	"dashboard": {
+		"joyride": {
+			"step1Content": "ここには選択した機能のコンテンツが表示されます",
+			"step2Content": "これはメインナビゲーションバーで、様々な機能にアクセスできます",
+			"step3Content": "クリックしてダッシュボードのホームページに戻ります",
+			"step4Content": "検索機能で、単語やデッキを見つけることができます",
+			"step5Content": "カードデッキ管理エリア",
+			"step6Content": "学習コンテンツをプレビュー",
+			"step7Content": "チャット機能エリア",
+			"step8Content": "マーケット機能で、より多くの学習リソースを取得",
+			"step9Content": "設定やログアウト機能を含むその他のオプション",
+			"step10Content": "高校7000語の一部",
+			"step11Content": "ログアウト機能、クリックして現在のアカウントを終了",
+			"step12Content": "設定機能、ここでアプリケーションの設定を調整できます"
+		},
+		"navigation": {
+			"sevenThousandWords": "7000語",
+			"altLogout": "ログアウト",
+			"altSettings": "設定",
+			"altMenu": "メニュー",
+			"altLogo": "ロゴ",
+			"altSearch": "検索",
+			"altDeck": "デッキ",
+			"altPreview": "プレビュー",
+			"altChat": "チャット",
+			"altMarket": "マーケット"
+		},
+		"home": {
+			"toggleRecentHistory": "クリックして最近の履歴を表示",
+			"recentHistoryTitle": "最近の履歴",
+			"noRecentHistory": "最近の履歴がありません。",
+			"toggleHotWords": "クリックして人気の単語を表示",
+			"hotWordsTitle": "人気単語ランキング",
+			"tableRank": "順位",
+			"tableWord": "単語",
+			"tableCount": "回数",
+			"countSuffix": " 回",
+			"noHotWords": "人気の単語がありません。"
+		},
+		"settings": {
+			"title": "設定",
+			"deckActionLabel": "単語カードを開いたときに自動的に次に切り替えるか",
+			"ocrProcessLabel": "画像処理タイプ",
+			"ocrOptionOnlyImage": "画像からのデータのみ",
+			"ocrOptionOnlyDefinition": "スキャンした画像の定義のみを使用",
+			"ocrOptionFullySource": "ソースから完全に",
+			"alertLoadFailed": "設定の読み込みに失敗しました：",
+			"languageLabel": "インターフェース言語",
+			"usingLanguageLabel": "（学習）使用言語",
+			"targetLanguageLabel": "（学習）目標言語",
+			"themeToggle": "テーマ切り替え",
+			"resetGuideCard": "カードガイドをリセット",
+			"resetGuideDashboard": "ダッシュボードガイドをリセット",
+			"resetGuidePreview": "プレビューガイドをリセット",
+			"resetButton": "リセット"
+		},
+		"deck": {
+			"altLoading": "読み込み中...",
+			"nameLabel": "名前：",
+			"publicLabel": "公開：",
+			"isPublicYes": "はい",
+			"isPublicNo": "いいえ",
+			"previewButton": "プレビュー",
+			"editButton": "編集",
+			"deleteButton": "削除",
+			"shareButton": "共有",
+			"noDecksFound": "デッキが見つかりません",
+			"addButton": "追加",
+			"alertDeleteFailed": "デッキの削除に失敗しました"
+		},
+		"chat": {
+			"inputPlaceholder": "メッセージを入力",
+			"sendButton": "送信",
+			"deleteChatButton": "チャットを削除",
+			"newChatButton": "新しいチャット",
+			"grammerFixLabel": "文法修正",
+			"altSendButton": "メッセージを送信",
+			"altDeleteChat": "チャットを削除",
+			"altNewChat": "新しいチャット",
+			"chatHistory": "チャット履歴",
+			"noMessages": "メッセージがまだありません",
+			"loading": "読み込み中...",
+			"errorSending": "メッセージの送信エラー",
+			"confirmDelete": "このチャットを削除してもよろしいですか？"
+		},
+		"preview": {
+			"joyride": {
+				"step1DisplayArea": "ここは表示エリアで、すべての機能がここに表示されます",
+				"step2MarkButton": "これはマークボタンで、クリックして単語をマークリストに追加できます",
+				"step3FunctionList": "これは機能リストで、ここで異なるプレビューの切り替えと単語数の制限ができます",
+				"step4CardButton": "これはカードエリアで、フラッシュカードとして表示されます",
+				"step5QuestionsButton": "これは問題エリアで、単語のスペリング練習に使用されます",
+				"step6ListButton": "これはリストエリアで、現在のすべての単語を表示できます",
+				"step7WordButton": "これは単語問題エリアで、意味を記憶するのに便利です",
+				"step8DeckSelector": "これはデッキ選択エリアで、異なる単語デッキを選択できます"
+			},
+			"altMarked": "マーク済み",
+			"altCard": "カード",
+			"altQuestions": "問題",
+			"altList": "リスト",
+			"altWordQuestions": "単語問題",
+			"altRefresh": "更新",
+			"altShowMarkedList": "マークリストを表示",
+			"altSearchIcon": "検索アイコン",
+			"filterAll": "すべて",
+			"selectedDeckLabel": "選択されたデッキ：",
+			"markWord": "単語をマーク",
+			"unmarkWord": "単語のマークを解除",
+			"filterByLetter": "頭文字でフィルター",
+			"setWordCount": "表示する単語数を設定"
+		},
+		"search": {
+			"inputPlaceholder": "検索する単語を入力",
+			"searchButton": "検索",
+			"noResults": "\"{{word}}\" の結果が見つかりません。"
+		},
+		"deckEdit": {
+			"uploadImagePrompt": "新しい画像をアップロードしてデッキにカードを追加します。",
+			"uploadButton": "アップロード",
+			"alertErrorPrefix": "エラー：",
+			"alertUploadError": "画像のアップロード中にエラーが発生しました",
+			"processingWord": "単語を処理中",
+			"add": {
+				"wordLabel": "単語：",
+				"posLabel": "品詞",
+				"definitionsLabel": "定義：",
+				"definitionPlaceholder": "定義",
+				"synonymsLabel": "同義語：",
+				"synonymPlaceholder": "同義語",
+				"antonymsLabel": "反義語：",
+				"antonymPlaceholder": "反義語",
+				"removeButton": "削除",
+				"addDefinitionButton": "定義を追加",
+				"addSynonymButton": "同義語を追加",
+				"addAntonymButton": "反義語を追加",
+				"removeDefinitionBlockButton": "定義ブロックを削除",
+				"selectDefinitionHint": "追加する定義を選択",
+				"addCardButton": "カードを追加",
+				"alertIncomplete": "すべての必須項目を完了してください。単語と少なくとも一つの意味が必要です",
+				"alertNoDefinition": "少なくとも一つの定義を追加してください",
+				"alertEmptyDefinition": "定義は空にできません",
+				"examplesLabel": "例文：",
+				"examplePlaceholder": "例文",
+				"addExampleButton": "例文を追加"
+			},
+			"search": {
+				"inputPlaceholder": "検索する単語を入力",
+				"searchButton": "検索",
+				"addButton": "追加"
+			},
+			"joyride": {
+				"step1Content": "ここで手動で単語を入力し、下から意味を選択して入力するか、完全に手動で入力できます",
+				"step2Content": "これはアップロードボタンを提供し、画像をアップロードして単語を抽出できます",
+				"step3Content": "ここで単語を検索してフィールドに追加できます",
+				"step4Content": "ページの最下部で現在のリスト内の単語を閲覧できます"
+			}
+		},
+		"speedReview": {
+			"noWords": "利用可能な単語がありません",
+			"nextWordButton": "次の単語"
+		}
+	},
+	"auth": {
+		"login": {
+			"title": "ログイン"
+		},
+		"signInWith": "{provider} でサインイン",
+		"signInGoogle": "Google でサインイン",
+		"signInDiscord": "Discord でサインイン"
+	},
+	"info": {
+		"title": "情報",
+		"aboutLink": "について",
+		"tosLink": "利用規約",
+		"privacyLink": "プライバシーポリシー",
+		"about": {
+			"title": "について",
+			"creatorLabel": "作成者：",
+			"emailLabel": "メール：",
+			"versionLabel": "バージョン："
+		},
+		"privacy": {
+			"title": "プライバシーポリシー",
+			"introTitle": "はじめに",
+			"introP1": "あなたのプライバシーは私たちにとって重要です。このプライバシーポリシーは、私たちがどのようにあなたの情報を収集、使用、保護するかを説明しています。",
+			"infoCollectTitle": "収集する情報",
+			"infoCollectP1": "私たちは、お名前、メールアドレス、およびサービスのご利用に関連するデータなどの詳細を収集する場合があります。これには、閲覧されたページ、アクセスされた機能、サイトで過ごした時間など、プラットフォームでのやり取りに関する洞察が含まれます。この情報は、サービスを向上させ、よりパーソナライズされたユーザー体験を提供するために使用されます。",
+			"howWeUseTitle": "情報の使用方法",
+			"howWeUseP1": "私たちは、サービスの提供と改善のためにあなたの情報を使用します。これには、プラットフォームがスムーズかつ効率的に動作することの確保、および全体的なユーザー体験の向上が含まれます。",
+			"howWeUseP2": "私たちは、あなたとのコミュニケーションのためにあなたの情報を使用します。これには、更新の送信、問い合わせへの回答、または遭遇した問題を解決するためのサポートの提供が含まれる場合があります。",
+			"howWeUseP3": "私たちは、プラットフォームのセキュリティを確保するためにあなたの情報を使用します。これには、疑わしい活動の監視、不正アクセスの防止、およびサービスの完全性の維持が含まれます。",
+			"howWeUseP4": "私たちは、語彙の復習と練習を推奨し、お手伝いするためにユーザーデータを分析します。この分析により、あなたの学習ニーズと好みにより適したコンテンツと提案を調整できます。",
+			"yourRightsTitle": "あなたの権利",
+			"yourRightsP1": "あなたには、個人情報にアクセス、更新、または削除する権利があります。私たちは、あなたの権利を尊重し、維持することを約束し、迅速かつ効率的にあなたのリクエストを満たすためにあらゆる合理的な努力を払います。",
+			"yourRightsP2": "あなたがデータへのアクセスを希望する場合、私たちはあなたについて収集した情報の詳細な概要を提供します。これにより透明性が確保され、個人データの正確性を確認できます。",
+			"yourRightsP3": "情報を更新する必要がある場合、記録が正確で最新の状態になるよう、必要な変更を行うお手伝いをします。情報を最新の状態に保つことで、最高の体験を提供できます。",
+			"yourRightsP4": "個人データの削除を要求された場合、私たちはシステムからの削除に最大限努力します。ただし、特定の状況では、特定のデータを削除することが実現不可能な場合があることにご注意ください。これは、技術的制限、法的義務、または正当な事業目的のために特定の情報を保持する必要性によるものです。そのような場合、データを削除できない理由をお知らせします。",
+			"yourRightsP5": "私たちは、あなたの信頼を大切にし、あなたの権利が尊重されることを保証することに取り組んでいます。権利や個人情報の取り扱いについてご質問やご懸念がございましたら、お気軽にお問い合わせください。私たちは、お手伝いし、遭遇した問題を解決するためにここにいます。",
+			"contactUsTitle": "お問い合わせ",
+			"contactUsP1": "このプライバシーポリシーについてご質問がございましたら、以下までお問い合わせください："
+		},
+		"tos": {
+			"title": "利用規約",
+			"introTitle": "1. はじめに",
+			"introP1": "フラッシュカードアプリへようこそ！サービスをご利用いただくことで、これらの規約に同意したものとみなされます。お時間をとって注意深くお読みください。",
+			"introP2": "私たちのアプリは、学生、専門家、生涯学習者のいずれであっても、学習体験を向上させるよう設計されています。効果的に学習し、情報を保持するお手伝いをするツールを提供することが私たちの目標です。",
+			"introP3": "アプリにアクセスまたは使用することで、これらの規約を読み、理解し、同意したことを確認したものとします。同意しない場合は、サービスのご利用をお控えください。",
+			"userRespTitle": "2. ユーザーの責任",
+			"userRespP1": "ユーザーとして、アカウントの機密性を維持し、アカウント下でのすべての活動がこれらの規約に準拠していることを確保する責任があります。",
+			"userRespP2": "私たちのアプリは学習を支援するツールであり、あなたの努力に代わるものではありません。責任を持って使用し、学習実践の補完として活用してください。",
+			"userRespP3": "アプリやそのサービスの完全性を妨害、攻撃、または損なおうとしてはいけません。適用される法律と規制に準拠した責任ある使用が期待されます。",
+			"userRespP4": "アプリの正確性と信頼性を確保するよう努力していますが、情報を確認し、学習環境で適切に使用することはあなたの責任です。",
+			"userRespP5": "アプリの改善とセキュリティの維持を支援するため、遭遇したバグ、脆弱性、または問題の報告をお勧めします。",
+			"prohibitedTitle": "3. 禁止活動",
+			"prohibitedP1": "安全で相互に尊重できる環境を維持するため、アプリの乱用に同意しないものとします。これには、不正アクセス、データスクレイピング、有害なコンテンツの配布などが含まれますが、これらに限定されません。",
+			"prohibitedP2": "ヘイトスピーチ、差別的発言、露骨な素材など、不適切、攻撃的、または違法なコンテンツを送信するためにアプリを使用してはいけません。そのような行為は法的結果をもたらす可能性があります。",
+			"prohibitedP3": "スパムやマルウェアなど、無関係または悪意のあるコンテンツのアップロードは厳しく禁止されています。さらに、システムの過負荷や脆弱性の悪用など、アプリの機能を害しようとする試みも禁止されています。",
+			"prohibitedP4": "虚偽の情報の拡散や中傷的発言など、アプリの評判を損なう可能性のある行為は避けてください。私たちは、アカウントの停止または終了を含む、禁止活動について調査し、適切な措置を講じる権利を留保します。",
+			"terminationTitle": "4. 終了",
+			"terminationP1": "私たちは、これらの規約の違反に対していつでもアプリへのアクセスを終了する権利を留保します。終了の理由には以下が含まれる場合があります：",
+			"terminationL1": "セクション3で述べられた禁止活動への関与。",
+			"terminationL2": "不正な目的でのアプリの乱用。",
+			"terminationL3": "アプリの機能を妨害または害しようとする試み。",
+			"terminationL4": "悪意のあるまたは不適切なコンテンツのアップロードまたは配布。",
+			"terminationL5": "アプリ使用中の適用法または規制の違反。",
+			"terminationP2": "終了は事前通知なしに発生する場合があり、私たちはそのような措置によるデータやアクセスの損失について責任を負いません。",
+			"contactUsP1": "ご質問がございましたり、さらなる支援が必要でしたら、以下までお問い合わせください："
+		}
+	},
+	"market": {
+		"title": "マーケット（公開デッキを探索）",
+		"deckNameLabel": "名前：",
+		"cardsSuffix": " 枚のカード",
+		"noPublicDecks": "公開デッキが見つかりません"
+	},
+	"download": {
+		"title": "ダウンロード",
+		"description": "あなたのプラットフォーム用の最新版Cardlisherをダウンロードします。",
+		"altWindows": "Windows",
+		"buttonWindows": "Windows",
+		"altAndroid": "Android",
+		"buttonAndroid": "Android"
+	},
+	"components": {
+		"card": {
+			"clickToFlip": "クリックして裏返す",
+			"altPlayAudio": "オーディオを再生",
+			"definitionLabel": "定義：",
+			"examplesLabel": "例文：",
+			"synonymsLabel": "同義語：",
+			"antonymsLabel": "反義語："
+		},
+		"deck": {
+			"previousButton": "前へ",
+			"nextButton": "次へ"
+		},
+		"list": {
+			"altBackArrow": "戻る",
+			"empty": {
+				"word": "カードなし",
+				"phonetic": "該当なし",
+				"errorContent": "エラーが発生しました。開発者に報告してください。"
+			}
+		},
+		"account": {
+			"signOutAlt": "ログアウト"
+		},
+		"questions": {
+			"skipButton": "スキップ"
+		},
+		"questionWord": {
+			"questionLabel": "問題：",
+			"noDefinitions": "この単語には定義がありません。"
+		},
+		"server": {
+			"adddeck": {
+				"placeholderName": "名前",
+				"labelPublic": "このデッキを公開にする",
+				"submitButton": "デッキを作成"
+			},
+			"deck": {
+				"loadingText": "読み込み中",
+				"closeButton": "閉じる",
+				"notFoundText": "デッキが見つかりません"
+			}
+		},
+		"spell": {
+			"previousDefButtonLabel": "前の定義",
+			"nextDefButtonLabel": "次の定義",
+			"noDefinitions": "利用可能な定義がありません。"
+		}
+	},
+	"sharePage": {
+		"altMarked": "マーク済み",
+		"altCard": "カード",
+		"altQuestions": "問題",
+		"altList": "リスト",
+		"altWordQuestions": "単語問題",
+		"altRefresh": "更新",
+		"altMarkedList": "マークリスト",
+		"addToCollectionButton": "コレクションに追加",
+		"filterAll": "すべて",
+		"alertDeckAdded": "デッキがコレクションに追加されました",
+		"alertErrorPrefix": "エラー："
+	},
+	"tempword": {
+		"joyride": {
+			"step1Display": "ここは表示エリアで、すべての機能がここに表示されます",
+			"step2MarkButton": "これはマークボタンで、クリックして単語をマークリストに追加できます",
+			"step3FunctionList": "これは機能リストで、ここで異なるプレビューの切り替えと単語数の制限ができます",
+			"step4DeckArea": "これはカードデッキエリアで、フラッシュカードとして表示されます",
+			"step5QuestionsArea": "これは問題エリアで、単語のスペリング練習に使用されます",
+			"step6ListArea": "これはリストエリアで、現在のすべての単語を表示できます",
+			"step7WordArea": "これは単語問題エリアで、意味を記憶するのに便利です",
+			"step8MarkedArea": "これはマークエリアで、ここで単語をマークした単語に変更できます"
+		},
+		"altMarked": "マーク済み",
+		"altCard": "カード",
+		"altQuestions": "問題",
+		"altList": "リスト",
+		"altWordQuestions": "単語問題",
+		"altRefresh": "更新",
+		"altShowMarkedList": "マークリストを表示",
+		"altSearchIcon": "検索アイコン",
+		"filterAll": "すべて"
+	}
+}

@@ -99,7 +99,9 @@
 			"ocrOptionOnlyDefinition": "僅使用掃描圖片中的定義",
 			"ocrOptionFullySource": "完全來自來源",
 			"alertLoadFailed": "載入設定失敗：",
-			"languageLabel": "語言",
+			"languageLabel": "介面語言",
+			"usingLanguageLabel": "(學習)使用語言",
+			"targetLanguageLabel": "(學習)目標語言",
 			"themeToggle": "樣式切換",
 			"resetGuideCard": "重置卡片指南",
 			"resetGuideDashboard": "重置儀表板指南",
@@ -125,7 +127,15 @@
 			"sendButton": "傳送",
 			"deleteChatButton": "刪除聊天",
 			"newChatButton": "新增聊天",
-			"grammerFixLabel": "文法修正"
+			"grammerFixLabel": "文法修正",
+			"altSendButton": "傳送訊息",
+			"altDeleteChat": "刪除聊天",
+			"altNewChat": "新增聊天",
+			"chatHistory": "聊天記錄",
+			"noMessages": "尚無訊息",
+			"loading": "載入中...",
+			"errorSending": "傳送訊息時發生錯誤",
+			"confirmDelete": "您確定要刪除此聊天嗎？"
 		},
 		"preview": {
 			"joyride": {

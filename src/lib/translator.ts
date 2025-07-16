@@ -1,12 +1,15 @@
 import en from 'public/locales/en.json';
-import zhTw from 'public/locales/zh-TW.json';
+import zhTw from 'public/locales/zh-tw.json';
+import ja from 'public/locales/ja.json';
+import { Lang, LangEnum } from '@/type';
 
 export function createTranslator(
 	lang: string,
 ): (text: string) => Promise<string> {
-	const translations = {
-		en: en,
-		'zh-TW': zhTw,
+	const translations: Record<Lang, string | object | undefined> = {
+		[LangEnum.EN]: en,
+		[LangEnum.TW]: zhTw,
+		[LangEnum.JA]: ja,
 	};
 
 	return async (text: string) => {

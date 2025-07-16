@@ -121,7 +121,7 @@ export default function Search() {
 				word &&
 				isScearched && (
 					<p className='mt-4 text-gray-500 dark:text-gray-400'>
-						`${notFoundString}`
+						{`${notFoundString}`}
 					</p>
 				)}
 		</div>

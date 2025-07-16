@@ -1,14 +1,23 @@
 export enum LangEnum {
 	EN = 'en',
-	TW = 'tw',
+	TW = 'zh-tw',
+	JA = 'ja',
 }
 
 export type Lang = `${LangEnum}`;
 
 export const Langs = Object.values(LangEnum);
 
-export const LangCodeToName = (lang: LangEnum) =>
-	({
-		[LangEnum.EN]: 'English',
-		[LangEnum.TW]: '繁體中文',
-	}[lang] || 'Unknown');
+export const LangNames: Record<LangEnum, string> = {
+	[LangEnum.EN]: 'English',
+	[LangEnum.TW]: '繁體中文',
+	[LangEnum.JA]: '日本語',
+};
+
+export const LangEnglishNames: Record<LangEnum, string> = {
+	[LangEnum.EN]: 'English',
+	[LangEnum.TW]: 'Traditional Chinese(Taiwan)',
+	[LangEnum.JA]: 'Japanese',
+};
+
+export const LangCodeToName = (lang: LangEnum) => LangNames[lang] || 'Unknown';
