@@ -144,10 +144,6 @@ We welcome contributions! Please feel free to submit issues and pull requests.
 - Update documentation as needed
 - Use conventional commit messages
 
-## License
-
-This project is private and proprietary.
-
 ## Live Demo
 
 Experience Cardlisher live at: [https://eng.pikacnu.com/](https://eng.pikacnu.com/)
