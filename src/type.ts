@@ -290,6 +290,8 @@ export type UserSettingsCollection = {
 	usingLang: LangEnum;
 };
 
+export type UserSettings = Omit<UserSettingsCollection, 'userId'>;
+
 export type EnWordDefinition = {
 	definition: string;
 	examples?: string[];

@@ -26,6 +26,9 @@ const CORE_SYSTEM_TEMPLATE = `You are an expert linguist specializing in multili
 - availableSearchTarget must only contain source words with semantically equivalent meanings in target language
 - Synonyms and antonyms must be accurately translated to target language
 
+**More Guidelines:**
+- If language is Japanese, use Kanji for definitions and examples, use Hiragana spelling for phonetics
+
 **Structural Organization:**
 Group all definitions by part of speech (noun, verb, adjective, adverb, etc.) into cohesive blocks rather than fragmenting into separate entries per definition.`;
 

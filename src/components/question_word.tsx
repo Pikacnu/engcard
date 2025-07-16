@@ -1,11 +1,24 @@
 'use client';
 
-import { CardProps, PartOfSpeech, PartOfSpeechShort } from '@/type';
-import { useState, useEffect, useMemo, Dispatch, SetStateAction } from 'react';
+import {
+	CardProps,
+	Lang,
+	LangEnum,
+	PartOfSpeech,
+	PartOfSpeechShort,
+} from '@/type';
+import {
+	useState,
+	useEffect,
+	useMemo,
+	Dispatch,
+	SetStateAction,
+	memo,
+} from 'react';
 import Card from '@/components/card';
-// Removed direct import of CardWhenEmpty
 import { shuffle } from '@/utils/functions';
 import { useTranslation } from '@/context/LanguageContext'; // Added
+import { useSettings } from '@/context/SettingsContext';
 
 type WithAnswer<T> = T & { answer: boolean };
 
@@ -20,6 +33,9 @@ export default function QuestionWord({
 	updateCurrentWord?: Dispatch<SetStateAction<CardProps | undefined>>;
 }) {
 	const { t } = useTranslation(); // Added
+
+	const { settings } = useSettings();
+	console.log('Settings in QuestionWord:', settings);
 
 	// Define CardWhenEmpty using translations
 	const CardWhenEmpty: CardProps = useMemo(
@@ -61,16 +77,14 @@ export default function QuestionWord({
 			cardData.length === 0 ||
 			cardData[0].word === CardWhenEmpty.word
 		) {
-			// Check against translated empty word
 			return [
-				{ ...CardWhenEmpty, answer: false }, // Ensure all have answer prop
+				{ ...CardWhenEmpty, answer: false },
 				{ ...CardWhenEmpty, answer: false },
 				{ ...CardWhenEmpty, answer: false },
 				{ ...CardWhenEmpty, answer: false },
 			];
 		}
 		if (index >= cardData.length) {
-			// This case should ideally not be reached if index is reset correctly
 			return [
 				{ ...CardWhenEmpty, answer: false },
 				{ ...CardWhenEmpty, answer: false },
@@ -96,17 +110,13 @@ export default function QuestionWord({
 			return;
 		}
 		setCard(cards);
-		// updateCurrentWord?.(cards[index] || cards[0]); // Initial updateCurrentWord
-		// Let's ensure index is reset if cards change fundamentally
-		setIndex(0); // Reset index when new cards are provided
-	}, [cards, updateCurrentWord, CardWhenEmpty]); // Added CardWhenEmpty dependency
+		setIndex(0);
+	}, [cards, updateCurrentWord, CardWhenEmpty]);
 
 	useEffect(() => {
-		// This effect updates the current word when the index changes or when cards initially load
 		if (cardData && cardData.length > 0 && index < cardData.length) {
 			updateCurrentWord?.(cardData[index]);
 		} else if (cardData && cardData.length > 0) {
-			// Handle case where index might be out of bounds temporarily
 			updateCurrentWord?.(cardData[0]);
 		} else {
 			updateCurrentWord?.(undefined);
@@ -117,7 +127,7 @@ export default function QuestionWord({
 		<div className='flex flex-col items-center justify-center w-full md:max-w-[60vw] h-full md:m-4 dark:bg-gray-700 rounded-lg shadow'>
 			<div className='max-w-full w-full max-h-[80vh] pb-8 p-4'>
 				{!isCorrect ? (
-					<div className='flex flex-col '>
+					<div className='flex flex-col items-center'>
 						<div className='text-xl m-4 md:m-8 p-4 bg-gray-100 dark:bg-black dark:bg-opacity-45 rounded-lg flex flex-row flex-wrap items-center *:rounded-lg *:m-1 *:p-2 text-black dark:text-white'>
 							<h1 className='font-semibold'>
 								{t('components.questionWord.questionLabel')}
@@ -135,40 +145,17 @@ export default function QuestionWord({
 								}
 							</h1>
 						</div>
-						<div className='flex flex-col items-center *:w-full space-y-2'>
+						<div className='flex flex-col items-center *:w-full space-y-2 relative'>
 							{currentCards &&
-								currentCards.map(
-									(
-										c,
-										i, // Changed card to c
-									) => (
-										<button
-											key={i}
-											className={`p-3 md:max-w-[30vw] max-md:max-w-[70vw] m-1 rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-black dark:text-white transition-colors`}
-											onClick={(e) => {
-												if (c.answer) {
-													setIsCorrect(true);
-												} else {
-													e.currentTarget.classList.remove(
-														'dark:bg-gray-800',
-														'bg-white',
-														'dark:hover:bg-gray-700',
-														'hover:bg-gray-100',
-													);
-													e.currentTarget.classList.add(
-														'bg-red-500',
-														'dark:bg-red-600',
-														'text-white',
-													);
-												}
-											}}
-										>
-											{c.blocks[0]?.definitions[0]?.definition[0]?.content ||
-												CardWhenEmpty.blocks[0].definitions[0].definition[0]
-													.content}
-										</button>
-									),
-								)}
+								currentCards.map((c, i) => (
+									<QuestionButton
+										key={`${c.word}-${i}`}
+										card={c}
+										lang={settings?.targetLang || LangEnum.TW}
+										setIsCorrect={setIsCorrect}
+										CardWhenEmpty={CardWhenEmpty}
+									/>
+								))}
 						</div>
 					</div>
 				) : (
@@ -183,7 +170,6 @@ export default function QuestionWord({
 							}
 							setIndex(index + 1);
 							setIsCorrect(false);
-							// updateCurrentWord is handled by useEffect
 						}}
 					>
 						<Card
@@ -204,7 +190,7 @@ export default function QuestionWord({
 								width: `${Math.min(
 									100,
 									((index + 1) / cardData.length) * 100,
-								)}%`, // Use cardData.length
+								)}%`,
 							}}
 						></div>
 					</div>
@@ -212,3 +198,73 @@ export default function QuestionWord({
 		</div>
 	);
 }
+
+const QuestionButton = memo(function QuestionButton({
+	card,
+	setIsCorrect,
+	CardWhenEmpty,
+	lang,
+}: {
+	card: WithAnswer<CardProps>;
+	setIsCorrect: Dispatch<SetStateAction<boolean>>;
+	CardWhenEmpty: CardProps;
+	lang: Lang;
+}) {
+	const [index, setIndex] = useState(0);
+	const definitions = useMemo(
+		() =>
+			card.blocks.flatMap((block) =>
+				block.definitions.flatMap((def) =>
+					def.definition.filter((d) => d.lang === lang),
+				),
+			),
+		[card.blocks, lang],
+	);
+	return (
+		<div className='w-full max-w-[90vw] *:self-center justify-center items-center flex flex-row flex-grow'>
+			<button
+				className=' bg-blue-200 p-2 rounded-xl dark:bg-blue-600 dark:bg-opacity-40 text-black dark:text-white font-semibold self-stretch '
+				onClick={() => {
+					if (index !== 0) {
+						setIndex(index - 1);
+					}
+				}}
+			>
+				{'<'}
+			</button>
+			<button
+				className={`p-3 md:max-w-[30vw] w-full max-md:max-w-[70vw] m-1 rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-black dark:text-white transition-colors`}
+				onClick={(e) => {
+					if (card.answer) {
+						setIsCorrect(true);
+					} else {
+						e.currentTarget.classList.remove(
+							'dark:bg-gray-800',
+							'bg-white',
+							'dark:hover:bg-gray-700',
+							'hover:bg-gray-100',
+						);
+						e.currentTarget.classList.add(
+							'bg-red-500',
+							'dark:bg-red-600',
+							'text-white',
+						);
+					}
+				}}
+			>
+				{definitions[index]?.content ||
+					CardWhenEmpty.blocks[0].definitions[0].definition[0].content}
+			</button>
+			<button
+				className=' bg-blue-200 p-2 rounded-xl dark:bg-blue-600 dark:bg-opacity-40 text-black dark:text-white font-semibold'
+				onClick={() => {
+					if (index !== definitions.length - 1) {
+						setIndex(index + 1);
+					}
+				}}
+			>
+				{'>'}
+			</button>
+		</div>
+	);
+});

@@ -14,6 +14,7 @@ import { useLocalStorage } from '@/hooks/localstorage';
 import { useTranslation } from '@/context/LanguageContext';
 import { ThemeToggler } from './../../components/ThemeToggler';
 import { useTheme } from '@/context/ThemeContext';
+import SettingsProvider from './../../context/SettingsContext';
 
 export default function DashBoardLayout({
 	children,
@@ -263,9 +264,11 @@ export default function DashBoardLayout({
 				)}
 			</div>
 			{/* The content area should inherit its background from the outer div's dark:bg-gray-700 */}
-			<div className='flex-grow w-full overflow-auto h-full relative content-area'>
-				{children}
-			</div>
+			<SettingsProvider>
+				<div className='flex-grow w-full overflow-auto h-full relative content-area'>
+					{children}
+				</div>
+			</SettingsProvider>
 		</div>
 	);
 }
