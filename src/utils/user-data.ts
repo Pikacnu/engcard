@@ -36,6 +36,16 @@ export const removeMarkWord = async (word: string, deckId: string) => {
 	});
 };
 
+export const removeMarkWordsByWord = async (deckId: string) => {
+	await fetch('/api/history/mark', {
+		method: 'DELETE',
+		body: JSON.stringify({ deckId }),
+		headers: {
+			'Content-Type': 'application/json',
+		},
+	});
+};
+
 export const addMarkWord = async (word: string, deckId: string) => {
 	await fetch('/api/history/mark', {
 		method: 'POST',

@@ -211,7 +211,8 @@
 		},
 		"speedReview": {
 			"noWords": "沒有可用的單字",
-			"nextWordButton": "下一個單字"
+			"nextWordButton": "下一個單字",
+			"remove": "取消標記"
 		}
 	},
 	"auth": {

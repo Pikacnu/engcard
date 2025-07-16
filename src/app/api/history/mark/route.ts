@@ -1,7 +1,7 @@
 import db from '@/lib/db';
 import { DeckCollection, MarkAsNeedReview, MarkWordData } from '@/type';
 import { auth } from '@/utils';
-import { ObjectId } from 'mongodb';
+import { ObjectId, WithId } from 'mongodb';
 import { NextResponse } from 'next/server';
 
 export async function POST(req: Request) {
@@ -120,7 +120,7 @@ export async function GET(req: Request) {
 			return NextResponse.json({ error: 'Data not found' }, { status: 404 });
 		}
 		const deckIds = [...new Set(markedWordData.word.map((w) => w.deckId))];
-		const words = await db
+		const words = (await db
 			.collection<DeckCollection>('deck')
 			.aggregate([
 				{
@@ -172,8 +172,10 @@ export async function GET(req: Request) {
 					},
 				},
 			])
-			.toArray();
-		const allWords = words.flatMap((deck) => deck.cards);
+			.toArray()) as WithId<DeckCollection>[];
+		const allWords = words.flatMap((deck) =>
+			deck.cards.map((card) => ({ ...card, deckId: deck._id.toString() })),
+		);
 		return NextResponse.json({ words: allWords }, { status: 200 });
 	}
 	const userId = session.user?.id;
