@@ -1,83 +1,25 @@
 'use client';
 
 import { DeckType, Lang, UserSettingsCollection } from '@/type';
-import { useCallback, useEffect, useState } from 'react';
+import { useState } from 'react';
 import Image from 'next/image';
 import { useTranslation } from '@/context/LanguageContext'; // Added
 import { LanguageSwitcher } from './../../../components/client/LanguageSwitcher';
 import { ThemeToggler } from './../../../components/ThemeToggler';
 import { useLocalStorage } from '@/hooks/localstorage';
-import { LangNames, Langs } from '@/types/lang';
+import { LangEnum, LangNames, Langs } from '@/types/lang';
+import { useSettings } from '@/context/SettingsContext';
 
 export default function Settings() {
 	const { t } = useTranslation(); // Added
-	const [isLoading, setIsLoading] = useState(true);
-	const [settings, setSettings] = useState<UserSettingsCollection | null>(null);
-
+	const { settings, setSettings } = useSettings();
 	const [, setGuideCard] = useLocalStorage('guideCard', false);
 	const [, setGuideDashboard] = useLocalStorage('guideDashboard', false);
 	const [, setGuidePreview] = useLocalStorage('guideDashboardPreview', false);
 
-	useEffect(() => {
-		(async () => {
-			setIsLoading(true);
-			const res = await fetch('/api/settings');
-			setIsLoading(false);
-			if (res.ok) {
-				const data = await res.json();
-				setSettings(data);
-			} else {
-				alert(
-					`${t('dashboard.settings.alertLoadFailed')}${res.status} ${
-						res.statusText
-					}`,
-				);
-			}
-		})();
-	}, [t]);
-
-	const updateSettings = useCallback(
-		async (
-			name: keyof UserSettingsCollection,
-			value: UserSettingsCollection[keyof UserSettingsCollection],
-		) => {
-			const res = await fetch('/api/settings', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				body: JSON.stringify({
-					name,
-					value,
-				}),
-			});
-			if (res.ok) {
-				res
-					.json()
-					.then(
-						(
-							data: Record<
-								keyof UserSettingsCollection,
-								UserSettingsCollection[keyof UserSettingsCollection]
-							>,
-						) => {
-							console.log('Settings updated:', data);
-							setSettings(
-								(prev) =>
-									Object.assign({ ...prev }, data) as UserSettingsCollection,
-							);
-						},
-					);
-			} else {
-				console.error('Failed to update settings:', await res.json());
-			}
-		},
-		[],
-	);
-
 	return (
 		<div className='flex flex-col w-full h-full flex-grow dark:bg-gray-700 dark:text-white'>
-			{isLoading || !settings ? (
+			{!settings ? (
 				<div className='flex items-center justify-center h-[80vh]'>
 					<Image
 						src='/icons/loading.svg'
@@ -111,12 +53,12 @@ export default function Settings() {
 								className='form-checkbox h-5 w-5 text-blue-600 dark:text-blue-400 bg-gray-300 dark:bg-gray-600 border-gray-300 dark:border-gray-500 rounded focus:ring-blue-500 dark:focus:ring-blue-300'
 								checked={settings.deckActionType === DeckType.AutoChangeToNext}
 								onChange={(e) => {
-									updateSettings(
-										'deckActionType',
-										e.target.checked
+									setSettings({
+										name: 'deckActionType',
+										value: e.target.checked
 											? DeckType.AutoChangeToNext
 											: DeckType.ChangeByButton,
-									);
+									});
 								}}
 							/>
 						</div>
@@ -134,12 +76,12 @@ export default function Settings() {
 								value={settings.ocrProcessType}
 								className='text-black dark:text-white bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md p-2 m-1 focus:ring-blue-500 dark:focus:ring-blue-300 focus:border-blue-500 dark:focus:border-blue-300'
 								onChange={(e) => {
-									updateSettings(
-										'ocrProcessType',
-										parseInt(
+									setSettings({
+										name: 'ocrProcessType',
+										value: parseInt(
 											e.target.value,
 										) as UserSettingsCollection['ocrProcessType'],
-									);
+									});
 								}}
 							>
 								<option value='0'>
@@ -166,7 +108,7 @@ export default function Settings() {
 						</div>
 					</div>
 					<div className='flex flex-col m-4 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg shadow'>
-						<div className='flex flex-row flex-wrap items-center justify-between relative'>
+						<div className='flex max-md:flex-col flex-row flex-wrap items-center justify-between relative'>
 							<label
 								htmlFor='languageSwitcher'
 								className='text-gray-700 dark:text-gray-200'
@@ -176,6 +118,7 @@ export default function Settings() {
 							<SettingLanguageSwitcher
 								targetName='usingLang'
 								originalLang={settings.usingLang}
+								disableLangs={[settings.targetLang]}
 							/>
 							<div className=' border-black dark:border-white border-opacity-60 rounded-md border-x-2 h-full'></div>
 							<label
@@ -187,6 +130,7 @@ export default function Settings() {
 							<SettingLanguageSwitcher
 								targetName='targetLang'
 								originalLang={settings.targetLang}
+								disableLangs={[settings.usingLang]}
 							/>
 						</div>
 					</div>
@@ -244,26 +188,23 @@ export default function Settings() {
 
 function SettingLanguageSwitcher({
 	targetName,
+	disableLangs,
 	originalLang,
 }: {
 	targetName: keyof Pick<UserSettingsCollection, 'targetLang' | 'usingLang'>;
 	originalLang: Lang;
+	disableLangs?: Lang[];
 }) {
 	const [selectedLang, setSelectedLang] = useState<Lang>(originalLang as Lang);
 	const [previousLang, setPreviousLang] = useState<Lang>(originalLang as Lang);
+	const { setSettings } = useSettings();
 
 	const fn = async (value: Lang) => {
-		const data = await fetch('/api/settings', {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-			},
-			body: JSON.stringify({
-				name: targetName,
-				value: value,
-			}),
+		const success = await setSettings({
+			name: targetName,
+			value: value as LangEnum,
 		});
-		if (!data.ok) {
+		if (!success) {
 			setSelectedLang(previousLang);
 			alert('Failed to update language');
 			return;
@@ -281,7 +222,9 @@ function SettingLanguageSwitcher({
 					fn(e.target.value as Lang);
 				}}
 			>
-				{Langs.map((lang) => (
+				{Langs.filter((l) =>
+					!!disableLangs ? !disableLangs.includes(l) : true,
+				).map((lang) => (
 					<option
 						className='hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors duration-200'
 						key={lang}

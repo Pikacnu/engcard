@@ -9,7 +9,7 @@ const settingsContext = createContext<{
 	}: {
 		name: keyof UserSettings;
 		value: UserSettings[keyof UserSettings];
-	}) => void;
+	}) => Promise<boolean>;
 } | null>(null);
 
 export default function SettingsProvider({
@@ -38,7 +38,7 @@ export default function SettingsProvider({
 	}: {
 		name: keyof UserSettings;
 		value: UserSettings[keyof UserSettings];
-	}) => {
+	}): Promise<boolean> => {
 		const response = await fetch('/api/settings', {
 			method: 'POST',
 			headers: {
@@ -48,7 +48,7 @@ export default function SettingsProvider({
 		});
 		if (!response.ok) {
 			console.error('Failed to update settings');
-			return;
+			return false;
 		}
 		updateSettingsData((prevSettings) => {
 			if (!prevSettings) return prevSettings;
@@ -57,6 +57,7 @@ export default function SettingsProvider({
 				[name]: value,
 			};
 		});
+		return true;
 	};
 
 	return (

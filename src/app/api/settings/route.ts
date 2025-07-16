@@ -70,7 +70,6 @@ export async function POST(req: Request) {
 		return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 	}
 	const { name, value } = await req.json();
-	console.log(name, value);
 	if (!name || value === undefined) {
 		return NextResponse.json({ error: 'Need two arguments' }, { status: 400 });
 	}
