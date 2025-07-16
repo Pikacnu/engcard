@@ -9,7 +9,7 @@ import {
 	Definition,
 	PartOfSpeech,
 	ShareLink,
-	Word,
+	WordCollection,
 } from '@/type';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -135,15 +135,15 @@ export async function addCardFromDB(deckId: string, word: string) {
 	if (!session) {
 		return;
 	}
-	const card = await db.collection<Word>('words').findOne({ word });
+	const card = await db.collection<WordCollection>('words').findOne({ word });
 
 	if (!card) {
 		return;
 	}
 	const cardprops: CardProps = {
 		word: card.word,
-		phonetic: card.phonetic,
-		blocks: card.blocks,
+		phonetic: card.phonetic || '',
+		blocks: card.blocks || [],
 	};
 	await db.collection<DeckCollection>('deck').findOneAndUpdate(
 		{ _id: new ObjectId(deckId), userId: session.user?.id },

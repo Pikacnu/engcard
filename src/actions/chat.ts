@@ -6,7 +6,7 @@ import {
 	ChatSession,
 	ChatAction,
 	DeckCollection,
-	Word,
+	WordCollection,
 	Deck,
 	CardProps,
 } from '@/type';
@@ -354,7 +354,7 @@ const chatActionFunctions: Record<
 		words.forEach(async (word, index) => {
 			setTimeout(async () => {
 				let wordData = await db
-					.collection<Word>('words')
+					.collection<WordCollection>('words')
 					.findOne({ word: word });
 				if (!wordData) {
 					const res = await GET(
@@ -373,7 +373,7 @@ const chatActionFunctions: Record<
 						word: temp.word,
 						phonetic: temp.phonetic,
 						blocks: temp.blocks,
-					} as WithId<Word>;
+					} as WithId<WordCollection>;
 				}
 
 				if (wordData) {
@@ -383,8 +383,8 @@ const chatActionFunctions: Record<
 							$push: {
 								cards: {
 									word: wordData.word,
-									phonetic: wordData.phonetic,
-									blocks: wordData.blocks,
+									phonetic: wordData.phonetic || '',
+									blocks: wordData.blocks || [],
 								},
 							},
 						},
@@ -477,7 +477,7 @@ async function addWords(words: string[], deckId: string, session: Session) {
 		setTimeout(async () => {
 			await GET(new Request(`http://localhost:3000/api/word?word=${word}`));
 			const wordData = await db
-				.collection<Word>('words')
+				.collection<WordCollection>('words')
 				.findOne({ word: word });
 			if (wordData) {
 				await db.collection<Deck>('deck').findOneAndUpdate(
@@ -486,8 +486,8 @@ async function addWords(words: string[], deckId: string, session: Session) {
 						$push: {
 							cards: {
 								word: wordData.word,
-								phonetic: wordData.phonetic,
-								blocks: wordData.blocks,
+								phonetic: wordData.phonetic || '',
+								blocks: wordData.blocks || [],
 							},
 						},
 					},

@@ -4,12 +4,13 @@ import QuickReview from './speedReview';
 import { Suspense } from 'react';
 import { createTranslator } from '@/lib/translator';
 import { cookies } from 'next/headers';
+import { LangEnum } from '@/type';
 
 const maxWords = 5;
 
 export default async function DashBoard() {
 	const cookie = await cookies();
-	const lang = cookie.get('language')?.value || 'zh-TW';
+	const lang = cookie.get('language')?.value || LangEnum.TW;
 	const t = createTranslator(lang); // 伺服器端翻譯
 	const recentHistory = await getRecentlyHistory();
 	const hotWord = await getRecentHotWords(5);

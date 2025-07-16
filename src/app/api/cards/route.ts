@@ -1,6 +1,6 @@
 'use server';
 
-import { CardProps, PartOfSpeech } from '@/type';
+import { CardProps, LangEnum, PartOfSpeech } from '@/type';
 import { readFile } from 'fs/promises';
 import { NextResponse } from 'next/server';
 import { shuffle } from '@/utils';
@@ -70,7 +70,7 @@ const simpleWordToCard = (
 					{
 						definition: [
 							{
-								lang: 'tw',
+								lang: LangEnum.TW,
 								content: mean,
 							},
 						],

@@ -1,4 +1,4 @@
-import { Deck, Word } from '@/type';
+import { Deck, WordCollection } from '@/type';
 import client from './client';
 
 const dbName = process.env.NODE_ENV === 'development' ? 'test' : 'prod';
@@ -7,7 +7,7 @@ const db = client.db(dbName);
 
 //init
 
-export const words = db.collection<Word>('words');
+export const words = db.collection<WordCollection>('words');
 (async () => {
 	const exists = await words.indexExists('text');
 	if (exists) {

@@ -1,4 +1,4 @@
-import { CardProps, PartOfSpeech } from '@/type';
+import { CardProps, LangEnum, PartOfSpeech } from '@/type';
 
 export const CardWhenEmpty: CardProps = {
 	word: 'No Cards',
@@ -10,11 +10,11 @@ export const CardWhenEmpty: CardProps = {
 				{
 					definition: [
 						{
-							lang: 'en',
+							lang: LangEnum.EN,
 							content: 'Error Occured, Please Report to Developer',
 						},
 						{
-							lang: 'tw',
+							lang: LangEnum.TW,
 							content: '發生錯誤，請回報給開發者',
 						},
 					],
