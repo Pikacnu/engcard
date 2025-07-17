@@ -9,6 +9,7 @@ import { ThemeToggler } from './../../../components/ThemeToggler';
 import { useLocalStorage } from '@/hooks/localstorage';
 import { LangEnum, LangNames, Langs } from '@/types/lang';
 import { useSettings } from '@/context/SettingsContext';
+import TestTextParser from './../../../components/client/test';
 
 export default function Settings() {
 	const { t } = useTranslation(); // Added
@@ -107,8 +108,8 @@ export default function Settings() {
 							<LanguageSwitcher />
 						</div>
 					</div>
-					<div className='flex flex-col m-4 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg shadow'>
-						<div className='flex max-md:flex-col flex-row flex-wrap items-center justify-between relative'>
+					<div className='flex flex-col md:m-4 md:p-4 bg-gray-100 dark:bg-gray-800 rounded-lg shadow'>
+						<div className='flex max-md:flex-col flex-row flex-wrap items-center md:justify-between max-md:justify-center relative'>
 							<label
 								htmlFor='languageSwitcher'
 								className='text-gray-700 dark:text-gray-200'
@@ -123,7 +124,7 @@ export default function Settings() {
 							<div className=' border-black dark:border-white border-opacity-60 rounded-md border-x-2 h-full'></div>
 							<label
 								htmlFor='languageSwitcher'
-								className='text-gray-700 dark:text-gray-200'
+								className='text-gray-700 dark:text-gray-200 relative'
 							>
 								{t('dashboard.settings.targetLanguageLabel')}
 							</label>
@@ -180,6 +181,12 @@ export default function Settings() {
 							</div>
 						))}
 					</div>
+					{/*
+						<div className='flex flex-col m-4 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg shadow'>
+						<div className='flex flex-row items-center justify-between'>
+							<TestTextParser text='本日^ほんじつ.はご来店^らいてん.いただき、誠^まこと.にありがとうございます^ありが.とうございます.。'></TestTextParser>
+						</div>
+					</div>*/}
 				</div>
 			)}
 		</div>

@@ -76,7 +76,7 @@ export default function SpeedReview() {
 								}
 							}}
 						></Deck>
-						<button>
+						<div>
 							{removableWord && (
 								<div className=' absolute top-0 right-1/4 translate-x-1/2 translate-y-1/2 z-20 p-2 bg-red-500 text-white rounded-full flex'>
 									<button
@@ -87,7 +87,7 @@ export default function SpeedReview() {
 									</button>
 								</div>
 							)}
-						</button>
+						</div>
 					</div>
 				)}
 			</div>
