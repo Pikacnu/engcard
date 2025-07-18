@@ -211,7 +211,8 @@
 		},
 		"speedReview": {
 			"noWords": "利用可能な単語がありません",
-			"nextWordButton": "次の単語"
+			"nextWordButton": "次の単語",
+			"remove": "マーク解除"
 		}
 	},
 	"auth": {

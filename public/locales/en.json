@@ -93,14 +93,16 @@
 		},
 		"settings": {
 			"title": "Settings",
-			"deckActionLabel": "Is word card auto change to next when open",
+			"deckActionLabel": "Auto switch to next card when opening word cards",
 			"ocrProcessLabel": "Image Process Type",
-			"ocrOptionOnlyImage": "Only Data From Image",
-			"ocrOptionOnlyDefinition": "Only Use Definition From Scanned Image",
-			"ocrOptionFullySource": "Fully From Source",
+			"ocrOptionOnlyImage": "Only data from image",
+			"ocrOptionOnlyDefinition": "Only use definition from scanned image",
+			"ocrOptionFullySource": "Fully from source",
 			"alertLoadFailed": "Failed to load settings: ",
-			"languageLabel": "Language",
-			"themeToggle": "Theme Mode",
+			"languageLabel": "Interface Language",
+			"usingLanguageLabel": "(Learning) Using Language",
+			"targetLanguageLabel": "(Learning) Target Language",
+			"themeToggle": "Theme Toggle",
 			"resetGuideCard": "Reset Card Guide",
 			"resetGuideDashboard": "Reset Dashboard Guide",
 			"resetGuidePreview": "Reset Preview Guide",
@@ -209,7 +211,8 @@
 		},
 		"speedReview": {
 			"noWords": "No words available",
-			"nextWordButton": "Next Word"
+			"nextWordButton": "Next Word",
+			"remove": "Unmark"
 		}
 	},
 	"auth": {
