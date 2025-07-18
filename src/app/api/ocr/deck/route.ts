@@ -108,7 +108,7 @@ export async function POST(req: Request) {
 		processType = OCRProcessType.FromSource;
 	}
 
-	const sourceLang = settings?.usingLang || LangEnum.EN;
+	const sourceLang = settings?.usingLang || [LangEnum.EN];
 	const targetLang = settings?.targetLang || LangEnum.EN;
 
 	console.log('Process type:', processType);

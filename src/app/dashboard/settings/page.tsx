@@ -1,15 +1,14 @@
 'use client';
 
 import { DeckType, Lang, UserSettingsCollection } from '@/type';
-import { useState } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { useTranslation } from '@/context/LanguageContext'; // Added
 import { LanguageSwitcher } from './../../../components/client/LanguageSwitcher';
 import { ThemeToggler } from './../../../components/ThemeToggler';
 import { useLocalStorage } from '@/hooks/localstorage';
-import { LangEnum, LangNames, Langs } from '@/types/lang';
+import { LangCodeToName, LangEnum, LangNames, Langs } from '@/types/lang';
 import { useSettings } from '@/context/SettingsContext';
-import TestTextParser from './../../../components/client/test';
 
 export default function Settings() {
 	const { t } = useTranslation(); // Added
@@ -116,7 +115,7 @@ export default function Settings() {
 							>
 								{t('dashboard.settings.usingLanguageLabel')}
 							</label>
-							<SettingLanguageSwitcher
+							<MultipleLanguageSwitcher
 								targetName='usingLang'
 								originalLang={settings.usingLang}
 								disableLangs={[settings.targetLang]}
@@ -128,10 +127,10 @@ export default function Settings() {
 							>
 								{t('dashboard.settings.targetLanguageLabel')}
 							</label>
-							<SettingLanguageSwitcher
+							<SingleLanguageSwitcher
 								targetName='targetLang'
 								originalLang={settings.targetLang}
-								disableLangs={[settings.usingLang]}
+								disableLangs={settings.usingLang}
 							/>
 						</div>
 					</div>
@@ -193,7 +192,7 @@ export default function Settings() {
 	);
 }
 
-function SettingLanguageSwitcher({
+function SingleLanguageSwitcher({
 	targetName,
 	disableLangs,
 	originalLang,
@@ -206,17 +205,20 @@ function SettingLanguageSwitcher({
 	const [previousLang, setPreviousLang] = useState<Lang>(originalLang as Lang);
 	const { setSettings } = useSettings();
 
-	const fn = async (value: Lang) => {
-		const success = await setSettings({
-			name: targetName,
-			value: value as LangEnum,
-		});
-		if (!success) {
-			setSelectedLang(previousLang);
-			alert('Failed to update language');
-			return;
-		}
-	};
+	const fn = useCallback(
+		async (value: Lang) => {
+			const success = await setSettings({
+				name: targetName,
+				value: value as LangEnum,
+			});
+			if (!success) {
+				setSelectedLang(previousLang);
+				alert('Failed to update language');
+				return;
+			}
+		},
+		[previousLang, setSettings, targetName],
+	);
 
 	return (
 		<div className='flex items-center space-x-2 p-2 text-black dark:text-white border-0 rounded-lg bg-gray-200 dark:bg-gray-800 shadow-md hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors duration-200'>
@@ -225,8 +227,9 @@ function SettingLanguageSwitcher({
 				value={selectedLang}
 				onChange={(e) => {
 					setPreviousLang(selectedLang);
-					setSelectedLang(e.target.value as Lang);
-					fn(e.target.value as Lang);
+					const targetLang = e.target.value as Lang;
+					setSelectedLang(targetLang);
+					fn(targetLang);
 				}}
 			>
 				{Langs.filter((l) =>
@@ -241,6 +244,97 @@ function SettingLanguageSwitcher({
 					</option>
 				))}
 			</select>
+		</div>
+	);
+}
+
+function MultipleLanguageSwitcher({
+	targetName,
+	disableLangs,
+	originalLang,
+}: {
+	targetName: keyof Pick<UserSettingsCollection, 'targetLang' | 'usingLang'>;
+	originalLang: Lang[];
+	disableLangs?: Lang[];
+}) {
+	const [selectedLang, setSelectedLang] = useState<Lang[]>(
+		originalLang as Lang[],
+	);
+	const prevLang = useRef<Lang[]>(originalLang);
+	const [inputValue, setInputValue] = useState<string>('');
+
+	const { setSettings } = useSettings();
+
+	const fn = useCallback(
+		async (value: Lang[]) => {
+			const success = await setSettings({
+				name: targetName,
+				value: value as LangEnum[],
+			});
+			if (!success) {
+				setSelectedLang(prevLang.current);
+				alert('Failed to update language');
+				return;
+			}
+		},
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+		[prevLang, targetName],
+	);
+
+	useEffect(() => {
+		fn(selectedLang);
+	}, [selectedLang, fn]);
+
+	return (
+		<div className='flex items-center space-x-2 p-2 text-black dark:text-white border-0 rounded-lg bg-gray-200 dark:bg-gray-800 shadow-md hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors duration-200 max-w-[50%]'>
+			{Array.isArray(selectedLang) &&
+				selectedLang.map((targetLang) => (
+					<span key={targetLang}>
+						{LangCodeToName(targetLang as LangEnum)}{' '}
+						<button
+							className=' rounded-full text-white bg-black bg-opacity-40 hover:bg-red-600 transition-all w-5 h-5 text-sm'
+							onClick={() => {
+								setSelectedLang((prev) => prev.filter((l) => l !== targetLang));
+							}}
+						>
+							x
+						</button>
+					</span>
+				))}
+			<input
+				className='bg-transparent outline-none text-sm w-16'
+				list={`${targetName}-datalist`}
+				value={inputValue}
+				onChange={(e) => {
+					const targetLang = e.target.value as Lang;
+					if (!Langs.some((l) => targetLang === l)) {
+						return setInputValue(e.target.value);
+					}
+					prevLang.current = selectedLang;
+					setSelectedLang((prev) => {
+						if (prev.includes(targetLang)) {
+							return prev.filter((l) => l === targetLang);
+						}
+						return [...prev, targetLang];
+					});
+					setInputValue('');
+				}}
+			/>
+			<datalist id={`${targetName}-datalist`}>
+				{Langs.filter((l) =>
+					!!disableLangs
+						? !disableLangs.includes(l) && !selectedLang.includes(l)
+						: true,
+				).map((lang) => (
+					<option
+						className='hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors duration-200'
+						key={lang}
+						value={lang}
+					>
+						{LangNames[lang]}
+					</option>
+				))}
+			</datalist>
 		</div>
 	);
 }

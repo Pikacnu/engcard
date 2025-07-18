@@ -150,7 +150,7 @@ export default function QuestionWord({
 									<QuestionButton
 										key={`${c.word}-${i}`}
 										card={c}
-										lang={settings?.usingLang || LangEnum.TW}
+										lang={settings?.usingLang || [LangEnum.TW]}
 										setIsCorrect={setIsCorrect}
 										CardWhenEmpty={CardWhenEmpty}
 									/>
@@ -207,7 +207,7 @@ const QuestionButton = memo(function QuestionButton({
 	card: WithAnswer<CardProps>;
 	setIsCorrect: Dispatch<SetStateAction<boolean>>;
 	CardWhenEmpty: CardProps;
-	lang: Lang;
+	lang: Lang[];
 }) {
 	const [index, setIndex] = useState(0);
 	console.log('Card in QuestionButton:', card);
@@ -215,11 +215,7 @@ const QuestionButton = memo(function QuestionButton({
 		() =>
 			card.blocks.flatMap((block) =>
 				block.definitions.flatMap((def) =>
-					def.definition.filter((d) =>
-						lang === LangEnum.TW
-							? ['tw', LangEnum.TW].includes(d.lang)
-							: d.lang === lang,
-					),
+					def.definition.filter((d) => lang.includes(d.lang)),
 				),
 			),
 		[card.blocks, lang],

@@ -23,67 +23,40 @@ const CORE_SYSTEM_TEMPLATE = `You are an expert linguist specializing in multili
 **Critical Quality Checks:**
 - Every definition and example MUST include both source and target language versions
 - Incomplete or missing translations are strictly unacceptable
-- availableSearchTarget must only contain source words with semantically equivalent meanings in target language
+- availableSearchTarget must contain search terms in source language, including the original word and its variations
 - Synonyms and antonyms must be accurately translated to target language
 
-**More Guidelines:**
-- If language is Japanese, use Kanji for definitions and examples, use Hiragana spelling for phonetics
+**Language-Specific Guidelines:**
+- If source is Japanese: use Kanji for definitions/examples, Hiragana for phonetics
 
 **Structural Organization:**
 Group all definitions by part of speech (noun, verb, adjective, adverb, etc.) into cohesive blocks rather than fragmenting into separate entries per definition.`;
 
-// Language-specific mappings for better caching
-const LANG_MAPPINGS = {
-	'en-tw': {
-		sourceDesc: 'English',
-		targetDesc: 'Traditional Chinese',
-		sourceCode: 'en',
-		targetCode: 'tw',
-	},
-	'tw-en': {
-		sourceDesc: 'Traditional Chinese',
-		targetDesc: 'English',
-		sourceCode: 'tw',
-		targetCode: 'en',
-	},
-	// Add more language pairs as needed
-} as const;
-
 export const wordSystemInstructionCreator = (
-	source: LangEnum,
+	source: LangEnum[],
 	target: LangEnum,
 ): string => {
-	const langKey = `${source}-${target}` as keyof typeof LANG_MAPPINGS;
-	const mapping = LANG_MAPPINGS[langKey];
-
-	if (!mapping) {
-		// Fallback for unsupported language pairs
-		return CORE_SYSTEM_TEMPLATE.replace(
-			/source language/g,
-			LangEnglishNames[source],
-		)
-			.replace(/target language/g, LangEnglishNames[target])
-			.replace(
-				/source and target languages/g,
-				`${LangEnglishNames[source]} (${source}) and ${LangEnglishNames[target]} (${target})`,
-			);
-	}
-
-	return CORE_SYSTEM_TEMPLATE.replace(/source language/g, mapping.sourceDesc)
-		.replace(/target language/g, mapping.targetDesc)
+	return CORE_SYSTEM_TEMPLATE.replace(
+		/source language/g,
+		source.map((l) => LangEnglishNames[l]).join(', '),
+	)
+		.replace(/target language/g, LangEnglishNames[target])
 		.replace(
 			/source and target languages/g,
-			`${mapping.sourceDesc} (${mapping.sourceCode}) and ${mapping.targetDesc} (${mapping.targetCode})`,
+			`${source.map((l) => LangEnglishNames[l]).join(', ')} (${source.join(
+				', ',
+			)}) and ${LangEnglishNames[target]} (${target})`,
 		);
 };
 
-// Optimized few-shot examples for better caching
+// 精簡的示例對話 - 針對效能優化
 export const wordGeminiHistory: Content[] = [
+	// 英文示例 - 展示基本轉換格式
 	{
 		role: 'user',
 		parts: [
 			{
-				text: '[{"word":"search","phonetic":"/sɜːt͡ʃ/","meanings":[{"partOfSpeech":"noun","definitions":[{"definition":"An attempt to find something.","example":"The search for the keys started in earnest."},{"definition":"The act of searching in general.","example":"Search is a hard problem for computers."}]},{"partOfSpeech":"verb","definitions":[{"definition":"To look in (a place) for something.","example":"I searched the garden for the keys."},{"definition":"To look thoroughly.","example":"The police are searching for evidence."}]}]}]',
+				text: '[{"word":"search","phonetic":"/sɜːt͡ʃ/","meanings":[{"partOfSpeech":"noun","definitions":[{"definition":"An attempt to find something.","example":"The search for the keys started in earnest."}]},{"partOfSpeech":"verb","definitions":[{"definition":"To look in (a place) for something.","example":"I searched the garden for the keys."}]}]}]',
 			},
 		],
 	},
@@ -91,7 +64,41 @@ export const wordGeminiHistory: Content[] = [
 		role: 'model',
 		parts: [
 			{
-				text: '{"blocks":[{"partOfSpeech":"noun","definitions":[{"definition":[{"content":"An attempt to find something.","lang":"en"},{"content":"尋找某物的嘗試。","lang":"tw"}],"example":[{"content":"The search for the keys started in earnest.","lang":"en"},{"content":"尋找鑰匙的工作認真地開始了。","lang":"tw"},{"content":"The police conducted a thorough search.","lang":"en"},{"content":"警察進行了徹底的搜索。","lang":"tw"},{"content":"The search continues for survivors.","lang":"en"},{"content":"搜尋倖存者的工作繼續進行。","lang":"tw"}]},{"definition":[{"content":"The act of searching in general.","lang":"en"},{"content":"一般搜尋的行為。","lang":"tw"}],"example":[{"content":"Search is a hard problem for computers.","lang":"en"},{"content":"搜尋對電腦來說是個難題。","lang":"tw"},{"content":"The internet revolutionized search.","lang":"en"},{"content":"互聯網徹底改變了搜索。","lang":"tw"},{"content":"Search algorithms are crucial.","lang":"en"},{"content":"搜尋演算法至關重要。","lang":"tw"}]}]},{"partOfSpeech":"verb","definitions":[{"definition":[{"content":"To look in (a place) for something.","lang":"en"},{"content":"在某處尋找某物。","lang":"tw"}],"example":[{"content":"I searched the garden for the keys.","lang":"en"},{"content":"我在花園裡找鑰匙。","lang":"tw"},{"content":"She searched her bag.","lang":"en"},{"content":"她搜查了她的包。","lang":"tw"},{"content":"We searched the entire house.","lang":"en"},{"content":"我們搜索了整棟房子。","lang":"tw"}]},{"definition":[{"content":"To look thoroughly.","lang":"en"},{"content":"徹底尋找。","lang":"tw"}],"example":[{"content":"The police are searching for evidence.","lang":"en"},{"content":"警察正在搜查證據。","lang":"tw"},{"content":"They searched for survivors.","lang":"en"},{"content":"他們搜尋倖存者。","lang":"tw"},{"content":"We searched for a solution.","lang":"en"},{"content":"我們尋找解決方案。","lang":"tw"}]}]}],"phonetic":"/sɜːt͡ʃ/","tw":["搜尋","搜索"],"word":"search"}',
+				text: '{"word":"search","phonetic":"/sɜːt͡ʃ/","availableSearchTarget":["search","searching","searches","searched"],"blocks":[{"partOfSpeech":"noun","definitions":[{"definition":[{"content":"An attempt to find something.","lang":"en"},{"content":"尋找某物的嘗試。","lang":"zh-tw"}],"synonyms":["quest","hunt","exploration"],"antonyms":["abandonment","neglect"],"example":[[{"content":"The search for the keys started in earnest.","lang":"en"},{"content":"尋找鑰匙的工作認真地開始了。","lang":"zh-tw"}],[{"content":"The police conducted a thorough search.","lang":"en"},{"content":"警察進行了徹底的搜索。","lang":"zh-tw"}],[{"content":"The search continues for survivors.","lang":"en"},{"content":"搜尋倖存者的工作繼續進行。","lang":"zh-tw"}]]}]},{"partOfSpeech":"verb","definitions":[{"definition":[{"content":"To look in (a place) for something.","lang":"en"},{"content":"在某處尋找某物。","lang":"zh-tw"}],"synonyms":["seek","hunt","explore"],"antonyms":["ignore","overlook"],"example":[[{"content":"I searched the garden for the keys.","lang":"en"},{"content":"我在花園裡找鑰匙。","lang":"zh-tw"}],[{"content":"She searched her bag.","lang":"en"},{"content":"她搜查了她的包。","lang":"zh-tw"}],[{"content":"We searched the entire house.","lang":"en"},{"content":"我們搜索了整棟房子。","lang":"zh-tw"}]]}]}],"zh-tw":["搜尋","搜索"]}',
+			},
+		],
+	},
+	// 日文示例 - 展示日文處理
+	{
+		role: 'user',
+		parts: [
+			{
+				text: '[{"word":"勉強","phonetic":"べんきょう","meanings":[{"partOfSpeech":"noun","definitions":[{"definition":"知識や技能を身につけるための学習活動。","example":"毎日三時間勉強している。"}]},{"partOfSpeech":"verb","definitions":[{"definition":"学習して知識を身につける。","example":"試験のために一生懸命勉強した。"}]}]}]',
+			},
+		],
+	},
+	{
+		role: 'model',
+		parts: [
+			{
+				text: '{"word":"勉強","phonetic":"べんきょう","availableSearchTarget":["勉強","べんきょう","ベンキョウ","study","learning"],"blocks":[{"partOfSpeech":"noun","definitions":[{"definition":[{"content":"知識や技能を身につけるための学習活動。","lang":"ja"},{"content":"為了獲得知識或技能而進行的學習活動。","lang":"zh-tw"}],"synonyms":["学習","修習","研修"],"antonyms":["怠惰","放棄"],"example":[[{"content":"毎日三時間勉強している。","lang":"ja"},{"content":"我每天讀書三小時。","lang":"zh-tw"}],[{"content":"彼女は勉強熱心だ。","lang":"ja"},{"content":"她很認真讀書。","lang":"zh-tw"}],[{"content":"勉強の成果が出た。","lang":"ja"},{"content":"讀書的成果顯現出來了。","lang":"zh-tw"}]]}]},{"partOfSpeech":"verb","definitions":[{"definition":[{"content":"学習して知識を身につける。","lang":"ja"},{"content":"通過學習獲得知識。","lang":"zh-tw"}],"synonyms":["学ぶ","習う","修める"],"antonyms":["怠ける","諦める"],"example":[[{"content":"試験のために一生懸命勉強した。","lang":"ja"},{"content":"為了考試而拼命讀書。","lang":"zh-tw"}],[{"content":"図書館で勉強する。","lang":"ja"},{"content":"在圖書館讀書。","lang":"zh-tw"}],[{"content":"友達と一緒に勉強した。","lang":"ja"},{"content":"和朋友一起讀書。","lang":"zh-tw"}]]}]}],"zh-tw":["學習","讀書","研究"]}',
+			},
+		],
+	},
+	// 多語言示例 - 展示複雜處理
+	{
+		role: 'user',
+		parts: [
+			{
+				text: '[{"word":"technology","phonetic":"/tɛkˈnɒlədʒi/","meanings":[{"partOfSpeech":"noun","definitions":[{"definition":"The application of scientific knowledge for practical purposes.","example":"Modern technology has changed our lives."}]}]}]',
+			},
+		],
+	},
+	{
+		role: 'model',
+		parts: [
+			{
+				text: '{"word":"technology","phonetic":"/tɛkˈnɒlədʒi/","availableSearchTarget":["technology","technologies","technological","tech"],"blocks":[{"partOfSpeech":"noun","definitions":[{"definition":[{"content":"The application of scientific knowledge for practical purposes.","lang":"en"},{"content":"為實用目的而應用科學知識。","lang":"zh-tw"},{"content":"実用的な目的のための科学的知識の応用。","lang":"ja"}],"synonyms":["innovation","engineering","science"],"antonyms":["primitiveness","backwardness"],"example":[[{"content":"Modern technology has changed our lives.","lang":"en"},{"content":"現代科技改變了我們的生活。","lang":"zh-tw"},{"content":"現代の技術は私たちの生活を変えました。","lang":"ja"}],[{"content":"We rely on technology every day.","lang":"en"},{"content":"我們每天都依賴科技。","lang":"zh-tw"},{"content":"私たちは毎日技術に頼っています。","lang":"ja"}],[{"content":"Technology continues to advance rapidly.","lang":"en"},{"content":"科技持續快速發展。","lang":"zh-tw"},{"content":"技術は急速に進歩し続けています。","lang":"ja"}]]}]}],"zh-tw":["科技","技術","科學技術"],"ja":["技術","テクノロジー","科学技術"]}',
 			},
 		],
 	},

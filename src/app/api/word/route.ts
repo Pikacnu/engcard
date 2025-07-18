@@ -48,38 +48,20 @@ export async function GET(request: Request): Promise<Response> {
 		userId: session.user?.id || '',
 	});
 
-	const sourceLang = settings?.usingLang || LangEnum.EN;
+	const sourceLang = settings?.usingLang || [LangEnum.EN];
 	const targetLang = settings?.targetLang || LangEnum.TW;
 
 	const db = DB.collection<WordCollection>('words');
-	/*
-	zh-tw only code
-	if (isChinese(word)) {
+	const vailders = sourceLang.map((l) => LangVailderCreator(l));
+	if (vailders.some((fn) => fn(word!))) {
 		const result = await db
-			.find({ availableSearchTarget: { $in: [word] } })
-			.toArray();
-		if (result.length < 0) {
-			return NextResponse.json({ error: 'Word not found' }, { status: 404 });
-		}
-		const words = result.filter(
-			(word) => word.available !== false || !word.available,
-		);
-		if (words.length < 1) {
-			return NextResponse.json({ error: 'Word not found' }, { status: 404 });
-		}
-		if (result.length === 1) {
-			return NextResponse.json(result[0], { status: 200 });
-		}
-		return NextResponse.json(words, { status: 200 });
-	}*/
-	const vailder = LangVailderCreator(sourceLang);
-	if (vailder(word)) {
-		const result = await db
-			.find({
-				availableSearchTarget: { $in: [word] },
-				targetLang: targetLang,
-				sourceLang: sourceLang,
-			})
+			.find(
+				{
+					availableSearchTarget: { $in: [word] },
+					targetLang: targetLang,
+				},
+				{},
+			)
 			.toArray();
 		if (result.length < 0) {
 			return NextResponse.json({ error: 'Word not found' }, { status: 404 });
@@ -93,7 +75,7 @@ export async function GET(request: Request): Promise<Response> {
 						? targetLang.includes(data.lang)
 						: data.lang === targetLang,
 				);
-		const filter = simpleFilter([sourceLang, targetLang]);
+		const filter = simpleFilter([...sourceLang, targetLang]);
 		const words: WordCollectionWith<CardProps>[] = result
 			.filter((word) => word.available !== false || !word.available)
 			.filter(
@@ -139,12 +121,17 @@ export async function GET(request: Request): Promise<Response> {
 	}*/
 
 	word = word.trimEnd().trimStart().toLowerCase();
-	const result = await db.findOne({ word });
+	const result = await db.findOne({ word, targetLang });
 	if (result) {
 		if (result.available === false) {
 			return NextResponse.json({ error: 'Word not found' }, { status: 404 });
 		}
-		return NextResponse.json(result, { status: 200 });
+		if (
+			sourceLang.every((neededLang) => result.sourceLang.includes(neededLang))
+		)
+			return NextResponse.json(result, { status: 200 });
+		// Todo : handle the card which has different sourceLang
+		//const newResult = await getModifiedResult();
 	}
 	let data: CardProps;
 	if (![LangEnum.EN].includes(targetLang)) {
@@ -195,7 +182,7 @@ export async function GET(request: Request): Promise<Response> {
 
 async function newWord(
 	word: string,
-	sourceLang: LangEnum,
+	sourceLang: LangEnum[],
 	targetLang: LangEnum,
 ): Promise<CardProps | null> {
 	const sourceDataPromiseList = [
@@ -282,7 +269,7 @@ async function CheckData(
 
 async function getAIResponse(
 	processedData: CardProps | CardProps[] | string,
-	sourceLang: LangEnum,
+	sourceLang: LangEnum[],
 	targetLang: LangEnum,
 ): Promise<CardProps> {
 	let AIResponse;
@@ -325,7 +312,7 @@ async function getAIResponse(
 				},
 			],
 			response_format: zodResponseFormat(
-				wordSchemaCreator([sourceLang, targetLang]),
+				wordSchemaCreator([...sourceLang, targetLang]),
 				'data',
 			),
 		});
@@ -363,7 +350,7 @@ async function getAIResponse(
 				config: {
 					responseMimeType: 'application/json',
 					responseSchema: GwordSchemaCreator([
-						sourceLang,
+						...sourceLang,
 						targetLang,
 					]).toSchema(),
 					systemInstruction: wordSystemInstructionCreator(

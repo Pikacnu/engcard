@@ -32,7 +32,7 @@ export async function GET(req: Request) {
 			deckActionType: DeckType.AutoChangeToNext,
 			ocrProcessType: OCRProcessType.FromSource,
 			targetLang: LangEnum.EN,
-			usingLang: LangEnum.TW,
+			usingLang: [LangEnum.TW],
 		};
 		const result = await db
 			.collection<UserSettingsCollection>('settings')

@@ -167,7 +167,7 @@ export type WordHistory = {
 export type WordCollection = {
 	available: boolean;
 	word: string;
-	sourceLang: LangEnum;
+	sourceLang: LangEnum[];
 	targetLang: LangEnum;
 } & Partial<
 	CardProps & {
@@ -175,12 +175,8 @@ export type WordCollection = {
 	}
 >;
 
-export type WordCollectionWith<T> = T & {
-	available: boolean;
-	word: string;
-	sourceLang: LangEnum;
-	targetLang: LangEnum;
-};
+export type WordCollectionWith<T> = T &
+	Pick<WordCollection, 'available' | 'word' | 'sourceLang' | 'targetLang'>;
 
 export type WithStringId<T> = T & { id: string };
 
@@ -287,7 +283,7 @@ export type UserSettingsCollection = {
 	deckActionType: DeckType;
 	ocrProcessType: OCRProcessType;
 	targetLang: LangEnum;
-	usingLang: LangEnum;
+	usingLang: LangEnum[];
 };
 
 export type UserSettings = Omit<UserSettingsCollection, 'userId'>;

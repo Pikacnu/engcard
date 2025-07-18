@@ -50,6 +50,7 @@ export default function SettingsProvider({
 			console.error('Failed to update settings');
 			return false;
 		}
+		console.log('Settings updated:', name, value);
 		updateSettingsData((prevSettings) => {
 			if (!prevSettings) return prevSettings;
 			return {
