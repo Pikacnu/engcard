@@ -1,6 +1,7 @@
 import DB from '@/lib/db';
 import {
 	CardProps,
+	Example,
 	Lang,
 	LangEnum,
 	PartOfSpeech,
@@ -123,15 +124,47 @@ export async function GET(request: Request): Promise<Response> {
 	word = word.trimEnd().trimStart().toLowerCase();
 	const result = await db.findOne({ word, targetLang });
 	if (result) {
-		if (result.available === false) {
+		// has data in db and not available
+		if (result.available === false)
 			return NextResponse.json({ error: 'Word not found' }, { status: 404 });
-		}
+
+		// has data in db and available with all sourceLang
 		if (
 			sourceLang.every((neededLang) => result.sourceLang.includes(neededLang))
 		)
 			return NextResponse.json(result, { status: 200 });
-		// Todo : handle the card which has different sourceLang
-		//const newResult = await getModifiedResult();
+
+		// has data in db and available but not all sourceLang
+		const missingLangs = sourceLang.filter(
+			(neededLang) => !result.sourceLang.includes(neededLang),
+		);
+		const testfn = (
+			data: WithId<WordCollection>,
+		): data is WithId<WordCollectionWith<CardProps>> =>
+			data.blocks !== undefined;
+		if (testfn(result)) {
+			const newResult = await getModifiedResult(
+				result,
+				missingLangs,
+				targetLang,
+			);
+			if (!newResult) {
+				return NextResponse.json({ error: 'Word not found' }, { status: 404 });
+			}
+			await db.updateOne(
+				{ _id: result._id },
+				{
+					$set: {
+						available: true,
+						sourceLang: [...result.sourceLang, ...missingLangs],
+					},
+				},
+			);
+			return NextResponse.json(newResult, { status: 200 });
+		}
+
+		// If the result is not a valid WordCollectionWith<CardProps> Generate new data
+		// *Fallthrough to generate new data
 	}
 	let data: CardProps;
 	if (![LangEnum.EN].includes(targetLang)) {
@@ -227,6 +260,7 @@ async function CheckData(
 	const isDataArray = Array.isArray(apidata);
 	const phonetic = isDataArray ? apidata[0].phonetic : apidata.phonetic;
 	audio = isDataArray ? apidata[0].audio : apidata.audio;
+	// Audio API
 	if (audio === undefined || audio === '') {
 		const res = await fetch((process.env.AUDIO_API_URL as string) || '', {
 			method: 'POST',
@@ -246,25 +280,116 @@ async function CheckData(
 			}`;
 		}
 	}
-	if (
-		aidata.phonetic === '' ||
-		aidata.phonetic === undefined ||
-		aidata.phonetic === 'string'
-	) {
+	const isObjKeyEmpty = <T>(obj: T, key: keyof T) => {
+		return (
+			obj[key] === '' ||
+			obj[key] === undefined ||
+			obj[key] === 'string' ||
+			(obj[key] as string).trim() === ''
+		);
+	};
+
+	if (isObjKeyEmpty(aidata, 'phonetic'))
 		result = Object.assign(result, {
 			phonetic: phonetic,
 		});
-	}
-	if (
-		aidata.audio === '' ||
-		aidata.audio === undefined ||
-		aidata.audio === 'string'
-	) {
+
+	if (isObjKeyEmpty(aidata, 'audio'))
 		result = Object.assign(result, {
 			audio: audio,
 		});
-	}
+
 	return result;
+}
+
+async function getModifiedResult(
+	originalData: CardProps,
+	missingLang: LangEnum[],
+	targetLang: LangEnum,
+): Promise<CardProps | null> {
+	const updatedResult = await getAIResponse(
+		originalData,
+		missingLang,
+		targetLang,
+	);
+	if (!updatedResult || Object.keys(updatedResult).length === 0) {
+		return null;
+	}
+	const newResult: CardProps = {
+		...originalData,
+		blocks: originalData.blocks.map((block) => {
+			const updatedBlock = updatedResult.blocks.find(
+				(b) => b.partOfSpeech === block.partOfSpeech,
+			);
+			if (!updatedBlock) return block;
+			return {
+				...block,
+				definitions: block.definitions.map((definition) => {
+					const updatedDefinition = updatedBlock.definitions.find((d) =>
+						d.definition.some((def) => def.lang === targetLang),
+					);
+					if (!updatedDefinition) return definition;
+
+					return {
+						...definition,
+						definition: updatedDefinition.definition
+							.filter((def) => missingLang.includes(def.lang as LangEnum))
+							.concat(definition.definition),
+						synonyms: updatedDefinition.synonyms?.concat(
+							definition.synonyms || [],
+						),
+						antonyms: updatedDefinition.antonyms?.concat(
+							definition.antonyms || [],
+						),
+
+						example: (() => {
+							if (!definition.example || !updatedDefinition.example) {
+								return definition.example || [];
+							}
+
+							const newExampleIndex = new Map<string, Example[]>();
+							updatedDefinition.example.forEach((newExample) => {
+								const targetContent = newExample.find(
+									(item) => item.lang === targetLang,
+								)?.content;
+								if (targetContent) {
+									newExampleIndex.set(targetContent, newExample);
+								}
+							});
+
+							// O(E × L × M) - 處理原有例句
+							return definition.example.map((originalExample) => {
+								const originalTargetContent = originalExample.find(
+									(item) => item.lang === targetLang,
+								)?.content;
+
+								if (
+									originalTargetContent &&
+									newExampleIndex.has(originalTargetContent)
+								) {
+									const matchingNewExample = newExampleIndex.get(
+										originalTargetContent,
+									)!;
+									const existingLangSet = new Set(
+										originalExample.map((item) => item.lang),
+									);
+									const newLangItems = matchingNewExample.filter(
+										(item) =>
+											missingLang.includes(item.lang as LangEnum) &&
+											!existingLangSet.has(item.lang),
+									);
+									return [...originalExample, ...newLangItems];
+								}
+
+								return originalExample;
+							});
+						})(),
+					};
+				}),
+			};
+		}),
+	};
+	return await CheckData(originalData, newResult);
 }
 
 async function getAIResponse(
