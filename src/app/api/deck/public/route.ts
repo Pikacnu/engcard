@@ -13,7 +13,7 @@ export async function POST(req: Request) {
 		return Response.json({ error: 'Unauthorized' }, { status: 401 });
 	}
 	const userId = session.user?.id;
-	console.log(deckId);
+
 	const deck = await db
 		.collection<DeckCollection>('deck')
 		.findOne({ _id: new ObjectId(deckId) });
@@ -81,27 +81,33 @@ export async function GET(req: Request) {
 				_id: deck._id.toString(),
 				name: deck.name,
 				isPublic: deck.isPublic,
-				cards: deck.cards,
+				cardInfo: {
+					length: deck.cards.length,
+					langs:
+						deck.cards[0].blocks[0].definitions[0].definition.map(
+							(d) => d.lang,
+						) || [],
+				},
 			};
 		});
-		return Response.json(
-			{ decks: processedDecks, fulldata: processedDecks },
-			{ status: 200 },
-		);
+		return Response.json({ decks: processedDecks }, { status: 200 });
 	}
 
 	const processedDecks = decks.map((deck) => {
 		return {
 			_id: deck._id.toString(),
 			name: deck.name,
-			card_length: deck.cards.length,
 			isPublic: deck.isPublic,
+			cardInfo: {
+				length: deck.cards.length,
+				langs:
+					deck.cards[0].blocks[0].definitions[0].definition.map(
+						(d) => d.lang,
+					) || [],
+			},
 		};
 	});
-	return Response.json(
-		{ decks: processedDecks, fulldata: processedDecks },
-		{ status: 200 },
-	);
+	return Response.json({ decks: processedDecks }, { status: 200 });
 }
 
 export async function DELETE(req: Request) {

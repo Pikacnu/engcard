@@ -20,4 +20,5 @@ export const LangEnglishNames: Record<LangEnum, string> = {
 	[LangEnum.JA]: 'Japanese',
 };
 
-export const LangCodeToName = (lang: LangEnum) => LangNames[lang] || 'Unknown';
+export const LangCodeToName = (lang: LangEnum | Lang) =>
+	LangNames[lang] || 'Unknown';

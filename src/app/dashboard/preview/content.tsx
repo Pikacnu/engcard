@@ -187,7 +187,7 @@ export default function Content() {
 			}
 			publicDecks = (await publicDeckResponse.json()).decks;
 			const availableDecks = [...fetchedDecks, ...(publicDecks || [])].filter(
-				(deck) => deck.card_length !== 0,
+				(deck) => deck.cardInfo.length !== 0,
 			);
 			const initialDeckId = deckid || availableDecks[0]?._id || '';
 			setSelectedDeck(initialDeckId);

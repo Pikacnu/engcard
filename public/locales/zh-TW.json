@@ -31,14 +31,14 @@
 		"home": {
 			"title": "Cardlisher",
 			"subtitle": "更有效地學習英文。",
-			"description": "Cardlisher是一款專為詞彙學習設計的閃卡應用程式，具有圖像識別和互動練習功能，助您高效記憶和複習英文單字。",
+			"description": "Cardlisher是一款專為詞彙學習設計的單字卡應用程式，具有圖像識別和互動練習功能，助您高效記憶和複習英文單字。",
 			"feature1": {
 				"title": "卡片管理",
-				"description": "創建、編輯和刪除閃卡，靈活管理您的學習內容。"
+				"description": "創建、編輯和刪除單字卡，靈活管理您的學習內容。"
 			},
 			"feature2": {
 				"title": "圖片導入",
-				"description": "上傳單字和文本的圖片，使用OCR技術自動生成閃卡。"
+				"description": "上傳單字和文本的圖片，使用OCR技術自動生成單字卡。"
 			},
 			"feature3": {
 				"title": "AI單字處理",
@@ -46,7 +46,7 @@
 			},
 			"feature4": {
 				"title": "進度追踪",
-				"description": "通過詳細的分析和表現洞察來監控您的學習旅程，以優化您的學習策略。"
+				"description": "透過詳細的分析和表現洞察來監控您的學習旅程，以優化您的學習策略。"
 			},
 			"getStartedButton": "開始使用",
 			"githubButton": "GitHub"
@@ -55,7 +55,7 @@
 	"dashboard": {
 		"joyride": {
 			"step1Content": "這裡將顯示您所選功能的內容",
-			"step2Content": "這裡是主導航欄，您可以通過它訪問各個功能",
+			"step2Content": "這裡是主導航欄，您可以透過它訪問各個功能",
 			"step3Content": "點擊返回儀表板首頁",
 			"step4Content": "搜索功能，可以查找單詞或牌組",
 			"step5Content": "卡片牌組管理區域",
@@ -93,7 +93,7 @@
 		},
 		"settings": {
 			"title": "設定",
-			"deckActionLabel": "打開單字卡時是否自動切換到下一個",
+			"deckActionLabel": "開啟單字卡時是否自動切換到下一張",
 			"ocrProcessLabel": "圖片處理類型",
 			"ocrOptionOnlyImage": "僅來自圖片的資料",
 			"ocrOptionOnlyDefinition": "僅使用掃描圖片中的定義",
@@ -103,10 +103,10 @@
 			"usingLanguageLabel": "(學習)使用語言",
 			"targetLanguageLabel": "(學習)目標語言",
 			"themeToggle": "樣式切換",
-			"resetGuideCard": "重置卡片指南",
-			"resetGuideDashboard": "重置儀表板指南",
-			"resetGuidePreview": "重置預覽指南",
-			"resetButton": "重製"
+			"resetGuideCard": "重設卡片指南",
+			"resetGuideDashboard": "重設儀表板指南",
+			"resetGuidePreview": "重設預覽指南",
+			"resetButton": "重設"
 		},
 		"deck": {
 			"altLoading": "載入中...",
@@ -142,7 +142,7 @@
 				"step1DisplayArea": "這裡是顯示區域，所有功能都將顯示在這",
 				"step2MarkButton": "這裡是標記按鈕，點擊可將單字加入標記列表",
 				"step3FunctionList": "這裡是功能列表，可以在此處切換不同的預覽與限制單字的數量",
-				"step4CardButton": "這裡是牌組區域，將以翻頁單字卡的行事呈現",
+				"step4CardButton": "這裡是牌組區域，將以翻頁單字卡的形式呈現",
 				"step5QuestionsButton": "這裡是問題區塊，用以練習單字拼寫",
 				"step6ListButton": "這裡是列表區塊，可以查看當前的所有單字",
 				"step7WordButton": "這裡是單字問題區塊，方便你記憶意思",
@@ -250,14 +250,14 @@
 			"yourRightsP2": "如果您希望訪問您的數據，我們將為您提供我們收集到的關於您的資訊的詳細概述。這確保了透明度，並允許您驗證個人數據的準確性。",
 			"yourRightsP3": "如果您需要更新您的資訊，我們將協助您進行必要的更改，以確保您的記錄準確且最新。保持您的資訊最新有助於我們為您提供最佳體驗。",
 			"yourRightsP4": "如果您請求刪除您的個人數據，我們將盡最大努力將其從我們的系統中移除。但是，請注意，在某些情況下，刪除特定數據可能不可行。這可能是由於技術限制、法律義務或為合法商業目的保留某些資訊的必要性。在這種情況下，我們將告知您無法刪除數據的原因。",
-			"yourRightsP5": "我們重視您的信任，並致力於確保您的權利得到尊重。如果您對您的權利或個人資訊的處理有任何疑慮或疑問，請隨時與我們聯繫。我們隨時準備協助您並解決您可能遇到的任何問題。",
+			"yourRightsP5": "我們重視您的信任，並致力於確保您的權利得到尊重。如果您對您的權利或個人資訊的處理有任何疑慮或疑問，請隨時與我們聯絡。我們隨時準備協助您並解決您可能遇到的任何問題。",
 			"contactUsTitle": "聯絡我們",
 			"contactUsP1": "如果您對本隱私權政策有任何疑問，請透過以下方式聯絡我們："
 		},
 		"tos": {
 			"title": "服務條款",
 			"introTitle": "1. 前言",
-			"introP1": "歡迎使用我們的閃卡應用程式！使用我們的服務即表示您同意這些條款。請花點時間仔細閱讀。",
+			"introP1": "歡迎使用我們的單字卡應用程式！使用我們的服務即表示您同意這些條款。請花點時間仔細閱讀。",
 			"introP2": "我們的應用程式旨在增強您的學習體驗，無論您是學生、專業人士還是終身學習者。我們的目標是提供有效幫助您學習和記憶資訊的工具。",
 			"introP3": "訪問或使用我們的應用程式即表示您確認已閱讀、理解並同意這些條款。如果您不同意，請不要使用我們的服務。",
 			"userRespTitle": "2. 使用者責任",
@@ -286,6 +286,8 @@
 		"title": "市集 (探索公開牌組)",
 		"deckNameLabel": "名稱：",
 		"cardsSuffix": " 張卡片",
+		"languagesLabel": "語言：",
+		"noLanguages": "未指定語言",
 		"noPublicDecks": "找不到公開牌組"
 	},
 	"download": {
@@ -363,7 +365,7 @@
 			"step1Display": "這裡是顯示區域，所有功能都將顯示在這",
 			"step2MarkButton": "這裡是標記按鈕，點擊可將單字加入標記列表",
 			"step3FunctionList": "這裡是功能列表，可以在此處切換不同的預覽與限制單字的數量",
-			"step4DeckArea": "這裡是牌組區域，將以翻頁單字卡的行事呈現",
+			"step4DeckArea": "這裡是牌組區域，將以翻頁單字卡的形式呈現",
 			"step5QuestionsArea": "這裡是問題區塊，用以練習單字拼寫",
 			"step6ListArea": "這裡是列表區塊，可以查看當前的所有單字",
 			"step7WordArea": "這裡是單字問題區塊，方便你記憶意思",

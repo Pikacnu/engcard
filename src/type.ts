@@ -144,7 +144,10 @@ export type Deck = {
 
 export type DeckResponse = {
 	_id: string;
-	card_length: number;
+	cardInfo: {
+		length: number;
+		langs: Lang[];
+	};
 	name: string;
 	isPublic: boolean;
 };

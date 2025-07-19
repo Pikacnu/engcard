@@ -5,7 +5,7 @@
 		"cancel": "キャンセル",
 		"language": {
 			"english": "English",
-			"traditionalChinese": "繁體中文"
+			"traditionalChinese": "正體中文"
 		},
 		"theme": {
 			"switchToLight": "ライトモードに切り替え",
@@ -286,6 +286,8 @@
 		"title": "マーケット（公開デッキを探索）",
 		"deckNameLabel": "名前：",
 		"cardsSuffix": " 枚のカード",
+		"languagesLabel": "言語：",
+		"noLanguages": "言語が指定されていません",
 		"noPublicDecks": "公開デッキが見つかりません"
 	},
 	"download": {

@@ -1,22 +1,25 @@
 'use client'; // Added
 
-import { DeckCollection } from '@/type'; // Assuming WithId<Document> is handled by DeckCollection
+import { DeckCollection, Lang } from '@/type'; // Assuming WithId<Document> is handled by DeckCollection
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react'; // Added
 import { useSession } from 'next-auth/react'; // Added for client-side session
 import { useTranslation } from '@/context/LanguageContext'; // Added
+import { LangCodeToName } from '@/types/lang';
 
-// If DeckCollection does not include _id, you might need to define a more specific type.
-// For now, assuming DeckCollection has an _id property (e.g., from WithId<Document>)
-interface MarketDeck extends DeckCollection {
-	_id: string; // Ensure _id is part of the type
+interface MarketDeck extends Pick<DeckCollection, 'name' | 'isPublic'> {
+	_id: string;
+	cardInfo: {
+		length: number;
+		langs: Lang[];
+	};
 }
 
 export default function Content() {
 	const { t } = useTranslation(); // Added
 	const [decks, setDecks] = useState<MarketDeck[]>([]);
-	const [loading, setLoading] = useState(true); // Added loading state
-	const { data: session } = useSession(); // Get session data
+	const [loading, setLoading] = useState(true);
+	const { data: session } = useSession();
 	const userId = session?.user?.id || '';
 
 	const fetchPublicDecks = useCallback(async () => {
@@ -32,8 +35,7 @@ export default function Content() {
 			const publicDecksData = await resPublic.json();
 			const allPublicDecks: MarketDeck[] = publicDecksData.decks || [];
 			const filteredDecks = allPublicDecks.filter(
-				(deck) =>
-					deck.userId !== userId && deck.cards && deck.cards.length !== 0,
+				(deck) => deck.cardInfo.length !== 0,
 			);
 			setDecks(filteredDecks);
 		} catch (error) {
@@ -46,11 +48,11 @@ export default function Content() {
 		} else if (session === null) {
 			fetchPublicDecks();
 		}
-	}, [userId, session]); // Added userId and session as dependencies
+	}, [userId, session]);
 
 	useEffect(() => {
 		fetchPublicDecks();
-	}, [fetchPublicDecks]); // Added fetchPublicDecks as a dependency
+	}, [fetchPublicDecks]);
 
 	if (loading) {
 		return (
@@ -61,7 +63,7 @@ export default function Content() {
 	}
 
 	return (
-		<div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4 w-full max-w-screen-xl mx-auto'>
+		<div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4 w-da max-w-screen-xl mx-auto'>
 			{decks.length !== 0 ? (
 				decks.map((deck) => {
 					return (
@@ -74,7 +76,15 @@ export default function Content() {
 								{t('market.deckNameLabel')} {deck.name} {/* Translated */}
 							</h1>
 							<p className='text-gray-600 dark:text-gray-300'>
-								{deck.cards.length} {t('market.cardsSuffix')} {/* Translated */}
+								{deck.cardInfo.length} {t('market.cardsSuffix')}{' '}
+							</p>
+							<p>
+								{t('market.languagesLabel')}{' '}
+								{deck.cardInfo.langs.length > 0
+									? deck.cardInfo.langs
+											.map((lang) => LangCodeToName(lang))
+											.join(', ')
+									: t('market.noLanguages')}
 							</p>
 						</Link>
 					);

@@ -31,7 +31,7 @@
 		"home": {
 			"title": "Cardlisher",
 			"subtitle": "Learn English. More Effectively.",
-			"description": "English Card is a flashcard app designed for vocabulary learning, featuring Image recognition, and interactive practice to help you efficiently memorize and review English words.",
+			"description": "Cardlisher is a flashcard app designed for vocabulary learning, featuring Image recognition, and interactive practice to help you efficiently memorize and review English words.",
 			"feature1": {
 				"title": "Card Management",
 				"description": "Create, edit, and delete flashcards to flexibly manage your learning content."
@@ -286,6 +286,8 @@
 		"title": "Market (Explore Public Decks)",
 		"deckNameLabel": "Name :",
 		"cardsSuffix": " cards",
+		"languagesLabel": "Languages:",
+		"noLanguages": "No languages specified",
 		"noPublicDecks": "No Public Decks Found"
 	},
 	"download": {
