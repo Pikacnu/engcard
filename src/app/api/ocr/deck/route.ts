@@ -161,7 +161,7 @@ export async function POST(req: Request) {
             systemInstruction: getTextRecognizeModelInstructionWithLanguage([
               ...sourceLang,
               targetLang,
-            ]),
+            ] as LangEnum[]),
           },
           contents: [
             {
