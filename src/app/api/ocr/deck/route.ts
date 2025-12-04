@@ -115,9 +115,8 @@ export async function POST(req: Request) {
   console.log('Process type:', processType);
 
   try {
-    const binaryData = new Uint8Array(await imageData.arrayBuffer());
     const fileData = await uploadFile(
-      binaryData,
+      imageData,
       ExtenstionToMimeType.get(imageType) as string,
     );
     let response = await Models.generateContent({
