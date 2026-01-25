@@ -41,7 +41,7 @@ export default function Chat() {
   const [loading, setLoading] = useState(true);
 
   const chatRef = useRef<HTMLDivElement>(null);
-  useScrollToBottom(chatRef, [chatId]);
+  useScrollToBottom(chatRef, [chatId, history]);
 
   useEffect(() => {
     (async () => {
@@ -95,19 +95,21 @@ export default function Chat() {
         .then((data) => {
           if ('error' in data) {
             console.error(data.error);
-            setHistory(history.slice(0, -1)); // Revert optimistic update
+            setHistory((prev) => prev.slice(0, -1)); // Revert optimistic update using functional update
             return;
           }
           setHistory((prev) => [
             ...prev,
-            Object.assign(data.content, {
+            {
+              ...data.content,
               grammerFix: data.grammerFix,
-            }),
+              action: data.action as (typeof prev)[0]['action'],
+            },
           ]);
           setMessage('');
         });
     },
-    [chatId, history],
+    [chatId],
   );
 
   return (
@@ -182,7 +184,6 @@ export default function Chat() {
           {history.map((content, contentIndex) => {
             const { role, parts, action } = content;
             const isUser = role === 'user';
-            console.log('Render message:', content);
             const messageBgColor = isUser
               ? 'bg-blue-500 dark:bg-blue-600 text-white'
               : 'bg-gray-300 dark:bg-gray-600 text-black dark:text-white';
@@ -198,7 +199,6 @@ export default function Chat() {
               >
                 <div className={`flex flex-col max-w-[70%]`}>
                   {parts?.map((part, index) => {
-                    console.log('Render part:', part);
                     if (part.text) {
                       return (
                         <div
@@ -305,20 +305,51 @@ export default function Chat() {
                             </div>
                           );
                         case 'grammer_correction': {
-                          const corrections = func.args!.grammerFixes as Array<{
-                            offsetWords: number;
-                            lengthWords: number;
+                          const corrections = func.args!.grammerFix as Array<{
+                            replaceTarget: string;
                             correctedText: string;
                           }>;
+                          const lastPart = history[contentIndex - 1];
+                          const lastPartTexts =
+                            lastPart?.parts
+                              ?.map((part) => part.text?.split(' '))
+                              .flat() || [];
+                          const correctionCopy = [...corrections];
+                          console.log('corrections:', corrections);
                           return (
                             <div
                               className={`p-3 m-1 rounded-xl shadow ${messageBgColor} ${messageAlign}`}
                               key={`${content.id}-part-${index}`}
                             >
                               <p className='pt-2'>
-                                {t('dashboard.chat.grammerFixLabel')}:
+                                {t('dashboard.chat.grammerFixLabel')} :
                               </p>
-                              <p className=' text-gray-900 flex flex-wrap'></p>
+                              <p className=' text-gray-900 flex flex-wrap bg-white/10 p-2 rounded-lg'>
+                                {lastPartTexts.map((word) => {
+                                  if (
+                                    correctionCopy.length > 0 &&
+                                    word === correctionCopy[0].replaceTarget
+                                  ) {
+                                    const corrected = correctionCopy.shift();
+                                    return (
+                                      <span
+                                        key={`${content.id}-correction-${word}`}
+                                        className='text-red-500 pl-2'
+                                      >
+                                        {corrected?.correctedText}
+                                      </span>
+                                    );
+                                  }
+                                  return (
+                                    <span
+                                      key={`${content.id}-word-${word}`}
+                                      className='text-black dark:text-white pl-2'
+                                    >
+                                      {word}
+                                    </span>
+                                  );
+                                })}
+                              </p>
                             </div>
                           );
                         }

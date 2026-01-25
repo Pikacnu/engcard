@@ -318,24 +318,21 @@ export const chatActionFunctionDeclarations: FunctionDeclaration[] = [
           items: {
             type: Type.OBJECT,
             properties: {
-              offsetWords: {
-                type: Type.NUMBER,
-                description: 'Offset position of the grammar error.',
-              },
-              lengthWords: {
-                type: Type.NUMBER,
-                description: 'Length of the grammar error.',
+              replaceTarget: {
+                type: Type.STRING,
+                description: 'The original text segment with grammar error.',
               },
               correctedText: {
                 type: Type.STRING,
                 description: 'The corrected text.',
               },
             },
-            required: ['offsetWords', 'lengthWords', 'correctedText'],
+            required: ['replaceTarget', 'correctedText'],
           },
           description: 'Optional grammar corrections for the user message.',
         },
       },
+      required: ['grammerFix'],
     },
   },
   {
