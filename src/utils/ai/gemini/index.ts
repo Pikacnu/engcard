@@ -1,38 +1,39 @@
-import { Content, FunctionCall, GoogleGenAI } from '@google/genai';
+import {
+  Content,
+  FunctionCall,
+  GoogleGenAI,
+  FunctionCallingConfigMode,
+} from '@google/genai';
 import { DeckCollection } from '@/type';
 import db from '@/lib/db';
-import {
-	chatModelInstruction,
-	ChatModelSchema,
-	GChatModelSchema,
-} from '../../ai';
+import { chatModelInstruction, chatActionFunctionDeclarations } from '../../ai';
 
 const googleAIKey = process.env.GEMINI_API_KEY || '';
 
 export const GenerativeAI = new GoogleGenAI({
-	apiKey: googleAIKey,
+  apiKey: googleAIKey,
 });
 
 export const Models = GenerativeAI.models;
 
 async function PrepareTheDataForGenerate(userId: string): Promise<string> {
-	const userDecks = await db
-		.collection<DeckCollection>('deck')
-		.find({
-			userId,
-		})
-		.toArray();
+  const userDecks = await db
+    .collection<DeckCollection>('deck')
+    .find({
+      userId,
+    })
+    .toArray();
 
-	const userDecksInfo = userDecks.map((deck) => {
-		return JSON.stringify({
-			deckId: deck._id.toString(),
-			deckName: deck.name,
-			cards: deck.cards.map((card) => card.word),
-		});
-	});
-	return `User Info : ${userDecksInfo.join(', ')}\n\n
+  const userDecksInfo = userDecks.map((deck) => {
+    return JSON.stringify({
+      deckId: deck._id.toString(),
+      deckName: deck.name,
+      cards: deck.cards.map((card) => card.word),
+    });
+  });
+  return `User Info : ${userDecksInfo.join(', ')}\n\n
 				`;
-	/*Actions Functionality:
+  /*Actions Functionality:
 				${
 					ChatAction.AddDeck
 				} : Create a new deck with the given name. and fill it with the given words.
@@ -45,47 +46,52 @@ async function PrepareTheDataForGenerate(userId: string): Promise<string> {
 }
 
 export async function GenerateTextResponse(
-	message: string,
-	history: Content[],
-	userId: string,
+  message: string,
+  history: Content[],
+  userId: string,
 ): Promise<{
-	content: Content;
-	data: ChatModelSchema;
-	functionCall?: FunctionCall[];
+  content: Content;
+  functionCalls?: FunctionCall[];
 }> {
-	const response = await Models.generateContent({
-		model: 'gemini-2.0-flash',
-		contents: [...history, { role: 'user', parts: [{ text: message }] }],
-		config: {
-			systemInstruction: `
+  const response = await Models.generateContent({
+    model: 'gemini-2.5-flash',
+    contents: [...history, { role: 'user', parts: [{ text: message }] }],
+    config: {
+      systemInstruction: `
 			prompt : ${chatModelInstruction} 
 			data : ${await PrepareTheDataForGenerate(userId)}`,
+      tools: [
+        {
+          functionDeclarations: chatActionFunctionDeclarations,
+        },
+      ],
+      toolConfig: {
+        functionCallingConfig: {
+          mode: FunctionCallingConfigMode.AUTO,
+        },
+      },
+    },
+  });
 
-			responseMimeType: 'application/json',
-			responseSchema: GChatModelSchema,
-		},
-		/*
-		tools: [
-			{
-				functionDeclarations: [...functions],
-			},
-		],
-		toolConfig: {
-			functionCallingConfig: {
-				mode: FunctionCallingMode.ANY,
-			},
-		},*/
-	});
-	const resultText = response.text;
-	if (!resultText) {
-		throw new Error('No response text from Gemini AI');
-	}
-	const result = JSON.parse(resultText) as ChatModelSchema;
-	return {
-		content: {
-			role: 'model',
-			parts: [{ text: result.message }],
-		},
-		data: result,
-	};
+  // 提取 function calls
+  const functionCalls = response.functionCalls;
+
+  // 提取文字回應
+  const textResponse = response.text || '';
+
+  return {
+    content: {
+      role: 'model',
+      parts:
+        functionCalls && functionCalls.length > 0
+          ? [
+              { text: textResponse },
+              ...functionCalls.map((fc: FunctionCall) => ({
+                functionCall: fc,
+              })),
+            ]
+          : [{ text: textResponse }],
+    },
+    functionCalls,
+  };
 }

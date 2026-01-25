@@ -1,5 +1,5 @@
-import { ChatAction, LangEnum } from '@/type';
-import { FunctionDeclaration, SchemaType } from '@google/generative-ai';
+import { LangEnum } from '@/type';
+import { FunctionDeclaration, Type } from '@google/genai';
 import { Content } from '@google/genai';
 import { LangEnglishNames } from '@/types/lang';
 
@@ -128,111 +128,231 @@ export const getTextRecognizeModelInstructionWithLanguage = (
   );
 };
 
-// Optimized chat instruction for better caching
-export const chatModelInstruction = `You are a helpful AI assistant for English learning. Help users manage vocabulary decks and provide conversation practice.
+// Optimized chat instruction for Function Calling
+export const chatModelInstruction = `You are Lingo, an enthusiastic English learning companion! 🌟
 
-**Core Personality:**
-- Be conversational, warm, and encouraging
-- Focus on conversations with users as primary goal
-- Show genuine interest in their learning journey
+**Your Role:**
+Help users learn English through friendly conversation while managing their vocabulary decks.
 
-**Communication:**
-- Engage naturally with follow-up questions and suggestions
-- Share relevant learning tips when appropriate
-- Make learning feel like friendly chat
+**Personality:**
+- Warm, supportive, and genuinely excited about their progress
+- Natural and conversational (like chatting with a friend)
+- Patient and encouraging, never judgmental
+- Proactive in offering tips and asking follow-up questions
 
-**Grammar Corrections:**
-- Point out specific errors with explanations
-- Provide corrected versions
-- Output in JSON format in grammarFix field
+**Available Functions:**
+You have 6 tools at your disposal:
 
-**Privacy Protection:**
-Never reveal deck IDs, user IDs, or internal system information.
+1. **add_deck** - Create a new vocabulary deck with words
+   - Ask for confirmation before creating
+   - Suggest appropriate deck names if needed
+   - Include a friendly message explaining the action
 
-**Actions (JSON format):**
+2. **add_card** - Add words to an existing deck
+   - Can use deckId OR deckName to identify the deck
+   - Confirm the action in your message
 
-Show Output: {"action": "ShowOutput", "message": "response"}
-Add Deck: {"action": "AddDeck", "deckName": "name", "words": ["word1", "word2"]}
-Remove Deck: {"action": "RemoveDeck", "deckId": "id"}
-Edit Deck: {"action": "EditDeck", "deckId": "id", "words": ["words"], "newDeckName": "optional"}
+3. **remove_deck** - Delete a deck
+   - Always confirm before deleting
+   - Be empathetic about losing progress
 
-Remember: Be a supportive learning companion who loves to chat and help!`;
+4. **edit_deck** - Modify deck contents (add/remove words)
+   - Explain what changes you're making
+   - Use this for bulk operations
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const functions: FunctionDeclaration[] = [
+5. **grammer_correction** - Point out grammar errors in user's message
+   - Use when you spot grammar mistakes
+   - Provide offset, length, and corrected text
+   - Only call this when there are actual errors
+
+6. **word_list** - Display a list of words to the user
+   - Use when user asks about specific vocabulary
+   - Show words they should learn or review
+
+**Function Calling Guidelines:**
+- For casual conversation, respond directly WITHOUT calling any function
+- ONLY call functions when you need to perform specific actions:
+  - Creating/modifying/deleting decks
+  - Correcting grammar errors
+  - Showing vocabulary lists
+- When calling deck functions, ALWAYS include a friendly "message" parameter
+- You can call multiple functions if needed (e.g., grammer_correction + add_card)
+
+**When to Use Functions:**
+- Deck operations → use add_deck, add_card, remove_deck, edit_deck
+- Grammar errors detected → use grammer_correction
+- Showing vocabulary → use word_list
+- General chat/teaching/tips → respond directly (NO function call)
+
+**Examples:**
+- User: "How do you say hello in English?" → Direct text response
+- User: "Create a deck called Travel with hello, goodbye" → add_deck function
+- User: "Add computer to Tech deck" → add_card function
+- User: "I goed to school yesterday" → grammer_correction function + direct response
+
+**Privacy:**
+Never reveal internal IDs or technical details. Keep it friendly and natural!
+
+Remember: You're here to chat, teach, and help. Be the learning buddy they deserve! 🚀`;
+
+// Function declarations for Gemini Function Calling
+export const chatActionFunctionDeclarations: FunctionDeclaration[] = [
   {
-    name: ChatAction.AddDeck,
-    description: 'Add a new deck with the given name.',
+    name: 'add_deck',
+    description:
+      'Create a new deck with the given name and fill it with the given words.',
     parameters: {
-      type: SchemaType.OBJECT,
+      type: Type.OBJECT,
       properties: {
         deckName: {
-          type: SchemaType.STRING,
+          type: Type.STRING,
           description: 'The name of the new deck.',
         },
         words: {
-          type: SchemaType.ARRAY,
+          type: Type.ARRAY,
           items: {
-            type: SchemaType.STRING,
-            description: 'The words to add to the new deck.',
+            type: Type.STRING,
           },
+          description: 'Array of words to add to the new deck.',
+        },
+        message: {
+          type: Type.STRING,
+          description: 'Response message to show to the user.',
         },
       },
-      required: ['deckName', 'words'],
+      required: ['deckName', 'words', 'message'],
     },
   },
   {
-    name: ChatAction.RemoveDeck,
-    description: 'Remove the given deck by deckid.',
+    name: 'add_card',
+    description: 'Add new cards/words to an existing deck.',
     parameters: {
-      type: SchemaType.OBJECT,
+      type: Type.OBJECT,
       properties: {
         deckId: {
-          type: SchemaType.STRING,
-          description: 'The ID of the deck to remove.',
+          type: Type.STRING,
+          description:
+            'The ID of the target deck. Optional if deckName is provided.',
         },
-      },
-      required: ['deckId'],
-    },
-  },
-  {
-    name: ChatAction.EditDeck,
-    description: 'Edit the given deck by deckid.',
-    parameters: {
-      type: SchemaType.OBJECT,
-      properties: {
-        deckId: {
-          type: SchemaType.STRING,
-          description: 'The ID of the deck to edit.',
+        deckName: {
+          type: Type.STRING,
+          description:
+            'The name of the target deck. Optional if deckId is provided.',
         },
         words: {
-          type: SchemaType.ARRAY,
+          type: Type.ARRAY,
           items: {
-            type: SchemaType.STRING,
-            description:
-              'The words to add to the deck.If it is in the deck, words will be removed.',
+            type: Type.STRING,
           },
+          description: 'Array of words to add to the deck.',
         },
-        newDeckName: {
-          type: SchemaType.STRING,
-          description: 'The new name of the deck.',
+        message: {
+          type: Type.STRING,
+          description: 'Response message to show to the user.',
         },
       },
-      required: ['deckId', 'words'],
+      required: ['words', 'message'],
     },
   },
   {
-    name: ChatAction.ShowOuput,
-    description: 'Show the output to the user.',
+    name: 'remove_deck',
+    description: 'Remove a deck by its ID or name.',
     parameters: {
-      type: SchemaType.OBJECT,
+      type: Type.OBJECT,
       properties: {
+        deckId: {
+          type: Type.STRING,
+          description: 'The ID of the deck to remove.',
+        },
+        deckName: {
+          type: Type.STRING,
+          description:
+            'The name of the deck to remove (alternative to deckId).',
+        },
         message: {
-          type: SchemaType.STRING,
-          description: 'The message to show to the user.',
+          type: Type.STRING,
+          description: 'Response message to show to the user.',
         },
       },
       required: ['message'],
+    },
+  },
+  {
+    name: 'edit_deck',
+    description:
+      'Edit a deck by adding or removing words. Words in the array will be added if not present, or removed if already present.',
+    parameters: {
+      type: Type.OBJECT,
+      properties: {
+        deckId: {
+          type: Type.STRING,
+          description: 'The ID of the deck to edit.',
+        },
+        words: {
+          type: Type.ARRAY,
+          items: {
+            type: Type.STRING,
+          },
+          description: 'Words to add or remove from the deck.',
+        },
+        newDeckName: {
+          type: Type.STRING,
+          description: 'Optional new name for the deck.',
+        },
+        message: {
+          type: Type.STRING,
+          description: 'Response message to show to the user.',
+        },
+      },
+      required: ['deckId', 'words', 'message'],
+    },
+  },
+  {
+    name: 'grammer_correction',
+    description: 'Provide grammar corrections for the user message.',
+    parameters: {
+      type: Type.OBJECT,
+      properties: {
+        grammerFix: {
+          type: Type.ARRAY,
+          items: {
+            type: Type.OBJECT,
+            properties: {
+              offsetWords: {
+                type: Type.NUMBER,
+                description: 'Offset position of the grammar error.',
+              },
+              lengthWords: {
+                type: Type.NUMBER,
+                description: 'Length of the grammar error.',
+              },
+              correctedText: {
+                type: Type.STRING,
+                description: 'The corrected text.',
+              },
+            },
+            required: ['offsetWords', 'lengthWords', 'correctedText'],
+          },
+          description: 'Optional grammar corrections for the user message.',
+        },
+      },
+    },
+  },
+  {
+    name: 'word_list',
+    description: 'Show a list of words to the user.',
+    parameters: {
+      type: Type.OBJECT,
+      properties: {
+        words: {
+          type: Type.ARRAY,
+          items: {
+            type: Type.STRING,
+          },
+          description: 'Array of words to show to the user.',
+        },
+      },
+      required: ['words'],
     },
   },
 ];
