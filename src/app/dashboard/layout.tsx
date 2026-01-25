@@ -69,10 +69,10 @@ export default function DashBoardLayout({
       target: '.more-options',
       content: t('dashboard.joyride.step9Content'),
     },
-    {
-      target: '.tempword',
-      content: t('dashboard.joyride.step10Content'),
-    },
+    // {
+    //   target: '.tempword',
+    //   content: t('dashboard.joyride.step10Content'),
+    // },
     {
       target: '.logout',
       content: t('dashboard.joyride.step11Content'),
@@ -130,12 +130,12 @@ export default function DashBoardLayout({
         {isBiMenuOpen ? (
           // Buttons: bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-700 dark:bg-opacity-40 dark:hover:bg-emerald-600
           <div className='*:bg-emerald-100 dark:*:bg-emerald-700 dark:*:bg-opacity-40 *:p-2 *:m-2 *:rounded-md *:text-center flex flex-col max-md:flex-row'>
-            <Link
+            {/* <Link
               href={'/tempword'}
               className='w-10 break-words max-md:w-auto max-md:h-10 tempword text-black'
             >
               {t('dashboard.navigation.sevenThousandWords')}
-            </Link>
+            </Link> */}
             <button
               onClick={() => redirect('/auth/logout')}
               className='logout'
