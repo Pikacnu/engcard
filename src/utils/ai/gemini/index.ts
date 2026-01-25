@@ -54,7 +54,7 @@ export async function GenerateTextResponse(
   functionCalls?: FunctionCall[];
 }> {
   const response = await Models.generateContent({
-    model: 'gemini-2.5-flash',
+    model: 'gemma-3-27b-it',
     contents: [...history, { role: 'user', parts: [{ text: message }] }],
     config: {
       systemInstruction: `

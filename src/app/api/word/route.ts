@@ -496,7 +496,7 @@ async function getAIResponse(
     console.log('trying by google AI SDK');
     try {
       const response = await Models.generateContent({
-        model: 'gemma-3-27b',
+        model: 'gemma-3-27b-it',
         config: {
           responseMimeType: 'application/json',
           responseSchema: GwordSchemaCreator([

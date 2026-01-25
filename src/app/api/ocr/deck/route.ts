@@ -120,7 +120,7 @@ export async function POST(req: Request) {
       ExtenstionToMimeType.get(imageType) as string,
     );
     let response = await Models.generateContent({
-      model: 'gemma-3-27b',
+      model: 'gemma-3-27b-it',
       config: {
         responseMimeType: 'application/json',
         responseSchema: GTextRecognizeSchema,
@@ -153,7 +153,7 @@ export async function POST(req: Request) {
         part += response.text;
         processedPart.push(jsonFix(part));
         response = await Models.generateContent({
-          model: 'gemma-3-27b',
+          model: 'gemma-3-27b-it',
           config: {
             responseMimeType: 'application/json',
             responseSchema: GTextRecognizeSchema,
