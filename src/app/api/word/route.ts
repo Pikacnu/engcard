@@ -228,7 +228,29 @@ async function newWord(
   if (sourceDataList.length < 1) {
     return null;
   }
-  return await getAIResponse(sourceDataList, sourceLang, targetLang);
+
+  // 過濾例句，只保留包含原始單字的例句
+  const normalizedWord = word.toLowerCase().trim();
+  const filteredData = sourceDataList.map((data) => ({
+    ...data,
+    blocks: data.blocks.map((block) => ({
+      ...block,
+      definitions: block.definitions.map((def) => ({
+        ...def,
+        example: def.example?.filter((exampleGroup) => {
+          // 檢查每個 example group 是否包含原始單字
+          return exampleGroup.some((item) => {
+            const content = item.content.toLowerCase();
+            // 使用單字邊界檢查，確保是完整單字而不是單詞的一部分
+            const wordRegex = new RegExp(`\\b${normalizedWord}\\b`, 'i');
+            return wordRegex.test(content);
+          });
+        }),
+      })),
+    })),
+  }));
+
+  return await getAIResponse(filteredData, sourceLang, targetLang);
 }
 
 async function CheckData(
@@ -411,15 +433,18 @@ async function getAIResponse(
           0,
         )} blocks(part of speech)
 				Please response with all the blocks
-				And combine all the data into one data (from all the data sources)`;
+				And combine all the data into one data (from all the data sources)
+				IMPORTANT: Provide at least 3 varied examples for each definition in both source and target languages`;
     } else {
       processedData = processedData as CardProps;
       prompt = `data : ${JSON.stringify(processedData)}
 				it have ${processedData.blocks.length} blocks(part of speech)
-				Please response with all the blocks`;
+				Please response with all the blocks
+				IMPORTANT: Provide at least 3 varied examples for each definition in both source and target languages`;
     }
   } else {
-    prompt = `word : ${processedData} Please response with all the blocks`;
+    prompt = `word : ${processedData} Please response with all the blocks
+			IMPORTANT: Provide at least 3 varied examples for each definition in both source and target languages`;
   }
 
   try {
