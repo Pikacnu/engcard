@@ -120,7 +120,7 @@ export async function POST(req: Request) {
       ExtenstionToMimeType.get(imageType) as string,
     );
     let response = await Models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: 'gemma-3-27b',
       config: {
         responseMimeType: 'application/json',
         responseSchema: GTextRecognizeSchema,
@@ -153,7 +153,7 @@ export async function POST(req: Request) {
         part += response.text;
         processedPart.push(jsonFix(part));
         response = await Models.generateContent({
-          model: 'gemini-2.0-flash',
+          model: 'gemma-3-27b',
           config: {
             responseMimeType: 'application/json',
             responseSchema: GTextRecognizeSchema,
@@ -341,20 +341,24 @@ export async function POST(req: Request) {
     cachedWords.forEach((wordData) => saveCardToDeck(wordData as CardProps));
 
     withoutCachedWords.forEach((word, index) => {
-      setTimeout(async () => {
-        await GET(
-          new Request(`http://localhost:3000/api/word?word=${word.word}`),
-        );
-        const wordData = await db
-          .collection<WordCollection>('words')
-          .findOne({ word: word.word });
-        if (
-          (wordData?.available !== undefined && wordData.available !== true) ||
-          !wordData
-        )
-          return;
-        saveCardToDeck(wordData as CardProps);
-      }, index * 1.5 * 1_000);
+      setTimeout(
+        async () => {
+          await GET(
+            new Request(`http://localhost:3000/api/word?word=${word.word}`),
+          );
+          const wordData = await db
+            .collection<WordCollection>('words')
+            .findOne({ word: word.word });
+          if (
+            (wordData?.available !== undefined &&
+              wordData.available !== true) ||
+            !wordData
+          )
+            return;
+          saveCardToDeck(wordData as CardProps);
+        },
+        index * 1.5 * 1_000,
+      );
     });
     return NextResponse.json(
       {

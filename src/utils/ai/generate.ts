@@ -11,8 +11,8 @@ export enum ModelLevel {
 }
 
 export const modelMap: Record<ModelLevel, [string, string]> = {
-  [ModelLevel.Simple]: ['gemini-2.5-flash', 'gpt-4.1-nano'],
-  [ModelLevel.Complex]: ['gemini-2.5-flash', 'gpt-4.1-mini'],
+  [ModelLevel.Simple]: ['gemma-3-27b', 'gpt-4.1-nano'],
+  [ModelLevel.Complex]: ['gemma-3-27b', 'gpt-4.1-mini'],
 };
 
 export async function getParseResponse<T>(
