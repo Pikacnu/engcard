@@ -5,120 +5,119 @@ import { and, eq, inArray, not } from 'drizzle-orm';
 import { CardProps } from '@/type';
 
 export async function POST(req: Request) {
-	const { id: deckId } = await req.json();
-	if (!deckId) {
-		return Response.json({ error: 'Deck ID is required' }, { status: 400 });
-	}
-	const session = await auth();
-	if (!session || !session.user?.id) {
-		return Response.json({ error: 'Unauthorized' }, { status: 401 });
-	}
-	const userId = session.user.id;
+  const { id: deckId } = await req.json();
+  if (!deckId) {
+    return Response.json({ error: 'Deck ID is required' }, { status: 400 });
+  }
+  const session = await auth();
+  if (!session || !session.user?.id) {
+    return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  const userId = session.user.id;
 
-	const deck = await db.query.decks.findFirst({
-		where: eq(decks.id, deckId),
-	});
+  const deck = await db.query.decks.findFirst({
+    where: eq(decks.id, deckId),
+  });
 
-	if (!deck) {
-		return Response.json({ error: 'Deck not found' }, { status: 404 });
-	}
-	if (!deck.isPublic) {
-		return Response.json({ error: 'Deck is not public' }, { status: 403 });
-	}
-	if (deck.userId === userId) {
-		return Response.json(
-			{ error: 'You cannot add your own deck' },
-			{ status: 403 },
-		);
-	}
+  if (!deck) {
+    return Response.json({ error: 'Deck not found' }, { status: 404 });
+  }
+  if (!deck.isPublic) {
+    return Response.json({ error: 'Deck is not public' }, { status: 403 });
+  }
+  if (deck.userId === userId) {
+    return Response.json(
+      { error: 'You cannot add your own deck' },
+      { status: 403 },
+    );
+  }
 
-	await db
-		.insert(savedDecks)
-		.values({
-			userId: userId,
-			deckId: deckId,
-		})
-		.onConflictDoNothing();
+  await db
+    .insert(savedDecks)
+    .values({
+      userId: userId,
+      deckId: deckId,
+    })
+    .onConflictDoNothing();
 
-	return Response.json(
-		{
-			message: 'Deck added to your collection',
-		},
-		{ status: 200 },
-	);
+  return Response.json(
+    {
+      message: 'Deck added to your collection',
+    },
+    { status: 200 },
+  );
 }
 
 export async function GET() {
-	// The original implementation had logic to filter only saved decks regardless of type param
-	const session = await auth();
-	if (!session || !session.user?.id) {
-		return Response.json({ error: 'Unauthorized' }, { status: 401 });
-	}
-	const userId = session.user.id;
+  // The original implementation had logic to filter only saved decks regardless of type param
+  const session = await auth();
+  if (!session || !session.user?.id) {
+    return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  const userId = session.user.id;
 
-	const userSavedDecks = await db.query.savedDecks.findMany({
-		where: eq(savedDecks.userId, userId),
-	});
+  const userSavedDecks = await db.query.savedDecks.findMany({
+    where: eq(savedDecks.userId, userId),
+  });
 
-	const savedDeckIds = userSavedDecks.map((d) => d.deckId);
+  const savedDeckIds = userSavedDecks.map((d) => d.deckId);
 
-	if (savedDeckIds.length === 0) {
-		return Response.json({ decks: [] }, { status: 200 });
-	}
+  if (savedDeckIds.length === 0) {
+    return Response.json({ decks: [] }, { status: 200 });
+  }
 
-	const resultDecks = await db
-		.select()
-		.from(decks)
-		.where(
-			and(
-				inArray(decks.id, savedDeckIds),
-				eq(decks.isPublic, true),
-				not(eq(decks.userId, userId)),
-			),
-		);
+  const resultDecks = await db
+    .select()
+    .from(decks)
+    .where(
+      and(
+        inArray(decks.id, savedDeckIds),
+        eq(decks.isPublic, true),
+        not(eq(decks.userId, userId)),
+      ),
+    );
 
-	const processedDecks = resultDecks.map((deck) => {
-		const cards = deck.cards as unknown as CardProps[];
-		const langs =
-			cards?.[0]?.blocks?.[0]?.definitions?.[0]?.definition?.map(
-				// @ts-expect-error Drizzle inference might not catch deep nested types perfectly
-				(d) => d.lang,
-			) || [];
+  const processedDecks = resultDecks.map((deck) => {
+    const cards = deck.cards as unknown as CardProps[];
+    const langs =
+      cards?.[0]?.blocks?.[0]?.definitions?.[0]?.definition?.map(
+        // @ts-expect-error Drizzle inference might not catch deep nested types perfectly
+        (d) => d.lang,
+      ) || [];
 
-		return {
-			_id: deck.id,
-			name: deck.name,
-			isPublic: deck.isPublic,
-			cardInfo: {
-				length: cards?.length || 0,
-				langs: langs,
-			},
-		};
-	});
+    return {
+      _id: deck.id,
+      name: deck.name,
+      isPublic: deck.isPublic,
+      cardInfo: {
+        length: cards?.length || 0,
+        langs: langs,
+      },
+    };
+  });
 
-	return Response.json({ decks: processedDecks }, { status: 200 });
+  return Response.json({ decks: processedDecks }, { status: 200 });
 }
 
 export async function DELETE(req: Request) {
-	const { deckId } = await req.json();
-	if (!deckId) {
-		return Response.json({ error: 'Deck ID is required' }, { status: 400 });
-	}
-	const session = await auth();
-	if (!session || !session.user?.id) {
-		return Response.json({ error: 'Unauthorized' }, { status: 401 });
-	}
-	const userId = session.user.id;
+  const { deckId } = await req.json();
+  if (!deckId) {
+    return Response.json({ error: 'Deck ID is required' }, { status: 400 });
+  }
+  const session = await auth();
+  if (!session || !session.user?.id) {
+    return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  const userId = session.user.id;
 
-	await db
-		.delete(savedDecks)
-		.where(and(eq(savedDecks.userId, userId), eq(savedDecks.deckId, deckId)));
+  await db
+    .delete(savedDecks)
+    .where(and(eq(savedDecks.userId, userId), eq(savedDecks.deckId, deckId)));
 
-	return Response.json(
-		{
-			message: 'Deck removed from your collection',
-		},
-		{ status: 200 },
-	);
+  return Response.json(
+    {
+      message: 'Deck removed from your collection',
+    },
+    { status: 200 },
+  );
 }
-

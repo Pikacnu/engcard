@@ -19,10 +19,10 @@ export const Models = GenerativeAI.models;
 
 async function PrepareTheDataForGenerate(userId: string): Promise<string> {
   const userDecks = await db.query.decks.findMany({
-      where: eq(decks.userId, userId),
-      with: {
-          cards: true
-      }
+    where: eq(decks.userId, userId),
+    with: {
+      cards: true,
+    },
   });
 
   const userDecksInfo = userDecks.map((deck) => {

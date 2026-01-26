@@ -31,8 +31,10 @@ export async function getSettings(): Promise<UserSettings & { _id: string }> {
   return {
     ...settingsData,
     _id: settingsData.id,
-    deckActionType: (settingsData.deckActionType ?? DeckType.ChangeByButton) as DeckType,
-    ocrProcessType: (settingsData.ocrProcessType ?? OCRProcessType.OnlyFromImage) as OCRProcessType,
+    deckActionType: (settingsData.deckActionType ??
+      DeckType.ChangeByButton) as DeckType,
+    ocrProcessType: (settingsData.ocrProcessType ??
+      OCRProcessType.OnlyFromImage) as OCRProcessType,
     targetLang: (settingsData.targetLang ?? LangEnum.TW) as LangEnum,
     usingLang: (settingsData.usingLang ?? [LangEnum.TW]) as LangEnum[],
   };

@@ -5,11 +5,7 @@ import { db } from '@/db';
 import { chatSessions, decks, cards, wordCache } from '@/db/schema';
 import { eq, and, inArray } from 'drizzle-orm';
 import { FunctionCall } from '@google/genai';
-import {
-  ChatSession,
-  ChatAction,
-  CardProps,
-} from '@/type';
+import { ChatSession, ChatAction, CardProps } from '@/type';
 import { auth, ChatModelSchema, GenerateTextResponse } from '@/utils';
 import { Session } from 'next-auth';
 
@@ -22,13 +18,13 @@ export async function getChatList() {
   }
 
   const sessions = await db.query.chatSessions.findMany({
-      where: eq(chatSessions.userId, session.user.id),
-      orderBy: (chatSessions, { desc }) => [desc(chatSessions.updatedAt)]
+    where: eq(chatSessions.userId, session.user.id),
+    orderBy: (chatSessions, { desc }) => [desc(chatSessions.updatedAt)],
   });
 
   return sessions.map((chat) => ({
-      chatName: chat.chatName || 'New Chat',
-      _id: chat.id,
+    chatName: chat.chatName || 'New Chat',
+    _id: chat.id,
   }));
 }
 
@@ -136,11 +132,14 @@ export async function createChatSession() {
     };
   }
 
-  const [newChat] = await db.insert(chatSessions).values({
-    userId: session.user.id,
-    history: [],
-    chatName: 'New Chat',
-  }).returning();
+  const [newChat] = await db
+    .insert(chatSessions)
+    .values({
+      userId: session.user.id,
+      history: [],
+      chatName: 'New Chat',
+    })
+    .returning();
 
   return {
     id: newChat.id,
@@ -154,9 +153,9 @@ export async function getChatHistory(chatId: string) {
       error: 'Not authenticated',
     };
   }
-  
+
   const chatSession = await db.query.chatSessions.findFirst({
-      where: eq(chatSessions.id, chatId),
+    where: eq(chatSessions.id, chatId),
   });
 
   if (!chatSession) {
@@ -164,11 +163,14 @@ export async function getChatHistory(chatId: string) {
       error: 'Chat not found',
     };
   }
-  
+
   const history = (chatSession.history || []) as ChatSession['history'];
 
   return history.map((historyItem) => {
-    if (historyItem.action && historyItem.action.action === ChatAction.ShowOuput) {
+    if (
+      historyItem.action &&
+      historyItem.action.action === ChatAction.ShowOuput
+    ) {
       return {
         ...historyItem.content,
         action: {
@@ -190,11 +192,17 @@ export async function chagneChatName(deckId: string, name: string) {
     };
   }
 
-  const [updated] = await db.update(chatSessions)
+  const [updated] = await db
+    .update(chatSessions)
     .set({ chatName: name })
-    .where(and(eq(chatSessions.id, deckId), eq(chatSessions.userId, session.user.id)))
+    .where(
+      and(
+        eq(chatSessions.id, deckId),
+        eq(chatSessions.userId, session.user.id),
+      ),
+    )
     .returning();
-    
+
   if (!updated) {
     return {
       error: 'Chat not found',
@@ -215,7 +223,10 @@ export async function sendMessage(chatId: string, message: string) {
 
   // 1. Fetch current chat
   const chat = await db.query.chatSessions.findFirst({
-      where: and(eq(chatSessions.id, chatId), eq(chatSessions.userId, session.user.id))
+    where: and(
+      eq(chatSessions.id, chatId),
+      eq(chatSessions.userId, session.user.id),
+    ),
   });
 
   if (!chat) {
@@ -231,28 +242,32 @@ export async function sendMessage(chatId: string, message: string) {
   ).toString(16);
 
   const newUserMessage: ChatSession['history'][number] = {
-      content: {
-        id: messageId,
-        role: 'user',
-        parts: [{ text: message }],
-      },
+    content: {
+      id: messageId,
+      role: 'user',
+      parts: [{ text: message }],
+    },
   };
 
   // 2. Append User Message
   // TODO: Concurrency issue if multiple messages sent at once, but acceptable for this scope
-  const updatedHistoryUser: ChatSession['history'] = [...currentHistory, newUserMessage];
-  
-  await db.update(chatSessions)
-      .set({ history: updatedHistoryUser })
-      .where(eq(chatSessions.id, chatId));
+  const updatedHistoryUser: ChatSession['history'] = [
+    ...currentHistory,
+    newUserMessage,
+  ];
+
+  await db
+    .update(chatSessions)
+    .set({ history: updatedHistoryUser })
+    .where(eq(chatSessions.id, chatId));
 
   // 3. Generate Response
   // Need to map history correctly for AI
   const historyForAI = updatedHistoryUser.map((h) => {
-      return {
-        role: h.content.role,
-        parts: h.content.parts,
-      };
+    return {
+      role: h.content.role,
+      parts: h.content.parts,
+    };
   });
 
   const response = await GenerateTextResponse(
@@ -263,7 +278,9 @@ export async function sendMessage(chatId: string, message: string) {
 
   console.log('response', response);
 
-  const aiMessageId = Number(updatedHistoryUser.length.toString() + Date.now()).toString(16);
+  const aiMessageId = Number(
+    updatedHistoryUser.length.toString() + Date.now(),
+  ).toString(16);
 
   // 處理 function calls
   const functionResults: Record<string, unknown> = {};
@@ -289,7 +306,7 @@ export async function sendMessage(chatId: string, message: string) {
           Array.isArray(result.grammerFix)
         ) {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          grammerFix = result.grammerFix as any; 
+          grammerFix = result.grammerFix as any;
         }
         if (
           result &&
@@ -315,21 +332,22 @@ export async function sendMessage(chatId: string, message: string) {
   }
 
   const newAiMessage: ChatSession['history'][number] = {
-      content: {
-        id: aiMessageId,
-        ...response.content,
-      },
-      functionCall: response.functionCalls?.[0], // Storing only first function call? Matching logic
-      grammerFix: grammerFix,
+    content: {
+      id: aiMessageId,
+      ...response.content,
+    },
+    functionCall: response.functionCalls?.[0], // Storing only first function call? Matching logic
+    grammerFix: grammerFix,
   };
 
   const finalHistory = [...updatedHistoryUser, newAiMessage];
 
   // 4. Update Chat with AI response
-  const [updatedChat] = await db.update(chatSessions)
-    .set({ 
-        history: finalHistory,
-        chatName: changeChatName || chat.chatName,
+  const [updatedChat] = await db
+    .update(chatSessions)
+    .set({
+      history: finalHistory,
+      chatName: changeChatName || chat.chatName,
     })
     .where(eq(chatSessions.id, chatId))
     .returning();
@@ -346,7 +364,7 @@ export async function sendMessage(chatId: string, message: string) {
       content: {
         id: aiMessageId,
         role: response.content.role,
-        parts: response.content.parts, 
+        parts: response.content.parts,
       },
       grammerFix: grammerFix,
       functionResults,
@@ -368,13 +386,16 @@ const chatActionFunctions: Record<
     const session = userData || (await auth());
     if (!session || !session.user?.id) return { error: 'Not authenticated' };
     if (!data.targetDeckName) return { error: 'No deck name provided' };
-    
-    const [newDeck] = await db.insert(decks).values({
+
+    const [newDeck] = await db
+      .insert(decks)
+      .values({
         userId: session.user.id,
         name: data.targetDeckName || '',
         isPublic: false,
-    }).returning();
-    
+      })
+      .returning();
+
     await addWords(data.words, newDeck.id);
     return;
   },
@@ -382,11 +403,14 @@ const chatActionFunctions: Record<
     const session = await auth();
     if (!session || !session.user?.id) return { error: 'Not authenticated' };
     let deckId = data.deckId;
-    
+
     if (!deckId || deckId.trim() === '') {
       if (data.targetDeckName) {
         const deck = await db.query.decks.findFirst({
-            where: and(eq(decks.name, data.targetDeckName), eq(decks.userId, session.user.id))
+          where: and(
+            eq(decks.name, data.targetDeckName),
+            eq(decks.userId, session.user.id),
+          ),
         });
         console.log('deck', deck);
         if (!deck) return { error: 'Deck not found' };
@@ -395,10 +419,11 @@ const chatActionFunctions: Record<
         return { error: 'No deck id provided' };
       }
     }
-    
-    const deleted = await db.delete(decks)
-        .where(and(eq(decks.id, deckId), eq(decks.userId, session.user.id)))
-        .returning();
+
+    const deleted = await db
+      .delete(decks)
+      .where(and(eq(decks.id, deckId), eq(decks.userId, session.user.id)))
+      .returning();
 
     if (!deleted.length) return { error: 'Deck not found' };
     return;
@@ -409,10 +434,10 @@ const chatActionFunctions: Record<
     if (!data.deckId) return { error: 'No deck id provided' };
 
     const currentDeck = await db.query.decks.findFirst({
-        where: eq(decks.id, data.deckId),
-        with: { cards: true }
+      where: eq(decks.id, data.deckId),
+      with: { cards: true },
     });
-    
+
     if (!currentDeck) return { error: 'Deck not found' };
 
     const originalDeckWords = currentDeck.cards.map((card) => card.word);
@@ -426,13 +451,13 @@ const chatActionFunctions: Record<
 
     // Remove cards
     if (removedWords.length > 0) {
-        await db.delete(cards)
-            .where(and(
-                eq(cards.deckId, data.deckId),
-                inArray(cards.word, removedWords)
-            ));
+      await db
+        .delete(cards)
+        .where(
+          and(eq(cards.deckId, data.deckId), inArray(cards.word, removedWords)),
+        );
     }
-    
+
     // Add new words
     await addWords(newWords, data.deckId);
 
@@ -444,7 +469,10 @@ const chatActionFunctions: Record<
     if (!deckId || deckId.trim() === '') {
       if (data.targetDeckName) {
         const deck = await db.query.decks.findFirst({
-            where: and(eq(decks.name, data.targetDeckName), eq(decks.userId, session.user.id))
+          where: and(
+            eq(decks.name, data.targetDeckName),
+            eq(decks.userId, session.user.id),
+          ),
         });
         if (!deck) return { error: 'Deck not found' };
         deckId = deck.id;
@@ -453,12 +481,11 @@ const chatActionFunctions: Record<
       }
     }
     if (!data.words) return { error: 'No word provided' };
-    
+
     // Using addWords helper to keep logic consistent
     await addWords(data.words, deckId);
   },
 };
-
 
 async function addWords(words: string[], deckId: string) {
   words.map((word, index) => {
@@ -466,36 +493,36 @@ async function addWords(words: string[], deckId: string) {
       async () => {
         // Try getting from cache first
         const cache = await db.query.wordCache.findFirst({
-            where: eq(wordCache.word, word)
+          where: eq(wordCache.word, word),
         });
-        
+
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let wordData = cache ? (cache.data as any) : null;
 
         if (!wordData) {
-            // Need to fetch from API
-             const res = await GET(
-              new Request(`http://localhost:3000/api/word?word=${word}`),
-            );
-            if (!res.ok) {
-              console.log('Error fetching word data');
-              return;
-            }
-            const temp = (await res.json()) as CardProps | null;
-            if (!temp) {
-              console.log('Error fetching word data');
-              return;
-            }
-            wordData = temp;
+          // Need to fetch from API
+          const res = await GET(
+            new Request(`http://localhost:3000/api/word?word=${word}`),
+          );
+          if (!res.ok) {
+            console.log('Error fetching word data');
+            return;
+          }
+          const temp = (await res.json()) as CardProps | null;
+          if (!temp) {
+            console.log('Error fetching word data');
+            return;
+          }
+          wordData = temp;
         }
 
         if (wordData) {
-            await db.insert(cards).values({
-               deckId,
-               word: wordData.word || word,
-               phonetic: wordData.phonetic || '',
-               blocks: wordData.blocks || [],
-            });
+          await db.insert(cards).values({
+            deckId,
+            word: wordData.word || word,
+            phonetic: wordData.phonetic || '',
+            blocks: wordData.blocks || [],
+          });
         }
       },
       index * 2.5 * 1_000,
@@ -511,11 +538,14 @@ export async function deleteChatSession(chatId: string) {
     };
   }
 
-  const deleted = await db.delete(chatSessions)
-    .where(and(
+  const deleted = await db
+    .delete(chatSessions)
+    .where(
+      and(
         eq(chatSessions.id, chatId),
-        eq(chatSessions.userId, session.user.id)
-    ))
+        eq(chatSessions.userId, session.user.id),
+      ),
+    )
     .returning();
 
   if (!deleted.length) {

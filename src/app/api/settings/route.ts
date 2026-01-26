@@ -1,12 +1,7 @@
 import { db } from '@/db';
 import { settings as settingsTable } from '@/db/schema';
 import { eq } from 'drizzle-orm';
-import {
-  DeckType,
-  LangEnum,
-  OCRProcessType,
-  UserSettings,
-} from '@/type';
+import { DeckType, LangEnum, OCRProcessType, UserSettings } from '@/type';
 import { auth } from '@/utils';
 import { NextResponse } from 'next/server';
 
@@ -34,13 +29,13 @@ export async function GET(req: Request) {
       targetLang: LangEnum.EN,
       usingLang: [LangEnum.TW],
     };
-    
+
     // Attempt to insert
     const inserted = await db
       .insert(settingsTable)
       .values(newSettings)
       .returning();
-      
+
     if (!inserted || inserted.length === 0) {
       return NextResponse.json(
         { error: 'Failed to create settings' },
@@ -54,20 +49,24 @@ export async function GET(req: Request) {
   const responseData = {
     ...result,
     _id: result.id,
-    deckActionType: (result.deckActionType ?? DeckType.ChangeByButton) as DeckType,
-    ocrProcessType: (result.ocrProcessType ?? OCRProcessType.OnlyFromImage) as OCRProcessType,
+    deckActionType: (result.deckActionType ??
+      DeckType.ChangeByButton) as DeckType,
+    ocrProcessType: (result.ocrProcessType ??
+      OCRProcessType.OnlyFromImage) as OCRProcessType,
     targetLang: (result.targetLang ?? LangEnum.TW) as LangEnum,
     usingLang: (result.usingLang ?? [LangEnum.TW]) as LangEnum[],
   };
 
   if (!name) {
-     return NextResponse.json(responseData);
+    return NextResponse.json(responseData);
   }
-  
+
   if (name in responseData) {
-      return NextResponse.json({ [name]: responseData[name as keyof typeof responseData] });
+    return NextResponse.json({
+      [name]: responseData[name as keyof typeof responseData],
+    });
   }
-  
+
   return NextResponse.json({ [name]: undefined });
 }
 

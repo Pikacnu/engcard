@@ -249,15 +249,15 @@ export async function POST(req: Request) {
 
     if (processType === OCRProcessType.OnlyFromImage) {
       const words = transfromToCardPropsFromRecognizedResult(result);
-      
+
       if (words.length > 0) {
         await db.insert(cards).values(
-            words.map((word) => ({
-                deckId: deckId,
-                word: word.word,
-                phonetic: word.phonetic || null,
-                blocks: word.blocks,
-            }))
+          words.map((word) => ({
+            deckId: deckId,
+            word: word.word,
+            phonetic: word.phonetic || null,
+            blocks: word.blocks,
+          })),
         );
       }
 
@@ -295,10 +295,7 @@ export async function POST(req: Request) {
           blocks: wordData.blocks || [],
         };
       }
-      if (
-        processType ===
-        OCRProcessType.FromSourceButOnlyDefinitionFromImage
-      ) {
+      if (processType === OCRProcessType.FromSourceButOnlyDefinitionFromImage) {
         const porcessedWordData =
           getDefiniationFromRecognizedResultAndCardProps(
             {
@@ -310,33 +307,33 @@ export async function POST(req: Request) {
             result,
             targetLang,
           );
-        
+
         if (
-            porcessedWordData &&
-            Array.isArray(porcessedWordData.blocks) &&
-            porcessedWordData.blocks.length > 0
+          porcessedWordData &&
+          Array.isArray(porcessedWordData.blocks) &&
+          porcessedWordData.blocks.length > 0
         ) {
-            cardToSave = {
-                word: porcessedWordData.word,
-                phonetic: porcessedWordData.phonetic,
-                blocks: porcessedWordData.blocks,
-            };
+          cardToSave = {
+            word: porcessedWordData.word,
+            phonetic: porcessedWordData.phonetic,
+            blocks: porcessedWordData.blocks,
+          };
         }
       }
 
-       if (cardToSave) {
-          await db.insert(cards).values({
-               deckId: deckId,
-               word: cardToSave.word,
-               phonetic: cardToSave.phonetic || null,
-               blocks: cardToSave.blocks,
-          });
-       }
+      if (cardToSave) {
+        await db.insert(cards).values({
+          deckId: deckId,
+          word: cardToSave.word,
+          phonetic: cardToSave.phonetic || null,
+          blocks: cardToSave.blocks,
+        });
+      }
     };
 
     // Sequential for cache matches
     for (const wordData of cachedWords) {
-        await saveCardToDeck(wordData);
+      await saveCardToDeck(wordData);
     }
 
     withoutCachedWords.forEach((word, index) => {
@@ -347,17 +344,13 @@ export async function POST(req: Request) {
           );
           const wordRecord = await db.query.wordCache.findFirst({
             where: and(
-                eq(wordCache.word, word.word),
-                eq(wordCache.targetLang, targetLang),
-            )
+              eq(wordCache.word, word.word),
+              eq(wordCache.targetLang, targetLang),
+            ),
           });
 
-          if (
-            wordRecord &&
-            wordRecord.available !== false &&
-            wordRecord.data
-          ) {
-              saveCardToDeck(wordRecord.data as CardProps);
+          if (wordRecord && wordRecord.available !== false && wordRecord.data) {
+            saveCardToDeck(wordRecord.data as CardProps);
           }
         },
         index * 1.5 * 1_000,
