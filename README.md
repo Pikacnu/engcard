@@ -1,5 +1,7 @@
 # Cardlisher (English Card)
 
+> **WARNING**: The current version is unstable/broken. For a fully functional version, please use commit `1654834d066dbb9ea9930c6b64152b07ecaefeba`.
+
 Cardlisher is a modern English vocabulary learning application built with Next.js 15, designed to help users learn English effectively through interactive flashcards, AI-powered word processing, and OCR image recognition.
 
 > **Note**: This project is primarily designed for learning English with Traditional Chinese as the base language, providing comprehensive bilingual support.
