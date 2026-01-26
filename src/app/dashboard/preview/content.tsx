@@ -5,7 +5,7 @@ import {
   CardType,
   DeckCardsResponse,
   DeckType,
-  UserSettingsCollection,
+  UserSettings,
   type DeckResponse,
 } from '@/type';
 import Deck from '@/components/deck';
@@ -112,8 +112,7 @@ export default function Content() {
   const searchParams = useSearchParams();
   const deckid = searchParams.get('id');
   const [selectedDeck, setSelectedDeck] = useState(deckid || '');
-  const [userSettings, setUserSettings] =
-    useState<UserSettingsCollection | null>(null);
+  const [userSettings, setUserSettings] = useState<UserSettings | null>(null);
 
   const fetchCards = useCallback(
     async (

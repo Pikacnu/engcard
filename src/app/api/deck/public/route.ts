@@ -1,7 +1,8 @@
-import db from '@/lib/db';
-import { DeckCollection, PublicDeckToUser } from '@/type';
+import { db } from '@/db';
+import { decks, savedDecks } from '@/db/schema';
 import { auth } from '@/utils';
-import { ObjectId } from 'mongodb';
+import { and, eq, inArray, not } from 'drizzle-orm';
+import { CardProps } from '@/type';
 
 export async function POST(req: Request) {
 	const { id: deckId } = await req.json();
@@ -9,14 +10,15 @@ export async function POST(req: Request) {
 		return Response.json({ error: 'Deck ID is required' }, { status: 400 });
 	}
 	const session = await auth();
-	if (!session) {
+	if (!session || !session.user?.id) {
 		return Response.json({ error: 'Unauthorized' }, { status: 401 });
 	}
-	const userId = session.user?.id;
+	const userId = session.user.id;
 
-	const deck = await db
-		.collection<DeckCollection>('deck')
-		.findOne({ _id: new ObjectId(deckId) });
+	const deck = await db.query.decks.findFirst({
+		where: eq(decks.id, deckId),
+	});
+
 	if (!deck) {
 		return Response.json({ error: 'Deck not found' }, { status: 404 });
 	}
@@ -29,17 +31,15 @@ export async function POST(req: Request) {
 			{ status: 403 },
 		);
 	}
-	await db.collection<PublicDeckToUser>('publicDeckToUser').updateOne(
-		{
+
+	await db
+		.insert(savedDecks)
+		.values({
 			userId: userId,
-		},
-		{
-			$push: {
-				deckId: deck._id.toString(),
-			},
-		},
-		{ upsert: true },
-	);
+			deckId: deckId,
+		})
+		.onConflictDoNothing();
+
 	return Response.json(
 		{
 			message: 'Deck added to your collection',
@@ -48,65 +48,54 @@ export async function POST(req: Request) {
 	);
 }
 
-export async function GET(req: Request) {
-	const url = new URL(req.url);
-	const type = url.searchParams.get('type') || 'default';
+export async function GET() {
+	// The original implementation had logic to filter only saved decks regardless of type param
 	const session = await auth();
-	if (!session) {
+	if (!session || !session.user?.id) {
 		return Response.json({ error: 'Unauthorized' }, { status: 401 });
 	}
-	const userId = session.user?.id;
-	const publicDecks = await db
-		.collection<DeckCollection>('deck')
-		.find({ isPublic: true })
-		.toArray();
-	const userDecks = await db
-		.collection<PublicDeckToUser>('publicDeckToUser')
-		.findOne({ userId: userId });
-	if (!userDecks) {
-		return Response.json({ decks: [] }, { status: 200 });
-	}
-	if (userDecks.deckId.length === 0) {
-		return Response.json({ decks: [] }, { status: 200 });
-	}
-	const decks = publicDecks.filter((deck) => {
-		return (
-			userDecks.deckId.includes(deck._id.toString()) && deck.userId !== userId
-		);
+	const userId = session.user.id;
+
+	const userSavedDecks = await db.query.savedDecks.findMany({
+		where: eq(savedDecks.userId, userId),
 	});
 
-	if (type === 'full') {
-		const processedDecks = decks.map((deck) => {
-			return {
-				_id: deck._id.toString(),
-				name: deck.name,
-				isPublic: deck.isPublic,
-				cardInfo: {
-					length: deck.cards.length,
-					langs:
-						deck.cards[0].blocks[0].definitions[0].definition.map(
-							(d) => d.lang,
-						) || [],
-				},
-			};
-		});
-		return Response.json({ decks: processedDecks }, { status: 200 });
+	const savedDeckIds = userSavedDecks.map((d) => d.deckId);
+
+	if (savedDeckIds.length === 0) {
+		return Response.json({ decks: [] }, { status: 200 });
 	}
 
-	const processedDecks = decks.map((deck) => {
+	const resultDecks = await db
+		.select()
+		.from(decks)
+		.where(
+			and(
+				inArray(decks.id, savedDeckIds),
+				eq(decks.isPublic, true),
+				not(eq(decks.userId, userId)),
+			),
+		);
+
+	const processedDecks = resultDecks.map((deck) => {
+		const cards = deck.cards as unknown as CardProps[];
+		const langs =
+			cards?.[0]?.blocks?.[0]?.definitions?.[0]?.definition?.map(
+				// @ts-expect-error Drizzle inference might not catch deep nested types perfectly
+				(d) => d.lang,
+			) || [];
+
 		return {
-			_id: deck._id.toString(),
+			_id: deck.id,
 			name: deck.name,
 			isPublic: deck.isPublic,
 			cardInfo: {
-				length: deck.cards.length,
-				langs:
-					deck.cards[0].blocks[0].definitions[0].definition.map(
-						(d) => d.lang,
-					) || [],
+				length: cards?.length || 0,
+				langs: langs,
 			},
 		};
 	});
+
 	return Response.json({ decks: processedDecks }, { status: 200 });
 }
 
@@ -116,20 +105,15 @@ export async function DELETE(req: Request) {
 		return Response.json({ error: 'Deck ID is required' }, { status: 400 });
 	}
 	const session = await auth();
-	if (!session) {
+	if (!session || !session.user?.id) {
 		return Response.json({ error: 'Unauthorized' }, { status: 401 });
 	}
-	const userId = session.user?.id;
-	await db.collection<PublicDeckToUser>('publicDeckToUser').updateOne(
-		{
-			userId: userId,
-		},
-		{
-			$pop: {
-				deckId: deckId,
-			},
-		},
-	);
+	const userId = session.user.id;
+
+	await db
+		.delete(savedDecks)
+		.where(and(eq(savedDecks.userId, userId), eq(savedDecks.deckId, deckId)));
+
 	return Response.json(
 		{
 			message: 'Deck removed from your collection',
@@ -137,3 +121,4 @@ export async function DELETE(req: Request) {
 		{ status: 200 },
 	);
 }
+

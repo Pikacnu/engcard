@@ -4,8 +4,9 @@ import {
   GoogleGenAI,
   FunctionCallingConfigMode,
 } from '@google/genai';
-import { DeckCollection } from '@/type';
-import db from '@/lib/db';
+import { db } from '@/db';
+import { decks } from '@/db/schema';
+import { eq } from 'drizzle-orm';
 import { chatModelInstruction, chatActionFunctionDeclarations } from '..';
 
 const googleAIKey = process.env.GEMINI_API_KEY || '';
@@ -17,16 +18,16 @@ export const GenerativeAI = new GoogleGenAI({
 export const Models = GenerativeAI.models;
 
 async function PrepareTheDataForGenerate(userId: string): Promise<string> {
-  const userDecks = await db
-    .collection<DeckCollection>('deck')
-    .find({
-      userId,
-    })
-    .toArray();
+  const userDecks = await db.query.decks.findMany({
+      where: eq(decks.userId, userId),
+      with: {
+          cards: true
+      }
+  });
 
   const userDecksInfo = userDecks.map((deck) => {
     return JSON.stringify({
-      deckId: deck._id.toString(),
+      deckId: deck.id,
       deckName: deck.name,
       cards: deck.cards.map((card) => card.word),
     });

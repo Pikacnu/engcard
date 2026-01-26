@@ -13,16 +13,14 @@ import { GET } from '@/app/api/word/route';
 import {
   allowedImageExtension,
   CardProps,
-  Deck,
   ExtenstionTable,
   ExtenstionToMimeType,
   LangEnum,
   OCRProcessType,
-  UserSettingsCollection,
-  WordCollection,
 } from '@/type';
-import db from '@/lib/db';
-import { ObjectId } from 'mongodb';
+import { db } from '@/db';
+import { decks, settings, wordCache, cards } from '@/db/schema';
+import { eq, and, inArray } from 'drizzle-orm';
 import {
   getDefiniationFromRecognizedResultAndCardProps,
   transfromToCardPropsFromRecognizedResult,
@@ -31,29 +29,26 @@ import { FinishReason } from '@google/generative-ai';
 
 export async function POST(req: Request) {
   const session = await auth();
-  if (!session) {
+  if (!session || !session.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
+  const userId = session.user.id;
 
   const url = new URL(req.url);
   const params = url.searchParams;
 
-  const deckId = params.get('deckId') as string;
+  const deckId = params.get('deckId');
 
   if (!deckId) {
     return NextResponse.json({ error: 'DeckId is required' }, { status: 400 });
   }
 
-  const deck = await db
-    .collection<Deck>('deck')
-    .findOne({ _id: new ObjectId(deckId), userId: session.user?.id });
+  const deck = await db.query.decks.findFirst({
+    where: and(eq(decks.id, deckId), eq(decks.userId, userId)),
+  });
 
   if (!deck) {
     return NextResponse.json({ error: 'Deck not found' }, { status: 404 });
-  }
-
-  if (deck.userId !== session.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   let imageData;
@@ -66,13 +61,16 @@ export async function POST(req: Request) {
         { status: 400 },
       );
     }
-    const imageData = Base64ToFile(base64, filename, mimeType);
+    imageData = Base64ToFile(base64, filename, mimeType);
     if (!imageData) {
       return NextResponse.json({ error: 'Image is required' }, { status: 400 });
     }
   } else {
-    imageData = (await req.blob()) as Blob;
-    console.log(imageData);
+    try {
+      imageData = (await req.blob()) as Blob;
+    } catch {
+      // ignore
+    }
     if (!imageData) {
       return NextResponse.json({ error: 'Image is required' }, { status: 400 });
     }
@@ -99,18 +97,17 @@ export async function POST(req: Request) {
     );
   }
 
-  const settings = await db
-    .collection<UserSettingsCollection>('settings')
-    .findOne({
-      userId: session.user?.id,
-    });
-  let processType = settings?.ocrProcessType;
+  const userSettings = await db.query.settings.findFirst({
+    where: eq(settings.userId, userId),
+  });
+
+  let processType = userSettings?.ocrProcessType;
   if (processType === undefined || processType === null) {
     processType = OCRProcessType.FromSource;
   }
 
-  const sourceLang = settings?.usingLang || [LangEnum.EN];
-  const targetLang = settings?.targetLang || LangEnum.EN;
+  const sourceLang = (userSettings?.usingLang as LangEnum[]) || [LangEnum.EN];
+  const targetLang = (userSettings?.targetLang as LangEnum) || LangEnum.TW;
 
   console.log('Process type:', processType);
 
@@ -237,10 +234,12 @@ export async function POST(req: Request) {
       }
     }
 
-    const deckData = await db
-      .collection<Deck>('deck')
-      .findOne({ _id: new ObjectId(deckId), userId: session.user?.id });
-    const deckCards = deckData?.cards || [];
+    // Refresh deck data to be sure
+    const currentDeck = await db.query.decks.findFirst({
+      where: and(eq(decks.id, deckId), eq(decks.userId, userId)),
+      with: { cards: true },
+    });
+    const deckCards = (currentDeck?.cards as unknown as CardProps[]) || [];
 
     result = Object.assign(result, {
       words: result.words.filter(
@@ -250,21 +249,18 @@ export async function POST(req: Request) {
 
     if (processType === OCRProcessType.OnlyFromImage) {
       const words = transfromToCardPropsFromRecognizedResult(result);
-      await db.collection<Deck>('deck').findOneAndUpdate(
-        { _id: new ObjectId(deckId), userId: session.user?.id },
-        {
-          $push: {
-            cards: {
-              $each: words.map((word) => ({
+      
+      if (words.length > 0) {
+        await db.insert(cards).values(
+            words.map((word) => ({
+                deckId: deckId,
                 word: word.word,
-                phonetic: word.phonetic,
+                phonetic: word.phonetic || null,
                 blocks: word.blocks,
-              })),
-            },
-          },
-        },
-        { upsert: true },
-      );
+            }))
+        );
+      }
+
       return NextResponse.json(
         {
           message: 'Image uploaded successfully',
@@ -273,37 +269,34 @@ export async function POST(req: Request) {
       );
     }
 
-    const cachedWords = await db
-      .collection<WordCollection>('words')
-      .find({
-        word: { $in: result.words.map((word) => word.word) },
-        sourceLang,
-        targetLang,
-      })
-      .toArray();
+    const cachedWordsRecords = await db.query.wordCache.findMany({
+      where: and(
+        inArray(
+          wordCache.word,
+          result.words.map((word) => word.word),
+        ),
+        eq(wordCache.targetLang, targetLang),
+      ),
+    });
+
+    const cachedWords = cachedWordsRecords.map((r) => r.data as CardProps);
 
     const withoutCachedWords = result.words.filter((word) => {
       return !cachedWords.find((cachedWord) => cachedWord.word === word.word);
     });
 
     const saveCardToDeck = async (wordData: CardProps) => {
-      if (settings?.ocrProcessType === OCRProcessType.FromSource) {
-        // Get All Definitions From Processed Result
-        await db.collection<Deck>('deck').findOneAndUpdate(
-          { _id: new ObjectId(deckId), userId: session.user?.id },
-          {
-            $push: {
-              cards: {
-                word: wordData.word,
-                phonetic: wordData.phonetic || '',
-                blocks: wordData.blocks || [],
-              },
-            },
-          },
-        );
+      let cardToSave: CardProps | null = null;
+
+      if (processType === OCRProcessType.FromSource) {
+        cardToSave = {
+          word: wordData.word,
+          phonetic: wordData.phonetic || '',
+          blocks: wordData.blocks || [],
+        };
       }
       if (
-        settings?.ocrProcessType ===
+        processType ===
         OCRProcessType.FromSourceButOnlyDefinitionFromImage
       ) {
         const porcessedWordData =
@@ -317,28 +310,34 @@ export async function POST(req: Request) {
             result,
             targetLang,
           );
-        if (!porcessedWordData) return;
+        
         if (
-          !Array.isArray(porcessedWordData.blocks) ||
-          porcessedWordData.blocks.length <= 0
-        )
-          return;
-        await db.collection<Deck>('deck').findOneAndUpdate(
-          { _id: new ObjectId(deckId), userId: session.user?.id },
-          {
-            $push: {
-              cards: {
+            porcessedWordData &&
+            Array.isArray(porcessedWordData.blocks) &&
+            porcessedWordData.blocks.length > 0
+        ) {
+            cardToSave = {
                 word: porcessedWordData.word,
                 phonetic: porcessedWordData.phonetic,
                 blocks: porcessedWordData.blocks,
-              },
-            },
-          },
-        );
+            };
+        }
       }
+
+       if (cardToSave) {
+          await db.insert(cards).values({
+               deckId: deckId,
+               word: cardToSave.word,
+               phonetic: cardToSave.phonetic || null,
+               blocks: cardToSave.blocks,
+          });
+       }
     };
 
-    cachedWords.forEach((wordData) => saveCardToDeck(wordData as CardProps));
+    // Sequential for cache matches
+    for (const wordData of cachedWords) {
+        await saveCardToDeck(wordData);
+    }
 
     withoutCachedWords.forEach((word, index) => {
       setTimeout(
@@ -346,16 +345,20 @@ export async function POST(req: Request) {
           await GET(
             new Request(`http://localhost:3000/api/word?word=${word.word}`),
           );
-          const wordData = await db
-            .collection<WordCollection>('words')
-            .findOne({ word: word.word });
+          const wordRecord = await db.query.wordCache.findFirst({
+            where: and(
+                eq(wordCache.word, word.word),
+                eq(wordCache.targetLang, targetLang),
+            )
+          });
+
           if (
-            (wordData?.available !== undefined &&
-              wordData.available !== true) ||
-            !wordData
-          )
-            return;
-          saveCardToDeck(wordData as CardProps);
+            wordRecord &&
+            wordRecord.available !== false &&
+            wordRecord.data
+          ) {
+              saveCardToDeck(wordRecord.data as CardProps);
+          }
         },
         index * 1.5 * 1_000,
       );

@@ -1,54 +1,56 @@
-import db from '@/lib/db';
-import { DeckType, UserSettingsCollection } from '@/type';
-import { auth } from '@/utils/auth';
-import { WithId } from 'mongodb';
+'use server';
+import { db } from '@/db';
+import { settings as settingsTable } from '@/db/schema';
+import { DeckType, UserSettings, OCRProcessType, LangEnum } from '@/type';
+import { auth } from '@/utils/auth/';
+import { eq } from 'drizzle-orm';
 
-export async function getSettings(): Promise<UserSettingsCollection> {
-	const session = await auth();
-	if (!session) {
-		throw new Error('Unauthorized');
-	}
-	let settings = await db
-		.collection<UserSettingsCollection>('settings')
-		.findOne({
-			userId: session.user?.id,
-		});
-	if (!settings) {
-		settings = {
-			userId: session.user?.id || '',
-			deckActionType: DeckType.ChangeByButton,
-		} as WithId<UserSettingsCollection>;
-		await db.collection<UserSettingsCollection>('settings').insertOne(settings);
-	}
-	return Object.assign(settings, {
-		_id: settings._id.toString(),
-	});
+export async function getSettings(): Promise<UserSettings & { _id: string }> {
+  const session = await auth();
+  if (!session || !session.user?.id) {
+    throw new Error('Unauthorized');
+  }
+  let settingsData = (
+    await db
+      .select()
+      .from(settingsTable)
+      .where(eq(settingsTable.userId, session.user.id))
+      .limit(1)
+  )[0];
+
+  if (!settingsData) {
+    [settingsData] = await db
+      .insert(settingsTable)
+      .values({
+        userId: session.user.id,
+        deckActionType: DeckType.ChangeByButton,
+      })
+      .returning();
+  }
+
+  return {
+    ...settingsData,
+    _id: settingsData.id,
+    deckActionType: (settingsData.deckActionType ?? DeckType.ChangeByButton) as DeckType,
+    ocrProcessType: (settingsData.ocrProcessType ?? OCRProcessType.OnlyFromImage) as OCRProcessType,
+    targetLang: (settingsData.targetLang ?? LangEnum.TW) as LangEnum,
+    usingLang: (settingsData.usingLang ?? [LangEnum.TW]) as LangEnum[],
+  };
 }
 
 export async function updateSettings(
-	name: keyof UserSettingsCollection,
-	value: UserSettingsCollection[keyof UserSettingsCollection],
+  name: keyof UserSettings,
+  value: UserSettings[keyof UserSettings],
 ) {
-	const session = await auth();
-	if (!session) {
-		throw new Error('Unauthorized');
-	}
-	const settings = await db
-		.collection<UserSettingsCollection>('settings')
-		.findOne({
-			userId: session.user?.id,
-		});
-	if (!settings) {
-		throw new Error('Settings not found');
-	}
-	await db.collection<UserSettingsCollection>('settings').updateOne(
-		{
-			userId: session.user?.id,
-		},
-		{
-			$set: {
-				[name]: value,
-			},
-		},
-	);
+  const session = await auth();
+  if (!session || !session.user?.id) {
+    throw new Error('Unauthorized');
+  }
+
+  await db
+    .update(settingsTable)
+    .set({
+      [name]: value,
+    })
+    .where(eq(settingsTable.userId, session.user.id));
 }

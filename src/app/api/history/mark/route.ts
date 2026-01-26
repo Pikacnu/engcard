@@ -1,7 +1,7 @@
-import db from '@/lib/db';
-import { DeckCollection, MarkAsNeedReview, MarkWordData } from '@/type';
+import { db } from '@/db';
+import { markedWords, decks } from '@/db/schema';
 import { auth } from '@/utils';
-import { ObjectId, WithId } from 'mongodb';
+import { and, eq, inArray } from 'drizzle-orm';
 import { NextResponse } from 'next/server';
 
 export async function POST(req: Request) {
@@ -19,37 +19,28 @@ export async function POST(req: Request) {
 		);
 	}
 	const session = await auth();
-	if (!session) {
+	if (!session || !session.user?.id) {
 		return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 	}
-	const markedWord: MarkWordData = {
-		word: word,
-		deckId: deckId,
-	};
-	const data = await db
-		.collection<MarkAsNeedReview>('markAsNeedReview')
-		.updateOne(
-			{
-				userId: session.user?.id,
-				word: { $not: { $elemMatch: markedWord } },
-			},
-			{
-				$set: {
-					userId: session.user?.id,
-				},
-				$push: {
-					word: markedWord,
-				},
-				$inc: { count: 1 },
-			},
-			{
-				upsert: true,
-			},
-		);
+	const userId = session.user.id;
 
-	if (!data) {
-		return NextResponse.json({ error: 'Data not found' }, { status: 404 });
+	try {
+		await db
+			.insert(markedWords)
+			.values({
+				userId,
+				word,
+				deckId,
+			})
+			.onConflictDoNothing();
+	} catch (e) {
+		console.error('Error marking word:', e);
+		return NextResponse.json(
+			{ error: 'Failed to mark word. Deck might not exist.' },
+			{ status: 400 },
+		);
 	}
+
 	return NextResponse.json(
 		{ message: 'Word marked successfully' },
 		{ status: 200 },
@@ -71,32 +62,21 @@ export async function DELETE(req: Request) {
 		);
 	}
 	const session = await auth();
-	if (!session) {
+	if (!session || !session.user?.id) {
 		return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 	}
-	const markedWord: MarkWordData = {
-		word: word,
-		deckId: deckId,
-	};
-	const data = await db
-		.collection<MarkAsNeedReview>('markAsNeedReview')
-		.findOneAndUpdate(
-			{
-				userId: session.user?.id,
-			},
-			{
-				$pull: {
-					word: markedWord,
-				},
-				$inc: { count: -1 },
-			},
-			{
-				returnDocument: 'after',
-			},
+	const userId = session.user.id;
+
+	await db
+		.delete(markedWords)
+		.where(
+			and(
+				eq(markedWords.userId, userId),
+				eq(markedWords.word, word),
+				eq(markedWords.deckId, deckId),
+			),
 		);
-	if (!data) {
-		return NextResponse.json({ error: 'Data not found' }, { status: 404 });
-	}
+
 	return NextResponse.json(
 		{ message: 'Word unmarked successfully' },
 		{ status: 200 },
@@ -107,111 +87,71 @@ export async function GET(req: Request) {
 	const url = new URL(req.url);
 
 	const session = await auth();
-	if (!session) {
+	if (!session || !session.user?.id) {
 		return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 	}
-
+	const userId = session.user.id;
 	const deckId = url.searchParams.get('deckId');
-	if (!deckId) {
-		const markedWordData = await db
-			.collection<MarkAsNeedReview>('markAsNeedReview')
-			.findOne({ userId: session.user?.id });
-		if (!markedWordData) {
-			return NextResponse.json({ error: 'Data not found' }, { status: 404 });
+
+	if (deckId) {
+		const marked = await db.query.markedWords.findMany({
+			where: and(
+				eq(markedWords.userId, userId),
+				eq(markedWords.deckId, deckId),
+			),
+		});
+
+		if (marked.length === 0) {
+			return NextResponse.json({ error: 'No cards found' }, { status: 404 });
 		}
-		const deckIds = [...new Set(markedWordData.word.map((w) => w.deckId))];
-		const words = (await db
-			.collection<DeckCollection>('deck')
-			.aggregate([
-				{
-					$addFields: {
-						deckId: { $toString: '$_id' },
-					},
-				},
-				{
-					$match: {
-						deckId: { $in: deckIds },
-					},
-				},
-				{
-					$addFields: {
-						// 先取得當前 deck 的標記單字
-						markedWordsForThisDeck: {
-							$map: {
-								input: {
-									$filter: {
-										input: markedWordData.word,
-										as: 'w',
-										cond: {
-											$eq: ['$$w.deckId', '$deckId'],
-										},
-									},
-								},
-								as: 'markedWord',
-								in: '$$markedWord.word',
-							},
-						},
-					},
-				},
-				{
-					$addFields: {
-						cards: {
-							$filter: {
-								input: '$cards',
-								as: 'card',
-								cond: {
-									$in: ['$$card.word', '$markedWordsForThisDeck'],
-								},
-							},
-						},
-					},
-				},
-				{
-					$project: {
-						markedWordsForThisDeck: 0, // 移除臨時欄位
-					},
-				},
-			])
-			.toArray()) as WithId<DeckCollection>[];
-		const allWords = words.flatMap((deck) =>
-			deck.cards.map((card) => ({ ...card, deckId: deck._id.toString() })),
+
+		const deck = await db.query.decks.findFirst({
+			where: eq(decks.id, deckId),
+			with: { cards: true },
+		});
+
+		if (!deck) {
+			return NextResponse.json({ error: 'Deck not found' }, { status: 404 });
+		}
+
+		const markedWordSet = new Set(marked.map((m) => m.word));
+		const cards = (deck as unknown as { cards: { word: string }[] }).cards.filter((c) =>
+			markedWordSet.has(c.word),
 		);
+
+		return NextResponse.json({ words: cards || [] }, { status: 200 });
+	} else {
+		// All marked words
+		const marked = await db.query.markedWords.findMany({
+			where: eq(markedWords.userId, userId),
+		});
+
+		if (marked.length === 0) {
+			return NextResponse.json({ words: [] }, { status: 200 });
+		}
+
+		const deckIds = [...new Set(marked.map((m) => m.deckId))];
+		const deckList = await db.query.decks.findMany({
+			where: inArray(decks.id, deckIds),
+			with: { cards: true },
+		});
+
+		// Map deckId -> Set<Word>
+		const deckWordMap = new Map<string, Set<string>>();
+		for (const m of marked) {
+			if (!deckWordMap.has(m.deckId)) deckWordMap.set(m.deckId, new Set());
+			deckWordMap.get(m.deckId)!.add(m.word);
+		}
+
+		const allWords = deckList.flatMap((deck) => {
+			const markedSet = deckWordMap.get(deck.id);
+			if (!markedSet) return [];
+			// Filter cards in this deck
+			return (deck as unknown as { cards: { word: string }[] }).cards
+				.filter((c) => markedSet.has(c.word))
+				.map((c) => ({ ...c, deckId: deck.id }));
+		});
+
 		return NextResponse.json({ words: allWords }, { status: 200 });
 	}
-	const userId = session.user?.id;
-	const markedWords = await db
-		.collection<MarkAsNeedReview>('markAsNeedReview')
-		.findOne({ userId: userId });
-	if (!markedWords) {
-		return NextResponse.json({ error: 'Data not found' }, { status: 404 });
-	}
-	const cardDatas = await db.collection<DeckCollection>('deck').findOne(
-		{
-			_id: new ObjectId(deckId),
-			userId: userId,
-		},
-		{
-			projection: {
-				cards: {
-					$filter: {
-						input: '$cards',
-						as: 'card',
-						cond: {
-							$in: [
-								'$$card.word',
-								markedWords.word
-									.filter((w) => w.deckId === deckId)
-									.map((w) => w.word),
-							],
-						},
-					},
-				},
-			},
-		},
-	);
-	if (!cardDatas) {
-		return NextResponse.json({ error: 'No cards found' }, { status: 404 });
-	}
-	const words = cardDatas.cards.map((card) => card);
-	return NextResponse.json({ words: words }, { status: 200 });
 }

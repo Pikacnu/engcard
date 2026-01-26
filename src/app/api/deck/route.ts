@@ -1,7 +1,7 @@
-import db from '@/lib/db';
-import { DeckCollection } from '@/type';
+import { db } from '@/db';
+import { decks } from '@/db/schema';
 import { auth } from '@/utils/auth';
-import { ObjectId } from 'mongodb';
+import { eq } from 'drizzle-orm';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
@@ -11,40 +11,62 @@ export async function GET(request: NextRequest) {
 
 	const user = await auth();
 	const userId = user?.user?.id || '';
+	
 	if (!id) {
 		if (!user) {
 			// If user is not logged in, return public decks
-			// This is a public API, so we don't need to check for userId
-			const publicDecks = await db
-				.collection<DeckCollection>('deck')
-				.find({ isPublic: true })
-				.toArray();
-			const deckData = publicDecks.map((deck) =>
-				Object.assign(deck, { _id: deck._id.toString() }),
-			);
+            const publicDecks = await db.query.decks.findMany({
+                where: eq(decks.isPublic, true),
+                with: {
+                    cards: true
+                }
+            });
+
+			const deckData = publicDecks.map((deck) => ({
+                id: deck.id,
+                _id: deck.id, // Compat
+                name: deck.name,
+                isPublic: deck.isPublic,
+                cards_length: deck.cards.length,
+            }));
 			return NextResponse.json(deckData);
 		}
-		// If user is logged in, return their decks
-		const decks = await db.collection('deck').find({ userId }).toArray();
-		const deckData = decks.map((deck) => ({
-			_id: deck._id.toString(),
+		
+        // If user is logged in, return their decks
+        const userDecks = await db.query.decks.findMany({
+            where: eq(decks.userId, userId),
+            with: {
+                cards: true
+            }
+        });
+
+		const deckData = userDecks.map((deck) => ({
+			_id: deck.id,
+            id: deck.id,
 			name: deck.name,
 			isPublic: deck.isPublic,
 			cards_length: deck.cards.length,
 		}));
 		return NextResponse.json(deckData);
 	}
+    
 	if (id.trim().length === 0) {
 		return NextResponse.json({ error: 'Deck ID is required' }, { status: 400 });
 	}
 
-	const deck = await db.collection('deck').findOne({ _id: new ObjectId(id) });
+    const deck = await db.query.decks.findFirst({
+        where: eq(decks.id, id),
+        with: {
+            cards: true
+        }
+    });
+
 	if (!deck) {
 		return NextResponse.json({ error: 'Deck not found' }, { status: 404 });
 	}
 	if (deck.isPublic) {
 		// If deck is public, return it
-		return NextResponse.json(deck);
+		return NextResponse.json({ ...deck, _id: deck.id });
 	}
 	if (deck.userId !== userId) {
 		// If deck is not public and user is not the owner, return 403
@@ -54,7 +76,7 @@ export async function GET(request: NextRequest) {
 		);
 	}
 	// If deck is not public and user is the owner, return it
-	return NextResponse.json(deck);
+	return NextResponse.json({ ...deck, _id: deck.id });
 }
 
 export async function POST(req: NextRequest) {
@@ -63,9 +85,17 @@ export async function POST(req: NextRequest) {
 		return NextResponse.json({ error: 'Not authorized' }, { status: 401 });
 	}
 	const userId = user.user?.id;
+    if (!userId) {
+		return NextResponse.json({ error: 'Not authorized' }, { status: 401 });
+    }
+
 	const { name, isPublic } = await req.json();
-	const deck = await db
-		.collection('deck')
-		.insertOne({ name, isPublic, userId });
-	return NextResponse.json(deck);
+    
+    const [newDeck] = await db.insert(decks).values({
+        userId: userId,
+        name: name || 'New Deck',
+        isPublic: isPublic || false
+    }).returning();
+
+	return NextResponse.json({ ...newDeck, _id: newDeck.id });
 }

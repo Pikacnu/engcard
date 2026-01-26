@@ -1,6 +1,6 @@
 'use client';
 
-import { DeckType, Lang, UserSettingsCollection } from '@/type';
+import { DeckType, Lang, UserSettings } from '@/type';
 import { useState, useCallback, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { useTranslation } from '@/context/LanguageContext'; // Added
@@ -80,7 +80,7 @@ export default function Settings() {
                     name: 'ocrProcessType',
                     value: parseInt(
                       e.target.value,
-                    ) as UserSettingsCollection['ocrProcessType'],
+                    ) as UserSettings['ocrProcessType'],
                   });
                 }}
               >
@@ -197,7 +197,7 @@ function SingleLanguageSwitcher({
   disableLangs,
   originalLang,
 }: {
-  targetName: keyof Pick<UserSettingsCollection, 'targetLang' | 'usingLang'>;
+  targetName: keyof Pick<UserSettings, 'targetLang' | 'usingLang'>;
   originalLang: Lang;
   disableLangs?: Lang[];
 }) {
@@ -253,7 +253,7 @@ function MultipleLanguageSwitcher({
   disableLangs,
   originalLang,
 }: {
-  targetName: keyof Pick<UserSettingsCollection, 'targetLang' | 'usingLang'>;
+  targetName: keyof Pick<UserSettings, 'targetLang' | 'usingLang'>;
   originalLang: Lang[];
   disableLangs?: Lang[];
 }) {

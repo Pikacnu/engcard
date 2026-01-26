@@ -1,5 +1,5 @@
-import db from '@/lib/db';
-import { WordHistory } from '@/type';
+import { db } from '@/db';
+import { histories } from '@/db/schema';
 import { auth } from '@/utils/auth';
 
 export async function POST(request: Request) {
@@ -15,14 +15,14 @@ export async function POST(request: Request) {
 	if (userId && session.user?.id !== userId) {
 		return new Response('Unauthorized', { status: 401 });
 	}
-	await db
-		.collection<WordHistory>('history')
-		.insertOne({
-			userId: session.user?.id || '',
-			deckId,
-			date: new Date(),
-			words,
-		});
+    
+	await db.insert(histories).values({
+        userId: session.user?.id || '',
+        deckId,
+        date: new Date(),
+        words: Array.isArray(words) ? words : [words], // Ensure array
+    });
+
 	return new Response(
 		JSON.stringify({
 			success: 'save history',

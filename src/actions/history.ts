@@ -1,22 +1,21 @@
-import db from '@/lib/db';
-import { WordHistory } from '@/type';
+import { db } from '@/db';
+import { histories } from '@/db/schema';
+import { eq, and, desc, gte, lte, count } from 'drizzle-orm';
 import { auth } from '@/utils/auth';
 
 export async function getRecentlyHistory() {
 	const session = await auth();
-	if (!session) {
+	if (!session || !session.user?.id) {
 		return [];
 	}
-	const recentdata = db
-		.collection<WordHistory>('history')
-		.find(
-			{
-				userId: session.user?.id,
-			},
-			{ sort: { date: -1 }, limit: 10 },
-		)
-		.toArray();
-	return recentdata;
+	const recentdata = await db.query.histories.findMany({
+		where: eq(histories.userId, session.user.id),
+		orderBy: [desc(histories.date)],
+		limit: 10,
+	});
+	
+	// Map id to _id for backward compatibility if needed, or just return as is matching WordHistory type + id
+	return recentdata.map(h => ({ ...h, _id: h.id }));
 }
 
 export async function getHistoriesByDuraction({
@@ -25,48 +24,39 @@ export async function getHistoriesByDuraction({
 }: {
 	start?: Date;
 	end?: Date;
-}): Promise<WordHistory[]> {
+}) {
 	const session = await auth();
-	if (!session) {
+	if (!session || !session.user?.id) {
 		return [];
 	}
-	const data = db
-		.collection<WordHistory>('history')
-		.find({
-			userId: session.user?.id,
-			date: { $gte: start, $lte: end },
-		})
-		.toArray();
-	return data;
+	
+	const whereClause = [eq(histories.userId, session.user.id)];
+	if (start) whereClause.push(gte(histories.date, start));
+	if (end) whereClause.push(lte(histories.date, end));
+
+	const data = await db.query.histories.findMany({
+		where: and(...whereClause),
+	});
+
+	return data.map(h => ({ ...h, _id: h.id }));
 }
 
 export async function getRecentHotWords(duraction: number) {
 	const session = await auth();
-	if (!session) {
+	if (!session || !session.user?.id) {
 		return [];
 	}
+	
 	const data = await db
-		.collection<WordHistory>('history')
-		.aggregate([
-			{
-				$match: {
-					userId: session.user?.id,
-				},
-			},
-			{
-				$group: {
-					_id: '$words',
-					count: { $sum: 1 },
-				},
-			},
-			{
-				$sort: { count: -1 },
-			},
-			{
-				$limit: duraction,
-			},
-		])
-		.toArray();
+		.select({
+			_id: histories.words,
+			count: count(),
+		})
+		.from(histories)
+		.where(eq(histories.userId, session.user.id))
+		.groupBy(histories.words)
+		.orderBy(desc(count()))
+		.limit(duraction);
 
 	return data;
 }

@@ -3,7 +3,7 @@
 import { SetStateAction, useEffect, useState } from 'react';
 import { useTranslation } from '@/context/LanguageContext'; // Added
 import Deck from '@/components/deck';
-import { CardProps, DeckType, UserSettingsCollection } from '@/type';
+import { CardProps, DeckType, UserSettings } from '@/type';
 import { removeMarkWord } from '@/utils/functions/user-data';
 
 type WithId<T> = {
@@ -32,7 +32,7 @@ export default function SpeedReview() {
         console.log('Failed to fetch settings:', response.statusText);
         return;
       }
-      const settings = (await response.json()) as UserSettingsCollection;
+      const settings = (await response.json()) as UserSettings;
       if (!settings) {
         console.log('No settings found');
         return;

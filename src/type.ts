@@ -1,8 +1,14 @@
-import { Content, FunctionCall } from '@google/genai';
-import { ChatModelSchema } from './utils';
 import { Lang, LangEnum } from './utils/lang';
 
+// Export shared types moved to break circular dependency
+export * from './type-shared';
+// Export Drizzle inferred types
+export type { UserSettings, UserSettingsCollection } from '@/db/schema';
+
+// Re-export specific utils used elsewhere
 export { type Lang, LangEnum } from './utils/lang';
+
+import { Blocks, PartOfSpeech } from './type-shared';
 
 export type CardProps = {
   word: string;
@@ -19,59 +25,6 @@ export type Phonetic = {
     name: string;
     url: string;
   };
-};
-
-export enum PartOfSpeech {
-  Noun = 'noun',
-  Verb = 'verb',
-  Adjective = 'adjective',
-  Adverb = 'adverb',
-  Pronoun = 'pronoun',
-  Preposition = 'preposition',
-  Conjunction = 'conjunction',
-  Interjection = 'interjection',
-  Exclamation = 'exclamation',
-  Abbreviation = 'abbreviation',
-  Phrase = 'phrase',
-  Error = 'error',
-}
-
-export const PartOfSpeechShort: { [key in PartOfSpeech]: string } = {
-  [PartOfSpeech.Noun]: 'n.',
-  [PartOfSpeech.Verb]: 'v.',
-  [PartOfSpeech.Adjective]: 'adj.',
-  [PartOfSpeech.Adverb]: 'adv.',
-  [PartOfSpeech.Pronoun]: 'pron.',
-  [PartOfSpeech.Preposition]: 'prep.',
-  [PartOfSpeech.Conjunction]: 'conj.',
-  [PartOfSpeech.Interjection]: 'interj.',
-  [PartOfSpeech.Exclamation]: 'excl.',
-  [PartOfSpeech.Abbreviation]: 'abbr.',
-  [PartOfSpeech.Phrase]: 'phr.',
-  [PartOfSpeech.Error]: 'error',
-};
-
-export type Blocks = {
-  partOfSpeech?: PartOfSpeech;
-  definitions: Definition[];
-  phonetic?: string;
-};
-
-export type Definition = {
-  definition: DefinitionData[];
-  example?: Example[][];
-  synonyms?: string[];
-  antonyms?: string[];
-};
-
-export type DefinitionData = {
-  lang: Lang;
-  content: string;
-};
-
-export type Example = {
-  lang: Lang;
-  content: string;
 };
 
 export enum LoginMethod {
@@ -181,25 +134,7 @@ export type WordCollection = {
 export type WordCollectionWith<T> = T &
   Pick<WordCollection, 'available' | 'word' | 'sourceLang' | 'targetLang'>;
 
-export type WithStringId<T> = T & { id: string };
-
 export type WithStringObjectId<T> = T & { _id: string };
-
-export type ChatSession = {
-  userId: string;
-  //history: WithStringId<Content>[];
-  history: Array<{
-    content: WithStringId<Content>;
-    action?: ChatModelSchema;
-    functionCall?: FunctionCall | undefined;
-    grammerFix?: {
-      offsetWords: number;
-      lengthWords: number;
-      correctedText: string;
-    }[];
-  }>;
-  chatName: string;
-};
 
 export enum ChatAction {
   AddDeck = 'AddDeck',
@@ -269,27 +204,6 @@ export type PublicDeckToUser = {
   userId: string;
   deckId: string[];
 };
-
-export enum DeckType {
-  AutoChangeToNext,
-  ChangeByButton,
-}
-
-export enum OCRProcessType {
-  OnlyFromImage,
-  FromSourceButOnlyDefinitionFromImage,
-  FromSource,
-}
-
-export type UserSettingsCollection = {
-  userId: string;
-  deckActionType: DeckType;
-  ocrProcessType: OCRProcessType;
-  targetLang: LangEnum;
-  usingLang: LangEnum[];
-};
-
-export type UserSettings = Omit<UserSettingsCollection, 'userId'>;
 
 export type EnWordDefinition = {
   definition: string;

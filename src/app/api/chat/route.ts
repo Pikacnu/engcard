@@ -1,63 +1,48 @@
-import db from '@/lib/db';
-import { ChatSession, WithStringObjectId } from '@/type';
+import { db } from '@/db';
+import { chatSessions } from '@/db/schema';
 import { auth } from '@/utils';
-import { WithId } from 'mongodb';
+import { desc, eq } from 'drizzle-orm';
 import { NextResponse } from 'next/server';
 
 export async function GET() {
-  const session = await auth();
-  if (!session) {
-    return NextResponse.json(
-      {
-        error: 'Not authenticated',
-      },
-      {
-        status: 401,
-      },
-    );
-  }
+	const session = await auth();
+	if (!session || !session.user?.id) {
+		return NextResponse.json(
+			{
+				error: 'Not authenticated',
+			},
+			{
+				status: 401,
+			},
+		);
+	}
 
-  const chatSessions: WithId<ChatSession>[] = await db
-    .collection<ChatSession>('chat')
-    .find({
-      userId: session.user?.id,
-    })
-    .toArray();
+	const sessions = await db.query.chatSessions.findMany({
+		where: eq(chatSessions.userId, session.user.id),
+		orderBy: [desc(chatSessions.updatedAt)],
+	});
 
-  const chatList: WithStringObjectId<ChatSession>[] = chatSessions.map(
-    (chat) => {
-      return {
-        ...chat,
-        _id: chat._id.toString(),
-      };
-    },
-  );
+	const chatList = sessions.map((chat) => {
+		return {
+			...chat,
+			_id: chat.id,
+		};
+	});
 
-  return NextResponse.json(chatList);
+	return NextResponse.json(chatList);
 }
 
 export async function POST() {
-  const session = await auth();
-  if (!session) {
-    return NextResponse.json(
-      {
-        error: 'Not authenticated',
-      },
-      {
-        status: 401,
-      },
-    );
-  }
-  return NextResponse.json({ error: 'Not implemented' }, { status: 501 });
-
-  const chatSession = await db.collection<ChatSession>('chat').insertOne({
-    //@ts-expect-error Comment
-    userId: session.user?.id || '',
-    history: [],
-    chatName: 'New Chat',
-  });
-
-  return NextResponse.json({
-    id: chatSession.insertedId.toString(),
-  });
+	const session = await auth();
+	if (!session) {
+		return NextResponse.json(
+			{
+				error: 'Not authenticated',
+			},
+			{
+				status: 401,
+			},
+		);
+	}
+	return NextResponse.json({ error: 'Not implemented' }, { status: 501 });
 }
