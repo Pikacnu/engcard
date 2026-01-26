@@ -4,10 +4,14 @@ import * as schema from './schema';
 
 const globalForDb = global as unknown as { conn: Pool | undefined };
 
+const connectionString =
+  process.env.DATABASE_URL ||
+  `postgresql://${process.env.POSTGRESQL_USER}:${process.env.POSTGRESQL_PASSWORD}@${process.env.POSTGRESQL_HOST}:${process.env.POSTGRESQL_PORT}/${process.env.POSTGRESQL_DB}`;
+
 const conn =
   globalForDb.conn ??
   new Pool({
-    connectionString: process.env.DATABASE_URL!,
+    connectionString,
   });
 
 if (process.env.NODE_ENV !== 'production') globalForDb.conn = conn;

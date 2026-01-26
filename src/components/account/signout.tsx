@@ -8,7 +8,7 @@ export default function SignOutButton({ className }: { className?: string }) {
   const { t } = useTranslation(); // Added
 
   return (
-    // The form is removed as signOut from 'next-auth/react' is a function call.
+    // logout with better-auth
     <button
       onClick={async () => {
         // No 'use server' needed here

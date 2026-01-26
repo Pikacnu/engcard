@@ -7,7 +7,7 @@ import { eq, and, inArray } from 'drizzle-orm';
 import { FunctionCall } from '@google/genai';
 import { ChatSession, ChatAction, CardProps } from '@/type';
 import { auth, ChatModelSchema, GenerateTextResponse } from '@/utils';
-import { Session } from 'next-auth';
+import { Session } from '@/lib/auth';
 
 export async function getChatList() {
   const session = await auth();

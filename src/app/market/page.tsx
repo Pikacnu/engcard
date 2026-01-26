@@ -6,15 +6,14 @@ import { useTranslation } from '@/context/LanguageContext'; // Added
 import { redirect, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { ThemeToggler } from '@/components/ThemeToggler';
-import { NavBar } from '@/components/navbar';
-import { useSession } from 'next-auth/react';
+import { authClient } from '@/lib/auth-client';
 import Link from 'next/link';
 
 export default function Market() {
   const { t } = useTranslation(); // Added
   const searchParams = useSearchParams();
   const fromPage = useRef(searchParams.get('fromPage') || 'basePage');
-  const { data: session } = useSession();
+  const { data: session } = authClient.useSession();
   const [isBiMenuOpen, setIsBiMenuOpen] = useState(false);
 
   useEffect(() => {
