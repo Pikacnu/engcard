@@ -6,7 +6,7 @@ import {
 } from '@google/genai';
 import { DeckCollection } from '@/type';
 import db from '@/lib/db';
-import { chatModelInstruction, chatActionFunctionDeclarations } from '../../ai';
+import { chatModelInstruction, chatActionFunctionDeclarations } from '..';
 
 const googleAIKey = process.env.GEMINI_API_KEY || '';
 
