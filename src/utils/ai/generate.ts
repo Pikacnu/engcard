@@ -26,6 +26,30 @@ export async function getParseResponse<T>(
   const [geminiModel, openAIModel] = modelMap[modelType];
   const [[zodOpenAISchema, zodGeminiSchema], GeminiAISchema] = schema;
   try {
+    console.log('try Google AI SDK And Gemini Model :');
+    const response = await Models.generateContent({
+      contents: [
+        ...history,
+        {
+          role: 'user',
+          parts: [{ text: prompt }],
+        },
+      ],
+      model: geminiModel,
+      config: {
+        systemInstruction: systemInstruction,
+        responseMimeType: 'application/json',
+        responseSchema: GeminiAISchema,
+      },
+    });
+    const result = response.text as string;
+    const parsedResult = JSON.parse(result) as z.infer<typeof zodOpenAISchema>;
+    console.log('Google AI SDK Success');
+    return parsedResult as T;
+  } catch (error) {
+    console.error('Google AI SDK Error :', error);
+  }
+  try {
     console.log('try OpenAI SDK And OpenAI Model :');
     const response = await OpenAIClient.beta.chat.completions.parse({
       model: openAIModel,
@@ -50,30 +74,6 @@ export async function getParseResponse<T>(
     return result as T;
   } catch (error) {
     console.error('OpenAI SDK Error :', error);
-  }
-  try {
-    console.log('try Google AI SDK And Gemini Model :');
-    const response = await Models.generateContent({
-      contents: [
-        ...history,
-        {
-          role: 'user',
-          parts: [{ text: prompt }],
-        },
-      ],
-      model: geminiModel,
-      config: {
-        systemInstruction: systemInstruction,
-        responseMimeType: 'application/json',
-        responseSchema: GeminiAISchema,
-      },
-    });
-    const result = response.text as string;
-    const parsedResult = JSON.parse(result) as z.infer<typeof zodOpenAISchema>;
-    console.log('Google AI SDK Success');
-    return parsedResult as T;
-  } catch (error) {
-    console.error('Google AI SDK Error :', error);
   }
   throw new Error('Error in both AI SDKs');
 }

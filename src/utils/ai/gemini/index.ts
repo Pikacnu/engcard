@@ -11,11 +11,11 @@ import { chatModelInstruction, chatActionFunctionDeclarations } from '..';
 
 const googleAIKey = process.env.GEMINI_API_KEY || '';
 
-export const GenerativeAI = new GoogleGenAI({
+export const GenAI = new GoogleGenAI({
   apiKey: googleAIKey,
 });
 
-export const Models = GenerativeAI.models;
+export const Models = GenAI.models;
 
 async function PrepareTheDataForGenerate(userId: string): Promise<string> {
   const userDecks = await db.query.decks.findMany({
