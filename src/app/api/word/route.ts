@@ -1,5 +1,5 @@
 import { db } from '@/db';
-import { wordCache, settings } from '@/db/schema';
+import { wordCache, settings, dictionaryItems } from '@/db/schema';
 import { eq, and, arrayContains } from 'drizzle-orm';
 import {
   CardProps,
@@ -20,7 +20,9 @@ import {
   wordSystemInstructionCreator,
   Models,
   wordSchema,
+  generateEmbedding,
 } from '@/utils';
+import type { DictionaryItemMetadata } from '@/utils/ai/schema';
 import {
   getWordFromDictionaryAPI,
   getWordFromEnWordNetAPI,
@@ -287,6 +289,74 @@ async function newWord(
   return await getAIResponse(filteredData, sourceLang, targetLang);
 }
 
+async function saveToDictionaryItems(data: CardProps, langCode: LangEnum) {
+  try {
+    const term = data.word;
+    const inserts = [];
+
+    for (const block of data.blocks) {
+      for (const defItem of block.definitions) {
+        // Collect definition texts for embedding
+        const defTexts = defItem.definition.map((d) => d.content).join(' ');
+        const embeddingText = `${term} ${defTexts}`;
+
+        // Prepare definitions map for metadata
+        const definitionsMap: Record<string, string> = {};
+        defItem.definition.forEach((d) => {
+          definitionsMap[d.lang] = d.content;
+        });
+
+        // Prepare examples for metadata
+        const examples =
+          defItem.example?.map((exGroup) => {
+            const exObj: Record<string, string> = {};
+            exGroup.forEach((ex) => {
+              exObj[ex.lang] = ex.content;
+            });
+            // Approximate matching to schema keys (ja, zh, en)
+            return {
+              ja: exObj[LangEnum.JA],
+              zh: exObj[LangEnum.TW],
+              en: exObj[LangEnum.EN],
+              // nuance: ... not provided in CardProps
+            };
+          }) || [];
+
+        const metadata: DictionaryItemMetadata = {
+          source_term: term,
+          detected_lang: langCode,
+          phonetic: data.phonetic || '',
+          pos: block.partOfSpeech || 'unknown',
+          definitions: definitionsMap,
+          synonyms: defItem.synonyms || [],
+          context_tags: [], // Not in CardProps
+          examples: examples,
+        };
+
+        inserts.push(async () => {
+          try {
+            const embedding = await generateEmbedding(embeddingText);
+            await db.insert(dictionaryItems).values({
+              term: term,
+              languageCode: langCode,
+              embedding: embedding,
+              metadata: metadata,
+            });
+          } catch (e) {
+            console.error(
+              'Error generating embedding or inserting dictionary item',
+              e,
+            );
+          }
+        });
+      }
+    }
+    await Promise.all(inserts.map((fn) => fn()));
+  } catch (error) {
+    console.error('Error saving to dictionary items:', error);
+  }
+}
+
 async function CheckData(
   apidata: CardProps | CardProps[] | string,
   aidata: CardProps,
@@ -524,7 +594,9 @@ async function getAIResponse(
       })),
     };
     console.log('OpenAI SDK Success');
-    return await CheckData(processedData, result);
+    const checked = await CheckData(processedData, result);
+    await saveToDictionaryItems(checked, sourceLang[0] || LangEnum.EN);
+    return checked;
   } catch (error) {
     console.error('OpenAI SDK Error :', error);
     console.log('trying by google AI SDK');
@@ -576,7 +648,9 @@ async function getAIResponse(
         })),
       };
       console.log('Google AI SDK Success');
-      return await CheckData(processedData, result);
+      const checked = await CheckData(processedData, result);
+      await saveToDictionaryItems(checked, sourceLang[0] || LangEnum.EN);
+      return checked;
     } catch (error) {
       console.error('Error parsing AI response:', error);
     }

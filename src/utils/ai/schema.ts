@@ -257,3 +257,31 @@ export const GwordSchemaCreator = (Langs: Lang[]) =>
     ],
     showName: false,
   });
+
+export const DictionaryItemMetadataSchema = z.object({
+  source_term: z.string(),
+  detected_lang: z.string().describe('ISO code'),
+  phonetic: z.string().optional(),
+  pos: z.string().describe('noun/verb/etc'),
+  definitions: z
+    .object({
+      en: z.string().optional(),
+      zh: z.string().optional(),
+      ja: z.string().optional(),
+    })
+    .and(z.record(z.string())),
+  synonyms: z.array(z.string()),
+  context_tags: z.array(z.string()),
+  examples: z.array(
+    z.object({
+      ja: z.string().optional(),
+      zh: z.string().optional(),
+      en: z.string().optional(),
+      nuance: z.string().optional(),
+    }),
+  ),
+});
+
+export type DictionaryItemMetadata = z.infer<
+  typeof DictionaryItemMetadataSchema
+>;

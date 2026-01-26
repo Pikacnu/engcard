@@ -12,16 +12,15 @@
     "migrate": "bun run drizzle-kit migrate"
   },
   "dependencies": {
-    "@auth/drizzle-adapter": "^1.11.1",
     "@google/genai": "^1.38.0",
     "@google/generative-ai": "^0.24.1",
     "@opentelemetry/api": "^1.9.0",
     "@serwist/next": "^9.5.0",
     "@types/minimatch": "^6.0.0",
     "@vercel/otel": "^1.14.0",
+    "better-auth": "^1.4.17",
     "drizzle-orm": "^0.45.1",
     "next": "^15.5.9",
-    "next-auth": "^5.0.0-beta.30",
     "next-pwa": "^5.6.0",
     "openai": "^4.104.0",
     "pg": "^8.17.2",

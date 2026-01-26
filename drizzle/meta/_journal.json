@@ -8,6 +8,27 @@
       "when": 1769416301947,
       "tag": "0000_sleepy_omega_red",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1769420705623,
+      "tag": "0001_busy_doomsday",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1769431800805,
+      "tag": "0002_steady_nightshade",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1769432417221,
+      "tag": "0003_amazing_warlock",
+      "breakpoints": true
     }
   ]
 }

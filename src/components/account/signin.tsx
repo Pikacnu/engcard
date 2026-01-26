@@ -1,7 +1,7 @@
 'use client';
 
 import { LoginMethod } from '@/type';
-import { signIn } from 'next-auth/react';
+import { authClient } from '@/lib/auth-client';
 import { useTranslation } from '@/context/LanguageContext';
 export default function SignInButton({
   provider,
@@ -24,8 +24,9 @@ export default function SignInButton({
   return (
     <button
       onClick={async () => {
-        await signIn(provider.toLowerCase(), {
-          redirectTo: '/dashboard',
+        await authClient.signIn.social({
+          provider: provider.toLowerCase() as 'discord' | 'google',
+          callbackURL: '/dashboard',
         });
       }}
       className={`p-2 m-2 text-black dark:text-white bg-teal-400 hover:bg-teal-500 dark:bg-teal-600 dark:hover:bg-teal-500 rounded-md shadow-md dark:shadow-gray-700 ${className}`}

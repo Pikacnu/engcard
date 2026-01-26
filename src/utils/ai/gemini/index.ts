@@ -96,3 +96,26 @@ export async function GenerateTextResponse(
     functionCalls,
   };
 }
+
+export async function generateEmbedding(text: string): Promise<number[]> {
+  const result = await Models.embedContent({
+    model: 'gemini-embedding-1.0',
+    config: {
+      taskType: 'RETRIEVAL_DOCUMENT',
+      outputDimensionality: 1536,
+    },
+    contents: [
+      {
+        parts: [
+          {
+            text: text,
+          },
+        ],
+      },
+    ],
+  });
+  if (result.embeddings && result.embeddings.length > 0) {
+    return result.embeddings[0].values || [];
+  }
+  return [];
+}

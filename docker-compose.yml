@@ -10,7 +10,7 @@ services:
     environment:
       - NODE_ENV=production
       # Database connection (Points to the db service)
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/engcard
+      - DATABASE_URL=postgresql://engcard-user:engcard-user-pass@db:5432/engcard
       # Auth (Generate a secret with `openssl rand -base64 32` or similar)
       - AUTH_SECRET=change_this_to_a_secure_random_secret
       - NEXTAUTH_URL=http://localhost:3000
@@ -29,15 +29,17 @@ services:
       - engcard-network
 
   db:
-    image: postgres:15-alpine
+    image: pgvector/pgvector:pg18
     container_name: engcard-db
     restart: always
     environment:
       POSTGRES_USER: engcard-user
       POSTGRES_PASSWORD: engcard-user-pass
       POSTGRES_DB: engcard
+    ports:
+      - "5432:5432"
     volumes:
-      - db-data:/var/lib/postgresql/data
+      - db-data:/var/lib/postgresql
     networks:
       - engcard-network
 

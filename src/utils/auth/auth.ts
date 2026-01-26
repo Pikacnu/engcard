@@ -1,9 +1,8 @@
-import NextAuth from 'next-auth';
-import { DrizzleAdapter } from '@auth/drizzle-adapter';
-import { db } from '@/db';
-import authConfig from './auth.config';
+import { auth as betterAuth } from '@/lib/auth';
+import { headers } from 'next/headers';
 
-export const { handlers, signIn, signOut, auth } = NextAuth({
-  ...authConfig,
-  adapter: DrizzleAdapter(db),
-});
+export async function auth() {
+  return await betterAuth.api.getSession({
+    headers: await headers(),
+  });
+}
