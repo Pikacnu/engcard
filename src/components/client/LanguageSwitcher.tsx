@@ -2,7 +2,7 @@
 
 import useCookie from '@/hooks/cookie';
 import { useLocalStorage } from '@/hooks/localstorage';
-import { Lang, LangNames, Langs } from '@/types/lang';
+import { Lang, LangNames, Langs } from '@/utils/lang';
 import { useEffect } from 'react';
 
 export const LanguageSwitcher = ({ short = false }: { short?: boolean }) => {

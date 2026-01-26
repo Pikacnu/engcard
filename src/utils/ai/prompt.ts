@@ -1,7 +1,7 @@
 import { LangEnum } from '@/type';
 import { FunctionDeclaration, Type } from '@google/genai';
 import { Content } from '@google/genai';
-import { LangEnglishNames } from '@/types/lang';
+import { LangEnglishNames } from '@/utils/lang';
 
 // Core prompt templates for better caching
 const CORE_SYSTEM_TEMPLATE = `You are an expert linguist specializing in multilingual dictionary enhancement. Process the provided dictionary data with precision and comprehensiveness.

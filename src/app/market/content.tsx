@@ -4,7 +4,7 @@ import { DeckCollection, Lang } from '@/type'; // Assuming WithId<Document> is h
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react'; // Added
 import { useTranslation } from '@/context/LanguageContext'; // Added
-import { LangCodeToName } from '@/types/lang';
+import { LangCodeToName } from '@/utils/lang';
 
 interface MarketDeck extends Pick<DeckCollection, 'name' | 'isPublic'> {
   _id: string;

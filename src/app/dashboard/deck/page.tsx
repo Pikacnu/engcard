@@ -14,7 +14,7 @@ type Deck = WithId<Document> & {
   name: string;
   public: boolean;
   isPublic?: boolean;
-}; // Added isPublic for consistency with data
+};
 
 export default function Deck() {
   const { t } = useTranslation(); // Added

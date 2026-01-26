@@ -7,7 +7,7 @@ import { useTranslation } from '@/context/LanguageContext'; // Added
 import { LanguageSwitcher } from './../../../components/client/LanguageSwitcher';
 import { ThemeToggler } from './../../../components/ThemeToggler';
 import { useLocalStorage } from '@/hooks/localstorage';
-import { LangCodeToName, LangEnum, LangNames, Langs } from '@/types/lang';
+import { LangCodeToName, LangEnum, LangNames, Langs } from '@/utils/lang';
 import { useSettings } from '@/context/SettingsContext';
 
 export default function Settings() {
