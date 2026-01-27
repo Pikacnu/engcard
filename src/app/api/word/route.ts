@@ -265,6 +265,27 @@ export async function GET(request: Request): Promise<Response> {
       data = newWordData;
       break;
     }
+    case targetLang === LangEnum.TW: {
+      const newWordData = await getNewWordDataWithAPIResources(
+        normalizedWord,
+        sourceLang,
+        targetLang,
+        [],
+      );
+      if (!newWordData) {
+        await db
+          .insert(wordCache)
+          .values({
+            word: normalizedWord,
+            available: false,
+            sourceLang,
+            targetLang,
+            data: {},
+          })
+          .onConflictDoNothing();
+        return NextResponse.json({ error: 'Word not found' }, { status: 404 });
+      }
+    }
     case ![LangEnum.EN].includes(targetLang): {
       data = await getAIResponse(normalizedWord, sourceLang, targetLang);
       break;
