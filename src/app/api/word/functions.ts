@@ -19,6 +19,42 @@ import {
 } from '@/utils/dict/functions';
 import { zodResponseFormat } from 'openai/helpers/zod.mjs';
 
+export async function getNewWordDataWithAPIResources(
+  word: string,
+  sourceLang: LangEnum[],
+  targetLang: LangEnum,
+  apiData: Promise<CardProps | null>[],
+): Promise<CardProps | null> {
+  const sourceDataList = (await Promise.allSettled(apiData))
+    .filter((data) => data.status === 'fulfilled')
+    .map((data) => (data as PromiseFulfilledResult<CardProps>).value)
+    .filter((data): data is CardProps => data !== null);
+  if (sourceDataList.length < 1) {
+    return null;
+  }
+  const normalizedWord = word.toLowerCase().trim();
+  const filteredData = sourceDataList.map((data) => ({
+    ...data,
+    blocks: data.blocks.map((block) => ({
+      ...block,
+      definitions: block.definitions.map((def) => ({
+        ...def,
+        example: def.example?.filter((exampleGroup) => {
+          // 檢查每個 example group 是否包含原始單字
+          return exampleGroup.some((item) => {
+            const content = item.content.toLowerCase();
+            // 使用單字邊界檢查，確保是完整單字而不是單詞的一部分
+            const wordRegex = new RegExp(`\\b${normalizedWord}\\b`, 'i');
+            return wordRegex.test(content);
+          });
+        }),
+      })),
+    })),
+  }));
+
+  return await getAIResponse(filteredData, sourceLang, targetLang);
+}
+
 export async function newWord(
   word: string,
   sourceLang: LangEnum[],
@@ -29,10 +65,16 @@ export async function newWord(
     getWordFromDictionaryAPI(word),
     getWordFromEnWordNetAPI(word),
   ];
+  return getNewWordDataWithAPIResources(
+    word,
+    sourceLang,
+    targetLang,
+    sourceDataPromiseList,
+  );
 
-  const sourceDataList = (await Promise.all(sourceDataPromiseList)).filter(
-    (data) => data !== null && data !== undefined,
-  ) as CardProps[];
+  const sourceDataList = (await Promise.allSettled(sourceDataPromiseList))
+    .filter((data) => data.status === 'fulfilled')
+    .map((data) => (data as PromiseFulfilledResult<CardProps>).value);
   if (sourceDataList.length < 1) {
     return null;
   }
@@ -196,7 +238,9 @@ export async function CheckData(
       );
       if (!aBlock) {
         // AI missed a whole category, we should append it
-        console.warn(`AI missed part of speech: ${sBlock.partOfSpeech}, appending original data.`);
+        console.warn(
+          `AI missed part of speech: ${sBlock.partOfSpeech}, appending original data.`,
+        );
         result.blocks.push(sBlock);
       } else {
         // AI found the block, but check if it missed definitions?

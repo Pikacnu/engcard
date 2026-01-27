@@ -56,3 +56,13 @@ export const MultipleLangValidator = (
   return (value: string) =>
     acceptsLanguageValidators.some((validator) => validator(value));
 };
+
+export const getLangByStr = (str: string): LangEnum | null => {
+  const entries = Object.entries(LangEnumToValidator);
+  for (const [lang, validator] of entries) {
+    if (validator(str)) {
+      return lang as LangEnum;
+    }
+  }
+  return null;
+};

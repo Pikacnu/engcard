@@ -15,6 +15,7 @@ import {
   generateEmbedding,
   MultipleLangValidator,
   isHavingSpace,
+  getLangByStr,
 } from '@/utils';
 import { NextResponse } from 'next/server';
 import { getModifiedResult, getAIResponse, newWord } from './functions';
@@ -44,13 +45,16 @@ export async function GET(request: Request): Promise<Response> {
   const isPhrase = isHavingSpace(word);
 
   switch (true) {
-    // Use Semantic search for:
-    // 1. Any input in target language (Reverse lookup: finding English terms from Chinese)
-    // 2. Phrases in source language (Semantic search: finding terms from English descriptions)
-    case targetLangVailder(word):
-    case isPhrase && sourceLangValidator(word): {
+    // Semantic Search for phrases and words
+    // 1. Search in target language
+    // 2. Search in source language
+    // If not found, fallback to normal word search for single words
+    case isPhrase && targetLangVailder(word):
+    case sourceLangValidator(word): {
       const isTarget = targetLangVailder(word);
-      const queryLang = isTarget ? targetLang : sourceLang[0] || LangEnum.EN;
+      const queryLang = isTarget
+        ? targetLang
+        : getLangByStr(word) || LangEnum.EN;
 
       let nearestDefinitions: (typeof dictionaryItems.$inferSelect)[] = [];
 
