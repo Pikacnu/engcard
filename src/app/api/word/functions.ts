@@ -16,7 +16,7 @@ import {
 import {
   getWordFromDictionaryAPI,
   getWordFromEnWordNetAPI,
-} from '@/utils/dict/functions';
+} from '@/utils/dict';
 import { zodResponseFormat } from 'openai/helpers/zod.mjs';
 
 export async function getNewWordDataWithAPIResources(
