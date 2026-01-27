@@ -216,7 +216,10 @@ export async function seedRelatedWords(
   for (const word of seedList) {
     // 檢查快取，如果已經存在則跳過
     const existing = await db.query.wordCache.findFirst({
-      where: and(eq(wordCache.word, word), eq(wordCache.targetLang, targetLang)),
+      where: and(
+        eq(wordCache.word, word),
+        eq(wordCache.targetLang, targetLang),
+      ),
     });
 
     if (!existing) {
