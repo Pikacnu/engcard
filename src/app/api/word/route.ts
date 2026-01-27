@@ -1,18 +1,7 @@
 import { db } from '@/db';
 import { wordCache, settings, dictionaryItems } from '@/db/schema';
-import {
-  eq,
-  and,
-  cosineDistance,
-  lt,
-} from 'drizzle-orm';
-import {
-  CardProps,
-  Lang,
-  LangEnum,
-  PartOfSpeech,
-  Blocks,
-} from '@/type';
+import { eq, and, cosineDistance, lt } from 'drizzle-orm';
+import { CardProps, Lang, LangEnum, PartOfSpeech, Blocks } from '@/type';
 import {
   auth,
   generateEmbedding,
@@ -61,10 +50,13 @@ export async function GET(request: Request): Promise<Response> {
   const isSource = sourceLangValidator(word);
   const isTarget = targetLangValidator(word);
 
-  if (!isSource && !isTarget && !isPhrase) {
+  if (!isSource && !isTarget) {
     const detected = getLangByStr(word);
     if (!detected) {
-      return NextResponse.json({ error: 'Unsupported language' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Unsupported language' },
+        { status: 400 },
+      );
     }
   }
 
@@ -137,12 +129,17 @@ export async function GET(request: Request): Promise<Response> {
     const literalMatch = await db
       .select()
       .from(dictionaryItems)
-      .where(sql`${dictionaryItems.metadata}->'definitions'->>${targetLang} = ${normalizedWord}`)
+      .where(
+        sql`${dictionaryItems.metadata}->'definitions'->>${targetLang} = ${normalizedWord}`,
+      )
       .limit(1);
 
     if (literalMatch.length > 0) {
       const concept = literalMatch[0];
-      const conceptData = convertToCardProps(concept, [...sourceLang, targetLang]);
+      const conceptData = convertToCardProps(concept, [
+        ...sourceLang,
+        targetLang,
+      ]);
       return NextResponse.json(conceptData, { status: 200 });
     }
   }
@@ -152,12 +149,17 @@ export async function GET(request: Request): Promise<Response> {
   const nearestConcept = await db
     .select()
     .from(dictionaryItems)
-    .where(and(lt(cosineDistance(dictionaryItems.embedding, embeddedVector), 0.1)))
+    .where(
+      and(lt(cosineDistance(dictionaryItems.embedding, embeddedVector), 0.1)),
+    )
     .limit(1);
 
   if (nearestConcept.length > 0) {
     const concept = nearestConcept[0];
-    const conceptData = convertToCardProps(concept, [...sourceLang, targetLang]);
+    const conceptData = convertToCardProps(concept, [
+      ...sourceLang,
+      targetLang,
+    ]);
 
     // 概念命中後，同樣檢查語言補全邏輯
     const currentLangs = concept.languageCode as LangEnum[];
@@ -182,39 +184,51 @@ export async function GET(request: Request): Promise<Response> {
   const relatedResults = await db
     .select()
     .from(dictionaryItems)
-    .where(and(lt(cosineDistance(dictionaryItems.embedding, embeddedVector), 0.25)))
+    .where(
+      and(lt(cosineDistance(dictionaryItems.embedding, embeddedVector), 0.25)),
+    )
     .limit(5);
 
-  if (relatedResults.length > 0 && isPhrase) {
+  if (relatedResults.length > 0 && !isTarget) {
     const langSet = new Set([...sourceLang, targetLang]);
-    const groupedResults = relatedResults.reduce((acc, def) => {
-      const term = def.metadata.source_term;
-      if (!acc[term]) {
-        acc[term] = { word: term, phonetic: def.metadata.phonetic || '', blocks: [] };
-      }
-      const block = acc[term].blocks.find((b: Blocks) => b.partOfSpeech === def.metadata.pos);
-      const definitionItem = {
-        definition: Object.entries(def.metadata.definitions)
-          .filter(([lang]) => langSet.has(lang as LangEnum))
-          .map(([lang, content]) => ({ lang: lang as Lang, content })),
-        synonyms: def.metadata.synonyms || [],
-        antonyms: [],
-        example: (def.metadata.examples as Record<string, string>[]).map((ex) =>
-          Object.entries(ex)
+    const groupedResults = relatedResults.reduce(
+      (acc, def) => {
+        const term = def.metadata.source_term;
+        if (!acc[term]) {
+          acc[term] = {
+            word: term,
+            phonetic: def.metadata.phonetic || '',
+            blocks: [],
+          };
+        }
+        const block = acc[term].blocks.find(
+          (b: Blocks) => b.partOfSpeech === def.metadata.pos,
+        );
+        const definitionItem = {
+          definition: Object.entries(def.metadata.definitions)
             .filter(([lang]) => langSet.has(lang as LangEnum))
             .map(([lang, content]) => ({ lang: lang as Lang, content })),
-        ),
-      };
-      if (block) {
-        block.definitions.push(definitionItem);
-      } else {
-        acc[term].blocks.push({
-          partOfSpeech: def.metadata.pos as PartOfSpeech,
-          definitions: [definitionItem],
-        });
-      }
-      return acc;
-    }, {} as Record<string, CardProps>);
+          synonyms: def.metadata.synonyms || [],
+          antonyms: [],
+          example: (def.metadata.examples as Record<string, string>[]).map(
+            (ex) =>
+              Object.entries(ex)
+                .filter(([lang]) => langSet.has(lang as LangEnum))
+                .map(([lang, content]) => ({ lang: lang as Lang, content })),
+          ),
+        };
+        if (block) {
+          block.definitions.push(definitionItem);
+        } else {
+          acc[term].blocks.push({
+            partOfSpeech: def.metadata.pos as PartOfSpeech,
+            definitions: [definitionItem],
+          });
+        }
+        return acc;
+      },
+      {} as Record<string, CardProps>,
+    );
 
     return NextResponse.json(Object.values(groupedResults), { status: 200 });
   }
@@ -324,11 +338,12 @@ function convertToCardProps(
               .map(([lang, content]) => ({ lang: lang as Lang, content })),
             synonyms: concept.metadata.synonyms || [],
             antonyms: [],
-            example: (concept.metadata.examples as Record<string, string>[]).map(
-              (ex) =>
-                Object.entries(ex)
-                  .filter(([lang]) => langSet.has(lang as LangEnum))
-                  .map(([lang, content]) => ({ lang: lang as Lang, content })),
+            example: (
+              concept.metadata.examples as Record<string, string>[]
+            ).map((ex) =>
+              Object.entries(ex)
+                .filter(([lang]) => langSet.has(lang as LangEnum))
+                .map(([lang, content]) => ({ lang: lang as Lang, content })),
             ),
           },
         ],
