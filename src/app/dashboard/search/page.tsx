@@ -69,7 +69,7 @@ export default function Search() {
 
   return (
     <div className='flex flex-col items-center justify-start pt-10 h-full bg-gray-100 dark:bg-gray-700 w-full text-black dark:text-white relative'>
-      <div className='flex flex-row mb-4 w-full justify-center'>
+      <div className='flex flex-row mb-4 w-full justify-center relative'>
         <input
           className='p-2 m-2 rounded-md text-black dark:text-white bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 focus:ring-blue-500 focus:border-blue-500 md:max-w-[40vw] md:w-full'
           type='text'
@@ -109,9 +109,13 @@ export default function Search() {
           </p>
         </div>
       )) ||
-        (type === Type.card && card && <Card card={card} />) ||
+        (type === Type.card && card && (
+          <div className='md:w-[40vw] w-full relative h-[80vh] max-md:h-[75vh]'>
+            <Card card={card} />
+          </div>
+        )) ||
         (type === Type.cards && cards && cards.length > 0 && (
-          <div className='mt-4 w-full max-w-2xl'>
+          <div className='mt-4 w-full max-w-2xl h-[80vh] max-md:h-[75vh]'>
             <List cards={cards} />
           </div>
         ))}
