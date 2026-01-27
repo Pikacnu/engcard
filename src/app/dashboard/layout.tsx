@@ -104,7 +104,8 @@ export default function DashBoardLayout({
   const [isClient, setIsClient] = useState(false);
   useEffect(() => {
     setIsClient(true);
-  }, []);
+    setJoyrideRun(!isGuideDashboard);
+  }, [isGuideDashboard]);
 
   return (
     // Outer div: bg-gray-100 dark:bg-gray-700

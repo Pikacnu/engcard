@@ -4,6 +4,7 @@ import {
   GoogleGenAI,
   FunctionCallingConfigMode,
 } from '@google/genai';
+import { TaskType } from '@google/generative-ai';
 import { db } from '@/db';
 import { decks } from '@/db/schema';
 import { eq } from 'drizzle-orm';
@@ -13,6 +14,7 @@ const googleAIKey = process.env.GEMINI_API_KEY || '';
 
 export const GenAI = new GoogleGenAI({
   apiKey: googleAIKey,
+  apiVersion: 'v1beta',
 });
 
 export const Models = GenAI.models;
@@ -99,13 +101,14 @@ export async function GenerateTextResponse(
 
 export async function generateEmbedding(text: string): Promise<number[]> {
   const result = await Models.embedContent({
-    model: 'gemini-embedding-1.0',
+    model: 'gemini-embedding-001',
     config: {
-      taskType: 'RETRIEVAL_DOCUMENT',
       outputDimensionality: 1536,
+      taskType: TaskType.RETRIEVAL_DOCUMENT,
     },
     contents: [
       {
+        role: 'user',
         parts: [
           {
             text: text,

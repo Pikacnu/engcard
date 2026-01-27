@@ -21,6 +21,7 @@ import {
   Models,
   wordSchema,
   generateEmbedding,
+  MultipleLangValidator,
 } from '@/utils';
 import type { DictionaryItemMetadata } from '@/utils/ai/schema';
 import {
@@ -49,77 +50,91 @@ export async function GET(request: Request): Promise<Response> {
   const sourceLang = (userSettings?.usingLang as LangEnum[]) || [LangEnum.EN];
   const targetLang = (userSettings?.targetLang as LangEnum) || LangEnum.TW;
 
-  const vailders = sourceLang.map((l) => LangVailderCreator(l));
-  if (vailders.some((fn) => fn(word!))) {
-    const result = await db.query.wordCache.findMany({
-      where: and(
-        arrayContains(wordCache.availableSearchTarget, [word!]),
-        eq(wordCache.targetLang, targetLang),
-      ),
-    });
+  const sourceLangValidator = MultipleLangValidator(sourceLang);
+  const targetLangVailder = LangVailderCreator(targetLang);
 
-    if (result.length < 0) {
-      // Condition from original code is < 0 which is impossible for array length, assuming it meant length === 0 or !result? But original had < 0
-      return NextResponse.json({ error: 'Word not found' }, { status: 404 });
-    }
+  switch (true) {
+    // Search From sourceLang (by definition content)
+    case sourceLangValidator(word): {
+      // Check Cache
+      const result = await db.query.wordCache.findMany({
+        where: and(
+          //arrayContains(wordCache.availableSearchTarget, [word!]),
+          eq(wordCache.targetLang, targetLang),
+        ),
+      });
 
-    // Logic to parse results.
-    // In new schema, `data` is jsonb.
-    // Original result items were `WordCollectionWith<CardProps>` (flat).
-    // Now `data` holds the CardProps structure.
-
-    const parsedResults: WordCollectionWith<CardProps>[] = result
-      .filter((w) => w.data && typeof w.data === 'object' && 'blocks' in w.data)
-      .map((w) => ({
-        ...(w.data as CardProps),
-        available: w.available || false,
-        sourceLang: w.sourceLang as LangEnum[],
-        targetLang: w.targetLang as LangEnum,
-        availableSearchTarget: w.availableSearchTarget as string[],
-      }));
-
-    const simpleFilter =
-      (targetLang: Lang | Lang[]) =>
-      <T>(array: Array<T & { lang: Lang }>) =>
-        array.filter((data) =>
-          Array.isArray(targetLang)
-            ? targetLang.includes(data.lang)
-            : data.lang === targetLang,
-        );
-    const filter = simpleFilter([...sourceLang, targetLang]);
-
-    const words = parsedResults
-      .filter((word) => word.available !== false) // !word.available logic? available defaults to true in schema.
-      .map((word) => ({
-        ...word,
-        blocks: word.blocks.map((block) => ({
-          ...block,
-          definitions: block.definitions.map((definition) => ({
-            ...definition,
-            definition: filter(definition.definition),
-            synonyms: definition.synonyms,
-            antonyms: definition.antonyms,
-            example: definition.example?.map((ex) =>
-              ex.map((item) => ({
-                lang: item.lang,
-                content: item.content,
-              })),
-            ),
-          })),
-        })),
-      }));
-
-    if (words.length > 0) {
-      if (result.length === 1) {
-        return NextResponse.json(words[0], { status: 200 });
+      if (result.length === 0) {
+        // Condition from original code is < 0 which is impossible for array length, assuming it meant length === 0 or !result? But original had < 0
+        return NextResponse.json({ error: 'Word not found' }, { status: 404 });
       }
-      return NextResponse.json(words, { status: 200 });
+
+      const parsedResults: WordCollectionWith<CardProps>[] = result
+        .filter(
+          (w) => w.data && typeof w.data === 'object' && 'blocks' in w.data,
+        )
+        .map((w) => ({
+          ...(w.data as CardProps),
+          available: w.available || false,
+          sourceLang: w.sourceLang as LangEnum[],
+          targetLang: w.targetLang as LangEnum,
+          // availableSearchTarget: w.availableSearchTarget as string[],
+        }));
+
+      const simpleFilter =
+        (targetLang: Lang | Lang[]) =>
+        <T>(array: Array<T & { lang: Lang }>) =>
+          array.filter((data) =>
+            Array.isArray(targetLang)
+              ? targetLang.includes(data.lang)
+              : data.lang === targetLang,
+          );
+      const filter = simpleFilter([...sourceLang, targetLang]);
+
+      const words = parsedResults
+        .filter((word) => word.available !== false) // !word.available logic? available defaults to true in schema.
+        .map((word) => ({
+          ...word,
+          blocks: word.blocks.map((block) => ({
+            ...block,
+            definitions: block.definitions.map((definition) => ({
+              ...definition,
+              definition: filter(definition.definition),
+              synonyms: definition.synonyms,
+              antonyms: definition.antonyms,
+              example: definition.example?.map((ex) =>
+                ex.map((item) => ({
+                  lang: item.lang,
+                  content: item.content,
+                })),
+              ),
+            })),
+          })),
+        }));
+
+      if (words.length > 0) {
+        if (result.length === 1) {
+          return NextResponse.json(words[0], { status: 200 });
+        }
+        return NextResponse.json(words, { status: 200 });
+      }
+      break;
+    }
+    // Search From targetLang (by word)
+    case targetLangVailder(word): {
+      break;
+    }
+    default: {
+      return NextResponse.json(
+        { error: 'Word language does not match user settings' },
+        { status: 400 },
+      );
     }
   }
 
-  // Fallthrough for generation
   word = word.trimEnd().trimStart().toLowerCase();
 
+  // Check is word already in cache
   const cacheResult = await db.query.wordCache.findFirst({
     where: and(eq(wordCache.word, word), eq(wordCache.targetLang, targetLang)),
   });
@@ -133,10 +148,12 @@ export async function GET(request: Request): Promise<Response> {
     };
 
     // has data in db and not available
+    // * available means that the word is exist or not
     if (resultData.available === false)
       return NextResponse.json({ error: 'Word not found' }, { status: 404 });
 
     // has data in db and available with all sourceLang
+    // -> this fits all the needed sourceLang
     if (
       sourceLang.every((neededLang) =>
         resultData.sourceLang.includes(neededLang),
@@ -148,10 +165,10 @@ export async function GET(request: Request): Promise<Response> {
     const missingLangs = sourceLang.filter(
       (neededLang) => !resultData.sourceLang.includes(neededLang),
     );
-    const testfn = (data: unknown): data is WordCollectionWith<CardProps> =>
-      (data as WordCollectionWith<CardProps>).blocks !== undefined;
 
-    if (testfn(resultData)) {
+    if (resultData) {
+      // due to the missing langs, we need to get modified result from AI
+      // so we call AI again with existing data plus missing langs
       const newResult = await getModifiedResult(
         resultData,
         missingLangs,
@@ -180,25 +197,32 @@ export async function GET(request: Request): Promise<Response> {
 
   // Generate New Data
   let data: CardProps;
-  if (![LangEnum.EN].includes(targetLang)) {
-    data = await getAIResponse(word, sourceLang, targetLang);
-  } else {
-    // English Logic
-    const newWordData = await newWord(word, sourceLang, targetLang);
-    if (!newWordData) {
-      await db
-        .insert(wordCache)
-        .values({
-          word,
-          available: false,
-          sourceLang,
-          targetLang,
-          data: {},
-        })
-        .onConflictDoNothing(); // If exists?
+  switch (true) {
+    case ![LangEnum.EN].includes(targetLang): {
+      data = await getAIResponse(word, sourceLang, targetLang);
+      break;
+    }
+    case [LangEnum.EN].includes(targetLang): {
+      const newWordData = await newWord(word, sourceLang, targetLang);
+      if (!newWordData) {
+        await db
+          .insert(wordCache)
+          .values({
+            word,
+            available: false,
+            sourceLang,
+            targetLang,
+            data: {},
+          })
+          .onConflictDoNothing();
+        return NextResponse.json({ error: 'Word not found' }, { status: 404 });
+      }
+      data = newWordData;
+      break;
+    }
+    default: {
       return NextResponse.json({ error: 'Word not found' }, { status: 404 });
     }
-    data = newWordData;
   }
 
   if (!data) {
@@ -215,16 +239,6 @@ export async function GET(request: Request): Promise<Response> {
     return NextResponse.json({ error: 'Word not found' }, { status: 404 });
   }
 
-  const availableSearchTarget = data.blocks
-    .map((block) =>
-      block.definitions
-        .map((def) => def.definition)
-        .flat()
-        .filter((def) => def.lang === targetLang)
-        .map((def) => def.content),
-    )
-    .flat();
-
   await db
     .insert(wordCache)
     .values({
@@ -233,7 +247,7 @@ export async function GET(request: Request): Promise<Response> {
       data: data,
       sourceLang,
       targetLang,
-      availableSearchTarget,
+      //availableSearchTarget,
     })
     .onConflictDoUpdate({
       target: [wordCache.word, wordCache.targetLang],
@@ -241,10 +255,10 @@ export async function GET(request: Request): Promise<Response> {
         data: data,
         available: true,
         sourceLang,
-        availableSearchTarget,
+        //availableSearchTarget,
         updatedAt: new Date(),
       },
-    }); // Using upsert logic
+    });
 
   return NextResponse.json(data, { status: 200 });
 }
