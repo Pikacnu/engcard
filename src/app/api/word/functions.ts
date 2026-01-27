@@ -1,6 +1,7 @@
 import { db } from '@/db';
-import { dictionaryItems } from '@/db/schema';
+import { dictionaryItems, wordCache } from '@/db/schema';
 import { LangEnum, CardProps, Example, PartOfSpeech, Lang } from '@/type';
+import { eq, and } from 'drizzle-orm';
 import {
   DictionaryItemMetadata,
   generateEmbedding,
@@ -17,7 +18,6 @@ import {
   getWordFromDictionaryAPI,
   getWordFromEnWordNetAPI,
 } from '@/utils/dict';
-import { eq } from 'drizzle-orm';
 import { zodResponseFormat } from 'openai/helpers/zod.mjs';
 
 export async function getNewWordDataWithAPIResources(
@@ -187,6 +187,45 @@ export async function saveToDictionaryItems(
     });
   } catch (error) {
     console.error('Error saving to dictionary items:', error);
+  }
+}
+
+/**
+ * 有限度地自動探測並預熱相關單字
+ */
+export async function seedRelatedWords(
+  data: CardProps,
+  sourceLang: LangEnum[],
+  targetLang: LangEnum,
+) {
+  // 提取所有同義詞並去重
+  const synonyms = new Set<string>();
+  data.blocks.forEach((block) => {
+    block.definitions.forEach((def) => {
+      def.synonyms?.forEach((s) => {
+        if (s.toLowerCase().trim() !== data.word.toLowerCase().trim()) {
+          synonyms.add(s.toLowerCase().trim());
+        }
+      });
+    });
+  });
+
+  // 限制：僅選取前 3 個相關單字進行預熱，避免資源爆炸
+  const seedList = Array.from(synonyms).slice(0, 3);
+
+  for (const word of seedList) {
+    // 檢查快取，如果已經存在則跳過
+    const existing = await db.query.wordCache.findFirst({
+      where: and(eq(wordCache.word, word), eq(wordCache.targetLang, targetLang)),
+    });
+
+    if (!existing) {
+      console.log(`[Seed] Automatically detecting related word: ${word}`);
+      // 異步執行，不 await，不阻塞主流程
+      newWord(word, sourceLang, targetLang).catch((err) =>
+        console.error(`[Seed Error] Failed to seed ${word}:`, err),
+      );
+    }
   }
 }
 
@@ -461,6 +500,7 @@ export async function getAIResponse(
 
     const checked = await CheckData(processedData, result);
     await saveToDictionaryItems(checked, [...sourceLang, targetLang]);
+    seedRelatedWords(checked, sourceLang, targetLang); // 啟動背景預熱，不 await
     return checked;
   } catch (error) {
     console.error('AI Error processing, falling back to Google...', error);
@@ -515,6 +555,7 @@ export async function getAIResponse(
 
       const checked = await CheckData(processedData, result);
       await saveToDictionaryItems(checked, [...sourceLang, targetLang]);
+      seedRelatedWords(checked, sourceLang, targetLang); // 啟動背景預熱，不 await
       return checked;
     } catch (e) {
       console.error('Critical AI Error:', e);
