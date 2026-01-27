@@ -18,7 +18,13 @@ enum Type {
 
 export default function Search() {
   const { t } = useTranslation();
-  const [word, setWord] = useState<string>('');
+
+  const searchParams = new URLSearchParams(
+    typeof window !== 'undefined' ? window.location.search : '',
+  );
+  const initialWord = searchParams.get('word') || '';
+
+  const [word, setWord] = useState<string>(initialWord);
   const [card, setCard] = useState<CardProps | null>(null);
   const [cards, setCards] = useState<CardProps[]>([]);
   const [type, setType] = useState<Type>(Type.card);
@@ -115,7 +121,7 @@ export default function Search() {
           </div>
         )) ||
         (type === Type.cards && cards && cards.length > 0 && (
-          <div className='mt-4 w-full max-w-2xl h-[80vh] max-md:h-[75vh]'>
+          <div className='mt-4 w-full max-w-2xl h-[80vh] max-md:h-[75vh] flex item-center p-8'>
             <List cards={cards} />
           </div>
         ))}
