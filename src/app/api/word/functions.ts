@@ -23,12 +23,13 @@ export async function getNewWordDataWithAPIResources(
   word: string,
   sourceLang: LangEnum[],
   targetLang: LangEnum,
-  apiData: Promise<CardProps | null>[],
+  apiData: Promise<CardProps | CardProps[] | null>[],
 ): Promise<CardProps | null> {
   const sourceDataList = (await Promise.allSettled(apiData))
     .filter((data) => data.status === 'fulfilled')
     .map((data) => (data as PromiseFulfilledResult<CardProps>).value)
-    .filter((data): data is CardProps => data !== null);
+    .filter((data): data is CardProps => data !== null)
+    .flat();
   if (sourceDataList.length < 1) {
     return null;
   }

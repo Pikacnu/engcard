@@ -18,7 +18,13 @@ import {
   getLangByStr,
 } from '@/utils';
 import { NextResponse } from 'next/server';
-import { getModifiedResult, getAIResponse, newWord } from './functions';
+import {
+  getModifiedResult,
+  getAIResponse,
+  newWord,
+  getNewWordDataWithAPIResources,
+} from './functions';
+import { getWordFromJishoOrg } from '@/utils/dict/jisho';
 
 export async function GET(request: Request): Promise<Response> {
   const { searchParams } = new URL(request.url);
@@ -239,6 +245,29 @@ export async function GET(request: Request): Promise<Response> {
   // Generate New Data
   let data: CardProps;
   switch (true) {
+    case targetLang === LangEnum.JA: {
+      const newWordData = await getNewWordDataWithAPIResources(
+        word,
+        sourceLang,
+        targetLang,
+        [getWordFromJishoOrg(word)],
+      );
+      if (!newWordData) {
+        await db
+          .insert(wordCache)
+          .values({
+            word,
+            available: false,
+            sourceLang,
+            targetLang,
+            data: {},
+          })
+          .onConflictDoNothing();
+        return NextResponse.json({ error: 'Word not found' }, { status: 404 });
+      }
+      data = newWordData;
+      break;
+    }
     case ![LangEnum.EN].includes(targetLang): {
       data = await getAIResponse(word, sourceLang, targetLang);
       break;
