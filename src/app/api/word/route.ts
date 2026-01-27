@@ -17,6 +17,7 @@ import {
   getAIResponse,
   newWord,
   getNewWordDataWithAPIResources,
+  CheckData,
 } from './functions';
 import { getWordFromJishoOrg } from '@/utils/dict/jisho';
 
@@ -140,7 +141,11 @@ export async function GET(request: Request): Promise<Response> {
         ...sourceLang,
         targetLang,
       ]);
-      return NextResponse.json(conceptData, { status: 200 });
+      const checkedData = await CheckData(
+        concept.metadata.source_term,
+        conceptData,
+      );
+      return NextResponse.json(checkedData, { status: 200 });
     }
   }
 
@@ -177,7 +182,11 @@ export async function GET(request: Request): Promise<Response> {
         return NextResponse.json(expandedResult, { status: 200 });
       }
     }
-    return NextResponse.json(conceptData, { status: 200 });
+    const checkedData = await CheckData(
+      concept.metadata.source_term,
+      conceptData,
+    );
+    return NextResponse.json(checkedData, { status: 200 });
   }
 
   // 層級三：模糊/相關搜尋 (Fuzzy / Related Results)
