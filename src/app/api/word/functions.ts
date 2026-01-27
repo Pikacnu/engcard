@@ -195,8 +195,12 @@ export async function CheckData(
         (b) => b.partOfSpeech === sBlock.partOfSpeech,
       );
       if (!aBlock) {
-        // AI missed a whole category, we should keep it or at least log
-        console.warn(`AI missed part of speech: ${sBlock.partOfSpeech}`);
+        // AI missed a whole category, we should append it
+        console.warn(`AI missed part of speech: ${sBlock.partOfSpeech}, appending original data.`);
+        result.blocks.push(sBlock);
+      } else {
+        // AI found the block, but check if it missed definitions?
+        // For now, assume AI's definitions are preferred, but we could merge if needed.
       }
     });
   });

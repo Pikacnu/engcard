@@ -266,7 +266,7 @@ export const DictionaryItemMetadataSchema = z.object({
   definitions: z
     .object({
       en: z.string().optional(),
-      zh: z.string().optional(),
+      'zh-tw': z.string().optional(),
       ja: z.string().optional(),
     })
     .and(z.record(z.string())),
@@ -275,7 +275,7 @@ export const DictionaryItemMetadataSchema = z.object({
   examples: z.array(
     z.object({
       ja: z.string().optional(),
-      zh: z.string().optional(),
+      'zh-tw': z.string().optional(),
       en: z.string().optional(),
       nuance: z.string().optional(),
     }),
