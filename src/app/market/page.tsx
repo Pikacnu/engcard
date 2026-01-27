@@ -8,6 +8,7 @@ import Image from 'next/image';
 import { ThemeToggler } from '@/components/ThemeToggler';
 import { authClient } from '@/lib/auth-client';
 import Link from 'next/link';
+import { NavBar } from '@/components/navbar';
 
 export default function Market() {
   const { t } = useTranslation(); // Added
