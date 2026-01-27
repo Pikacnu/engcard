@@ -1,14 +1,7 @@
 import { db } from '@/db';
 import { wordCache, settings, dictionaryItems } from '@/db/schema';
-import { eq, and, arrayContains } from 'drizzle-orm';
-import {
-  CardProps,
-  Example,
-  Lang,
-  LangEnum,
-  PartOfSpeech,
-  WordCollectionWith,
-} from '@/type';
+import { eq, and, cosineDistance, lt } from 'drizzle-orm';
+import { CardProps, Example, Lang, LangEnum, PartOfSpeech } from '@/type';
 import {
   auth,
   GwordSchemaCreator,
@@ -56,67 +49,112 @@ export async function GET(request: Request): Promise<Response> {
   switch (true) {
     // Search From sourceLang (by definition content)
     case sourceLangValidator(word): {
-      // Check Cache
-      const result = await db.query.wordCache.findMany({
-        where: and(
-          //arrayContains(wordCache.availableSearchTarget, [word!]),
-          eq(wordCache.targetLang, targetLang),
-        ),
-      });
+      // embedding search content
 
-      if (result.length === 0) {
+      const embeddedVector = await generateEmbedding(word);
+      const nearestDefinitions = await db
+        .select()
+        .from(dictionaryItems)
+        .where(
+          and(
+            eq(dictionaryItems.languageCode, targetLang),
+            lt(cosineDistance(dictionaryItems.embedding, embeddedVector), 0.2),
+          ),
+        )
+        .limit(10);
+
+      if (nearestDefinitions.length === 0) {
         // Condition from original code is < 0 which is impossible for array length, assuming it meant length === 0 or !result? But original had < 0
         return NextResponse.json({ error: 'Word not found' }, { status: 404 });
       }
 
-      const parsedResults: WordCollectionWith<CardProps>[] = result
-        .filter(
-          (w) => w.data && typeof w.data === 'object' && 'blocks' in w.data,
-        )
-        .map((w) => ({
-          ...(w.data as CardProps),
-          available: w.available || false,
-          sourceLang: w.sourceLang as LangEnum[],
-          targetLang: w.targetLang as LangEnum,
-          // availableSearchTarget: w.availableSearchTarget as string[],
-        }));
-
       const simpleFilter =
         (targetLang: Lang | Lang[]) =>
-        <T>(array: Array<T & { lang: Lang }>) =>
-          array.filter((data) =>
-            Array.isArray(targetLang)
-              ? targetLang.includes(data.lang)
-              : data.lang === targetLang,
-          );
-      const filter = simpleFilter([...sourceLang, targetLang]);
+        <T>(obj: Array<T | Lang | (T & { lang: Lang })>) => {
+          return obj.filter((item) => {
+            if (Array.isArray(targetLang)) {
+              return targetLang.includes((item as T & { lang: Lang }).lang);
+            } else {
+              return (item as T & { lang: Lang }).lang === targetLang;
+            }
+          }) as Array<T>;
+        };
+      const pickupLanguageFilter = simpleFilter([...sourceLang, targetLang]);
 
-      const words = parsedResults
-        .filter((word) => word.available !== false) // !word.available logic? available defaults to true in schema.
-        .map((word) => ({
-          ...word,
-          blocks: word.blocks.map((block) => ({
-            ...block,
-            definitions: block.definitions.map((definition) => ({
-              ...definition,
-              definition: filter(definition.definition),
-              synonyms: definition.synonyms,
-              antonyms: definition.antonyms,
-              example: definition.example?.map((ex) =>
-                ex.map((item) => ({
-                  lang: item.lang,
-                  content: item.content,
+      const nearestDefinitionsWarpedWithWord = nearestDefinitions.map((def) => {
+        const blocks: CardProps['blocks'] = [
+          {
+            partOfSpeech: def.metadata.pos as PartOfSpeech,
+            definitions: [
+              {
+                definition: pickupLanguageFilter(
+                  Object.entries(def.metadata.definitions),
+                ).map(([lang, content]) => ({
+                  lang: lang as Lang,
+                  content: content,
                 })),
-              ),
-            })),
-          })),
-        }));
+                synonyms: def.metadata.synonyms || [],
+                antonyms: [],
+                example: pickupLanguageFilter(def.metadata.examples).map((ex) =>
+                  Object.entries(ex).map(([lang, content]) => ({
+                    lang: lang as Lang,
+                    content: content,
+                  })),
+                ),
+              },
+            ],
+          },
+        ];
 
-      if (words.length > 0) {
-        if (result.length === 1) {
-          return NextResponse.json(words[0], { status: 200 });
+        return {
+          phonetic: def.metadata.phonetic,
+          word: def.metadata.source_term,
+          blocks: blocks,
+        };
+      }) as CardProps[];
+
+      // const parsedResults: WordCollectionWith<CardProps>[] = result
+      //   .filter(
+      //     (w) => w.data && typeof w.data === 'object' && 'blocks' in w.data,
+      //   )
+      //   .map((w) => ({
+      //     ...(w.data as CardProps),
+      //     available: w.available || false,
+      //     sourceLang: w.sourceLang as LangEnum[],
+      //     targetLang: w.targetLang as LangEnum,
+      //     // availableSearchTarget: w.availableSearchTarget as string[],
+      //   }));
+
+      // const words = parsedResults
+      //   .filter((word) => word.available !== false) // !word.available logic? available defaults to true in schema.
+      //   .map((word) => ({
+      //     ...word,
+      //     blocks: word.blocks.map((block) => ({
+      //       ...block,
+      //       definitions: block.definitions.map((definition) => ({
+      //         ...definition,
+      //         definition: filter(definition.definition),
+      //         synonyms: definition.synonyms,
+      //         antonyms: definition.antonyms,
+      //         example: definition.example?.map((ex) =>
+      //           ex.map((item) => ({
+      //             lang: item.lang,
+      //             content: item.content,
+      //           })),
+      //         ),
+      //       })),
+      //     })),
+      //   }));
+
+      if (nearestDefinitionsWarpedWithWord.length > 0) {
+        if (nearestDefinitionsWarpedWithWord.length === 1) {
+          return NextResponse.json(nearestDefinitionsWarpedWithWord[0], {
+            status: 200,
+          });
         }
-        return NextResponse.json(words, { status: 200 });
+        return NextResponse.json(nearestDefinitionsWarpedWithWord, {
+          status: 200,
+        });
       }
       break;
     }
