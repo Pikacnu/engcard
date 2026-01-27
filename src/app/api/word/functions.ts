@@ -17,7 +17,7 @@ import {
   getWordFromDictionaryAPI,
   getWordFromEnWordNetAPI,
 } from '@/utils/dict';
-import { and, arrayContained, eq } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { zodResponseFormat } from 'openai/helpers/zod.mjs';
 
 export async function getNewWordDataWithAPIResources(
@@ -106,21 +106,23 @@ export async function newWord(
 
 export async function saveToDictionaryItems(
   data: CardProps,
-  langCode: LangEnum,
+  langCodes: LangEnum[],
 ) {
   try {
-    const term = data.word;
-    const inserts = [];
-    const LangSet = new Set<LangEnum>();
-    LangSet.add(langCode);
+    const term = data.word.toLowerCase().trim();
+    const inserts: { embedding: number[]; metadata: DictionaryItemMetadata }[] =
+      [];
+
+    const finalLangSet = new Set<LangEnum>(langCodes);
 
     for (const block of data.blocks) {
       for (const defItem of block.definitions) {
         // Collect definition texts for embedding
         const defTexts = defItem.definition.map((d) => d.content).join(' ');
-        const defLangs = defItem.definition.map((d) => d.lang);
-        defLangs.forEach((lang) => LangSet.add(lang as LangEnum));
         const embeddingText = `${term} ${defTexts}`;
+
+        // Add definition languages to finalLangSet
+        defItem.definition.forEach((d) => finalLangSet.add(d.lang as LangEnum));
 
         // Prepare definitions map for metadata
         const definitionsMap: Record<string, string> = {};
@@ -140,7 +142,7 @@ export async function saveToDictionaryItems(
 
         const metadata: DictionaryItemMetadata = {
           source_term: term,
-          detected_lang: Array.from(LangSet),
+          detected_lang: Array.from(finalLangSet),
           phonetic: data.phonetic || '',
           pos: block.partOfSpeech || 'unknown',
           definitions: definitionsMap,
@@ -149,25 +151,39 @@ export async function saveToDictionaryItems(
           examples: examples,
         };
 
-        inserts.push(async () => {
-          try {
-            const embedding = await generateEmbedding(embeddingText);
-            await db.insert(dictionaryItems).values({
-              term: term,
-              languageCode: Array.from(LangSet),
-              embedding: embedding,
-              metadata: metadata,
-            });
-          } catch (e) {
-            console.error(
-              'Error generating embedding or inserting dictionary item',
-              e,
-            );
-          }
+        const embedding = await generateEmbedding(embeddingText);
+        inserts.push({
+          embedding,
+          metadata,
         });
       }
     }
-    await Promise.all(inserts.map((fn) => fn()));
+
+    await db.transaction(async (tx) => {
+      // 邏輯修復：先獲取當前存在的語言，避免覆蓋時遺失其他語言
+      const existingItems = await tx
+        .select({ languageCode: dictionaryItems.languageCode })
+        .from(dictionaryItems)
+        .where(eq(dictionaryItems.term, term));
+
+      existingItems.forEach((item) => {
+        item.languageCode.forEach((l) => finalLangSet.add(l as LangEnum));
+      });
+
+      // 清除舊條目並插入更新後的條目
+      await tx.delete(dictionaryItems).where(eq(dictionaryItems.term, term));
+
+      if (inserts.length > 0) {
+        await tx.insert(dictionaryItems).values(
+          inserts.map((ins) => ({
+            term: term,
+            languageCode: Array.from(finalLangSet),
+            embedding: ins.embedding,
+            metadata: ins.metadata,
+          })),
+        );
+      }
+    });
   } catch (error) {
     console.error('Error saving to dictionary items:', error);
   }
@@ -272,17 +288,6 @@ export async function getModifiedResult(
     return null;
   }
 
-  const alreadyEmbeddedLangs = new Set<Lang>();
-
-  // Make sure to collect all already embedded languages
-  originalData.blocks.forEach((block) => {
-    block.definitions.forEach((def) => {
-      def.definition.forEach((d) => {
-        alreadyEmbeddedLangs.add(d.lang);
-      });
-    });
-  });
-
   const newResult: CardProps = {
     ...originalData,
     blocks: originalData.blocks.map((block) => {
@@ -293,8 +298,15 @@ export async function getModifiedResult(
       return {
         ...block,
         definitions: block.definitions.map((definition) => {
+          // 邏輯修復：優先匹配原始定義的內容（source language），確保定義正確對應
           const updatedDefinition = updatedBlock.definitions.find((d) =>
-            d.definition.some((def) => def.lang === targetLang),
+            definition.definition.some((orig) =>
+              d.definition.some(
+                (upd) =>
+                  upd.content.toLowerCase().trim() ===
+                  orig.content.toLowerCase().trim(),
+              ),
+            ),
           );
           if (!updatedDefinition) return definition;
 
@@ -363,89 +375,8 @@ export async function getModifiedResult(
     }),
   };
 
-  // regenerate embedding and save to database
-  Promise.allSettled(
-    newResult.blocks.map(async (block) => {
-      return (
-        await Promise.allSettled(
-          block.definitions.map(async (defItem) => {
-            const defTexts = defItem.definition.map((d) => d.content).join(' ');
-            const embeddingText = `${newResult.word} ${defTexts}`;
-            const embeddedVector = await generateEmbedding(embeddingText);
-            return {
-              embedding: embeddedVector,
-              metadata: {
-                source_term: newResult.word,
-                detected_lang: [targetLang] as LangEnum[],
-                phonetic: newResult.phonetic || '',
-                pos: block.partOfSpeech || 'unknown',
-                definitions: block.definitions.reduce(
-                  (acc, def) => {
-                    def.definition.forEach((d) => {
-                      acc[d.lang] = d.content;
-                    });
-                    return acc;
-                  },
-                  {} as Record<string, string>,
-                ),
-                synonyms: defItem.synonyms || [],
-                context_tags: [] as string[],
-                examples:
-                  defItem.example?.map((exGroup) => {
-                    const exObj: Record<string, string> = {};
-                    exGroup.forEach((ex) => {
-                      exObj[ex.lang] = ex.content;
-                    });
-                    return exObj;
-                  }) || [],
-              },
-            };
-          }),
-        )
-      )
-        .filter((res) => res.status === 'fulfilled')
-        .map((res) => res.value)
-        .flat();
-    }),
-  ).then((allEmbeddings) => {
-    const embeddings = allEmbeddings
-      .filter((res) => res.status === 'fulfilled')
-      .map((res) => res.value)
-      .flat();
-    db.transaction(async (tx) => {
-      try {
-        const existingLangCodes = await tx
-          .delete(dictionaryItems)
-          .where(
-            and(
-              eq(dictionaryItems.term, newResult.word),
-              arrayContained(dictionaryItems.languageCode, [targetLang]),
-            ),
-          )
-          .returning({
-            langCode: dictionaryItems.languageCode,
-          });
-        const existingLangSet = new Set<LangEnum>();
-        existingLangSet.add(targetLang);
-        existingLangCodes.forEach((item) => {
-          item.langCode.forEach((lang) =>
-            existingLangSet.add(lang as LangEnum),
-          );
-        });
-        await tx.insert(dictionaryItems).values(
-          embeddings.map((item) => ({
-            term: newResult.word,
-            languageCode: Array.from(existingLangSet),
-            embedding: item.embedding,
-            metadata: item.metadata,
-          })),
-        );
-      } catch (e) {
-        console.error('Error saving updated embeddings to database:', e);
-        tx.rollback();
-      }
-    });
-  });
+  // 異步同步到語義字典 (Upsert)
+  saveToDictionaryItems(newResult, [...missingLang, targetLang]);
 
   return await CheckData(originalData, newResult);
 }
@@ -528,7 +459,7 @@ export async function getAIResponse(
     };
 
     const checked = await CheckData(processedData, result);
-    await saveToDictionaryItems(checked, sourceLang[0] || LangEnum.EN);
+    await saveToDictionaryItems(checked, [...sourceLang, targetLang]);
     return checked;
   } catch (error) {
     console.error('AI Error processing, falling back to Google...', error);
@@ -582,7 +513,7 @@ export async function getAIResponse(
       };
 
       const checked = await CheckData(processedData, result);
-      await saveToDictionaryItems(checked, sourceLang[0] || LangEnum.EN);
+      await saveToDictionaryItems(checked, [...sourceLang, targetLang]);
       return checked;
     } catch (e) {
       console.error('Critical AI Error:', e);

@@ -1,6 +1,14 @@
 import { db } from '@/db';
 import { wordCache, settings, dictionaryItems } from '@/db/schema';
-import { eq, and, cosineDistance, lt, sql, inArray, gt } from 'drizzle-orm';
+import {
+  eq,
+  and,
+  cosineDistance,
+  lt,
+  sql,
+  gt,
+  arrayContains,
+} from 'drizzle-orm';
 import {
   CardProps,
   Lang,
@@ -71,7 +79,7 @@ export async function GET(request: Request): Promise<Response> {
           .from(dictionaryItems)
           .where(
             and(
-              inArray(dictionaryItems.languageCode, sourceLang),
+              arrayContains(dictionaryItems.languageCode, sourceLang),
               sql`${dictionaryItems.metadata}->'definitions'->>${targetLang} = ${word}`,
             ),
           );
@@ -86,7 +94,7 @@ export async function GET(request: Request): Promise<Response> {
           .from(dictionaryItems)
           .where(
             and(
-              eq(dictionaryItems.languageCode, queryLang),
+              arrayContains(dictionaryItems.languageCode, [queryLang]),
               and(
                 lt(
                   cosineDistance(dictionaryItems.embedding, embeddedVector),
