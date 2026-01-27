@@ -17,6 +17,7 @@ import {
   getWordFromDictionaryAPI,
   getWordFromEnWordNetAPI,
 } from '@/utils/dict';
+import { and, arrayContained, eq } from 'drizzle-orm';
 import { zodResponseFormat } from 'openai/helpers/zod.mjs';
 
 export async function getNewWordDataWithAPIResources(
@@ -110,11 +111,15 @@ export async function saveToDictionaryItems(
   try {
     const term = data.word;
     const inserts = [];
+    const LangSet = new Set<LangEnum>();
+    LangSet.add(langCode);
 
     for (const block of data.blocks) {
       for (const defItem of block.definitions) {
         // Collect definition texts for embedding
         const defTexts = defItem.definition.map((d) => d.content).join(' ');
+        const defLangs = defItem.definition.map((d) => d.lang);
+        defLangs.forEach((lang) => LangSet.add(lang as LangEnum));
         const embeddingText = `${term} ${defTexts}`;
 
         // Prepare definitions map for metadata
@@ -135,7 +140,7 @@ export async function saveToDictionaryItems(
 
         const metadata: DictionaryItemMetadata = {
           source_term: term,
-          detected_lang: langCode,
+          detected_lang: Array.from(LangSet),
           phonetic: data.phonetic || '',
           pos: block.partOfSpeech || 'unknown',
           definitions: definitionsMap,
@@ -149,7 +154,7 @@ export async function saveToDictionaryItems(
             const embedding = await generateEmbedding(embeddingText);
             await db.insert(dictionaryItems).values({
               term: term,
-              languageCode: langCode,
+              languageCode: Array.from(LangSet),
               embedding: embedding,
               metadata: metadata,
             });
@@ -358,19 +363,88 @@ export async function getModifiedResult(
     }),
   };
 
-  const newEmbeddedDefinations = newResult.blocks.filter((block) =>
-    block.definitions.some((def) =>
-      def.definition.some((d) => missingLang.includes(d.lang as LangEnum)),
-    ),
-  );
-
-  newEmbeddedDefinations.forEach((block) => {
-    const embedData: CardProps = {
-      word: newResult.word,
-      phonetic: newResult.phonetic,
-      blocks: [block],
-    };
-    saveToDictionaryItems(embedData, missingLang[0]);
+  // regenerate embedding and save to database
+  Promise.allSettled(
+    newResult.blocks.map(async (block) => {
+      return (
+        await Promise.allSettled(
+          block.definitions.map(async (defItem) => {
+            const defTexts = defItem.definition.map((d) => d.content).join(' ');
+            const embeddingText = `${newResult.word} ${defTexts}`;
+            const embeddedVector = await generateEmbedding(embeddingText);
+            return {
+              embedding: embeddedVector,
+              metadata: {
+                source_term: newResult.word,
+                detected_lang: [targetLang] as LangEnum[],
+                phonetic: newResult.phonetic || '',
+                pos: block.partOfSpeech || 'unknown',
+                definitions: block.definitions.reduce(
+                  (acc, def) => {
+                    def.definition.forEach((d) => {
+                      acc[d.lang] = d.content;
+                    });
+                    return acc;
+                  },
+                  {} as Record<string, string>,
+                ),
+                synonyms: defItem.synonyms || [],
+                context_tags: [] as string[],
+                examples:
+                  defItem.example?.map((exGroup) => {
+                    const exObj: Record<string, string> = {};
+                    exGroup.forEach((ex) => {
+                      exObj[ex.lang] = ex.content;
+                    });
+                    return exObj;
+                  }) || [],
+              },
+            };
+          }),
+        )
+      )
+        .filter((res) => res.status === 'fulfilled')
+        .map((res) => res.value)
+        .flat();
+    }),
+  ).then((allEmbeddings) => {
+    const embeddings = allEmbeddings
+      .filter((res) => res.status === 'fulfilled')
+      .map((res) => res.value)
+      .flat();
+    db.transaction(async (tx) => {
+      try {
+        const existingLangCodes = await tx
+          .delete(dictionaryItems)
+          .where(
+            and(
+              eq(dictionaryItems.term, newResult.word),
+              arrayContained(dictionaryItems.languageCode, [targetLang]),
+            ),
+          )
+          .returning({
+            langCode: dictionaryItems.languageCode,
+          });
+        const existingLangSet = new Set<LangEnum>();
+        existingLangSet.add(targetLang);
+        existingLangCodes.forEach((item) => {
+          item.langCode.forEach((lang) =>
+            existingLangSet.add(lang as LangEnum),
+          );
+        });
+        await tx.insert(dictionaryItems).values(
+          embeddings.map((item) => ({
+            term: newResult.word,
+            languageCode: Array.from(existingLangSet),
+            embedding: item.embedding,
+            metadata: item.metadata,
+          })),
+        );
+      } catch (e) {
+        console.error('Error saving updated embeddings to database:', e);
+        tx.rollback();
+      }
+    });
   });
 
   return await CheckData(originalData, newResult);

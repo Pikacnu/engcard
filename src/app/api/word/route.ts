@@ -1,6 +1,6 @@
 import { db } from '@/db';
 import { wordCache, settings, dictionaryItems } from '@/db/schema';
-import { eq, and, cosineDistance, lt, sql, inArray } from 'drizzle-orm';
+import { eq, and, cosineDistance, lt, sql, inArray, gt } from 'drizzle-orm';
 import {
   CardProps,
   Lang,
@@ -57,15 +57,15 @@ export async function GET(request: Request): Promise<Response> {
     // If not found, fallback to normal word search for single words
     case isPhrase && targetLangVailder(word):
     case sourceLangValidator(word): {
-      const isTarget = targetLangVailder(word);
-      const queryLang = isTarget
+      const isTargetLang = targetLangVailder(word);
+      const queryLang = isTargetLang
         ? targetLang
         : getLangByStr(word) || LangEnum.EN;
 
       let nearestDefinitions: (typeof dictionaryItems.$inferSelect)[] = [];
 
       // Try exact match for target language single words first (Reverse Lookup Fallback)
-      if (isTarget && !isPhrase) {
+      if (isTargetLang) {
         nearestDefinitions = await db
           .select()
           .from(dictionaryItems)
@@ -87,9 +87,15 @@ export async function GET(request: Request): Promise<Response> {
           .where(
             and(
               eq(dictionaryItems.languageCode, queryLang),
-              lt(
-                cosineDistance(dictionaryItems.embedding, embeddedVector),
-                0.2,
+              and(
+                lt(
+                  cosineDistance(dictionaryItems.embedding, embeddedVector),
+                  0.2,
+                ),
+                gt(
+                  cosineDistance(dictionaryItems.embedding, embeddedVector),
+                  0.05,
+                ),
               ),
             ),
           )

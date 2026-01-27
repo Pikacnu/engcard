@@ -8,22 +8,21 @@ export function shuffle<T>(array: T[]): T[] {
   }
   return result;
 }
-
 export function isChinese(str: string): boolean {
-  return /[\u4E00-\u9FA5\uF900-\uFA2D]/.test(str);
+  return /^[\u4E00-\u9FA5\uF900-\uFA2D\s]+$/.test(str);
 }
 
 export function isTraditionalChinese(str: string): boolean {
-  return (
-    /[\u4E00-\u9FFF]/.test(str) && !/[\u3400-\u4DBF\u20000-\u2A6DF]/.test(str)
-  );
+  const validChars = /^[\u4E00-\u9FFF\s]+$/;
+  const hasExtension = /[\u3400-\u4DBF\u{20000}-\u{2A6DF}]/u.test(str);
+  return validChars.test(str) && !hasExtension;
 }
 
 export function isHavingSpace(str: string): boolean {
   return /\s/.test(str);
 }
 export function isJapanese(str: string): boolean {
-  return /[ぁ-ゔゞァ-・ヽヾ゛゜ー一-龯]/.test(str);
+  return /[ぁ-ゔゞァ-・ヽヾ゛゜ー一-龯,.'"\-]/.test(str);
 }
 
 export function isEnglish(str: string): boolean {

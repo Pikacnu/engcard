@@ -8,7 +8,6 @@ import {
   jsonb,
   uniqueIndex,
   index,
-  varchar,
   uuid,
   vector,
 } from 'drizzle-orm/pg-core';
@@ -305,7 +304,7 @@ export const dictionaryItems = pgTable(
   {
     id: uuid('id').primaryKey().defaultRandom(),
     term: text('term').notNull(),
-    languageCode: varchar('language_code', { length: 10 }).notNull(),
+    languageCode: text('language_code').array().notNull(),
     embedding: vector('embedding', { dimensions: 3072 }),
     metadata: jsonb('metadata').notNull().$type<DictionaryItemMetadata>(),
     createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),

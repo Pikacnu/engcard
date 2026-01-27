@@ -260,7 +260,9 @@ export const GwordSchemaCreator = (Langs: Lang[]) =>
 
 export const DictionaryItemMetadataSchema = z.object({
   source_term: z.string(),
-  detected_lang: z.string().describe('ISO code'),
+  detected_lang: z
+    .array(z.string())
+    .describe('All Languages Provided in ISO code'),
   phonetic: z.string().optional(),
   pos: z.string().describe('noun/verb/etc'),
   definitions: z
