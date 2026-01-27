@@ -24,10 +24,12 @@ export async function newWord(
   sourceLang: LangEnum[],
   targetLang: LangEnum,
 ): Promise<CardProps | null> {
+  // Fetch data from multiple sources
   const sourceDataPromiseList = [
     getWordFromDictionaryAPI(word),
     getWordFromEnWordNetAPI(word),
   ];
+
   const sourceDataList = (await Promise.all(sourceDataPromiseList)).filter(
     (data) => data !== null && data !== undefined,
   ) as CardProps[];
@@ -35,7 +37,6 @@ export async function newWord(
     return null;
   }
 
-  // 過濾例句，只保留包含原始單字的例句
   const normalizedWord = word.toLowerCase().trim();
   const filteredData = sourceDataList.map((data) => ({
     ...data,
@@ -86,13 +87,7 @@ export async function saveToDictionaryItems(
             exGroup.forEach((ex) => {
               exObj[ex.lang] = ex.content;
             });
-            // Approximate matching to schema keys (ja, zh, en)
-            return {
-              ja: exObj[LangEnum.JA],
-              zh: exObj[LangEnum.TW],
-              en: exObj[LangEnum.EN],
-              // nuance: ... not provided in CardProps
-            };
+            return exObj;
           }) || [];
 
         const metadata: DictionaryItemMetadata = {
@@ -137,6 +132,7 @@ export async function CheckData(
   let result = aidata;
   let audio;
   if (typeof apidata === 'string') {
+    // Word string search
     const res = await fetch((process.env.AUDIO_API_URL as string) || '', {
       method: 'POST',
       headers: {
@@ -156,11 +152,16 @@ export async function CheckData(
     }
     return result;
   }
+
+  // Object data merging - Ensure data completeness
   const isDataArray = Array.isArray(apidata);
-  const phonetic = isDataArray ? apidata[0].phonetic : apidata.phonetic;
-  audio = isDataArray ? apidata[0].audio : apidata.audio;
-  // Audio API
-  if (audio === undefined || audio === '') {
+  const sourceList = isDataArray ? apidata : [apidata];
+
+  const phonetic = sourceList[0]?.phonetic;
+  audio = sourceList[0]?.audio;
+
+  // Audio API Fallback
+  if (!audio) {
     const res = await fetch((process.env.AUDIO_API_URL as string) || '', {
       method: 'POST',
       headers: {
@@ -169,34 +170,36 @@ export async function CheckData(
         Authorization: `Bearer ${process.env.AUDIO_API_KEY || ''}`,
       },
       body: JSON.stringify({
-        word: isDataArray ? apidata[0].word : apidata.word,
+        word: sourceList[0]?.word || aidata.word,
       }),
     });
-    console.log(`Audio API Response: ${res.status} ${res.statusText}`);
     if (res.ok) {
-      audio = `${process.env.AUDIO_API_URL}?word=${
-        isDataArray ? apidata[0].word : apidata.word
-      }`;
+      audio = `${process.env.AUDIO_API_URL}?word=${sourceList[0]?.word || aidata.word}`;
     }
   }
-  const isObjKeyEmpty = <T>(obj: T, key: keyof T) => {
-    return (
-      obj[key] === '' ||
-      obj[key] === undefined ||
-      obj[key] === 'string' ||
-      (obj[key] as string).trim() === ''
-    );
+
+  const isObjKeyEmpty = (obj: Record<string, unknown>, key: string) => {
+    const val = obj[key];
+    return !val || (typeof val === 'string' && val.trim() === '');
   };
 
-  if (isObjKeyEmpty(aidata, 'phonetic'))
-    result = Object.assign(result, {
-      phonetic: phonetic,
-    });
+  if (isObjKeyEmpty(aidata as unknown as Record<string, unknown>, 'phonetic'))
+    result.phonetic = phonetic || '';
+  if (isObjKeyEmpty(aidata as unknown as Record<string, unknown>, 'audio'))
+    result.audio = audio || '';
 
-  if (isObjKeyEmpty(aidata, 'audio'))
-    result = Object.assign(result, {
-      audio: audio,
+  // Deep comparison: Ensure all parts of speech from source are present in AI result
+  sourceList.forEach((source) => {
+    source.blocks.forEach((sBlock) => {
+      const aBlock = result.blocks.find(
+        (b) => b.partOfSpeech === sBlock.partOfSpeech,
+      );
+      if (!aBlock) {
+        // AI missed a whole category, we should keep it or at least log
+        console.warn(`AI missed part of speech: ${sBlock.partOfSpeech}`);
+      }
     });
+  });
 
   return result;
 }
@@ -214,6 +217,18 @@ export async function getModifiedResult(
   if (!updatedResult || Object.keys(updatedResult).length === 0) {
     return null;
   }
+
+  const alreadyEmbeddedLangs = new Set<Lang>();
+
+  // Make sure to collect all already embedded languages
+  originalData.blocks.forEach((block) => {
+    block.definitions.forEach((def) => {
+      def.definition.forEach((d) => {
+        alreadyEmbeddedLangs.add(d.lang);
+      });
+    });
+  });
+
   const newResult: CardProps = {
     ...originalData,
     blocks: originalData.blocks.map((block) => {
@@ -234,11 +249,17 @@ export async function getModifiedResult(
             definition: updatedDefinition.definition
               .filter((def) => missingLang.includes(def.lang as LangEnum))
               .concat(definition.definition),
-            synonyms: updatedDefinition.synonyms?.concat(
-              definition.synonyms || [],
+            synonyms: Array.from(
+              new Set([
+                ...(updatedDefinition.synonyms || []),
+                ...(definition.synonyms || []),
+              ]),
             ),
-            antonyms: updatedDefinition.antonyms?.concat(
-              definition.antonyms || [],
+            antonyms: Array.from(
+              new Set([
+                ...(updatedDefinition.antonyms || []),
+                ...(definition.antonyms || []),
+              ]),
             ),
 
             example: (() => {
@@ -256,7 +277,6 @@ export async function getModifiedResult(
                 }
               });
 
-              // O(E × L × M) - 處理原有例句
               return definition.example.map((originalExample) => {
                 const originalTargetContent = originalExample.find(
                   (item) => item.lang === targetLang,
@@ -288,6 +308,22 @@ export async function getModifiedResult(
       };
     }),
   };
+
+  const newEmbeddedDefinations = newResult.blocks.filter((block) =>
+    block.definitions.some((def) =>
+      def.definition.some((d) => missingLang.includes(d.lang as LangEnum)),
+    ),
+  );
+
+  newEmbeddedDefinations.forEach((block) => {
+    const embedData: CardProps = {
+      word: newResult.word,
+      phonetic: newResult.phonetic,
+      blocks: [block],
+    };
+    saveToDictionaryItems(embedData, missingLang[0]);
+  });
+
   return await CheckData(originalData, newResult);
 }
 
@@ -314,7 +350,7 @@ export async function getAIResponse(
 				IMPORTANT: Provide at least 3 varied examples for each definition in both source and target languages`;
     } else {
       processedData = processedData as CardProps;
-      prompt = `data : ${JSON.stringify(processedData)}
+      prompt = `data : ${JSON.stringify(processedData).replaceAll('"', '')}
 				it have ${processedData.blocks.length} blocks(part of speech)
 				Please response with all the blocks
 				IMPORTANT: Provide at least 3 varied examples for each definition in both source and target languages`;
@@ -326,7 +362,7 @@ export async function getAIResponse(
 
   try {
     AIResponse = await OpenAIClient.beta.chat.completions.parse({
-      model: 'gpt-4.1-mini',
+      model: 'gpt-4o-mini',
       messages: [
         {
           role: 'system',
@@ -343,18 +379,19 @@ export async function getAIResponse(
         'data',
       ),
     });
-    console.log(AIResponse.usage);
+
     const tempResult = AIResponse.choices[0].message?.parsed as wordSchema;
     const result: CardProps = {
       word: tempResult.word,
       phonetic: tempResult.phonetic,
+      availableSearchTarget: tempResult.availableSearchTarget,
       blocks: tempResult.blocks.map((block) => ({
         partOfSpeech: block.partOfSpeech as PartOfSpeech,
         definitions: block.definitions.map((definition) => ({
-          definition: Object.values(definition.definition) as {
-            lang: Lang;
-            content: string;
-          }[],
+          definition: Object.values(definition.definition).map((d) => ({
+            lang: (d as { lang: Lang }).lang,
+            content: (d as { content: string }).content,
+          })),
           synonyms: definition.synonyms,
           antonyms: definition.antonyms,
           example: definition.example.map((ex) =>
@@ -366,13 +403,12 @@ export async function getAIResponse(
         })),
       })),
     };
-    console.log('OpenAI SDK Success');
+
     const checked = await CheckData(processedData, result);
     await saveToDictionaryItems(checked, sourceLang[0] || LangEnum.EN);
     return checked;
   } catch (error) {
-    console.error('OpenAI SDK Error :', error);
-    console.log('trying by google AI SDK');
+    console.error('AI Error processing, falling back to Google...', error);
     try {
       const response = await Models.generateContent({
         model: 'gemma-3-27b-it',
@@ -395,41 +431,41 @@ export async function getAIResponse(
           },
         ],
       });
-      if (!response || !response.text) {
-        throw new Error('No response from Google AI SDK');
-      }
-      const tempResult: CardProps = JSON.parse(response.text);
+
+      if (!response.text) throw new Error('No response text');
+
+      const tempResult: wordSchema = JSON.parse(response.text);
       const result: CardProps = {
         word: tempResult.word,
         phonetic: tempResult.phonetic,
+        availableSearchTarget: tempResult.availableSearchTarget,
         blocks: tempResult.blocks.map((block) => ({
           partOfSpeech: block.partOfSpeech as PartOfSpeech,
           definitions: block.definitions.map((definition) => ({
-            definition: Object.values(definition.definition) as {
-              lang: Lang;
-              content: string;
-            }[],
+            definition: Object.values(definition.definition).map((d) => ({
+              lang: (d as { lang: Lang }).lang,
+              content: (d as { content: string }).content,
+            })),
             synonyms: definition.synonyms,
             antonyms: definition.antonyms,
             example: definition.example?.map((ex) =>
               ex.map((item) => ({
-                lang: item.lang,
+                lang: item.lang as Lang,
                 content: item.content,
               })),
             ),
           })),
         })),
       };
-      console.log('Google AI SDK Success');
+
       const checked = await CheckData(processedData, result);
       await saveToDictionaryItems(checked, sourceLang[0] || LangEnum.EN);
       return checked;
-    } catch (error) {
-      console.error('Error parsing AI response:', error);
+    } catch (e) {
+      console.error('Critical AI Error:', e);
     }
   }
-  if (typeof processedData === 'string') {
-    console.log('Error: No data found');
-  }
-  return processedData as CardProps;
+  return (
+    Array.isArray(processedData) ? processedData[0] : processedData
+  ) as CardProps;
 }

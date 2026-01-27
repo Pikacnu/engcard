@@ -16,6 +16,7 @@ export type CardProps = {
   blocks: Blocks[];
   flipped?: boolean;
   audio?: string;
+  availableSearchTarget?: string[];
 };
 
 export type Phonetic = {

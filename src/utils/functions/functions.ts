@@ -27,7 +27,7 @@ export function isJapanese(str: string): boolean {
 }
 
 export function isEnglish(str: string): boolean {
-  return /^[a-zA-Z]+$/.test(str);
+  return /^[a-zA-Z\s\d,.'"\-]+$/.test(str);
 }
 
 export const LangEnumToValidator: Record<LangEnum, (value: string) => boolean> =
