@@ -305,7 +305,7 @@ export const dictionaryItems = pgTable(
     id: uuid('id').primaryKey().defaultRandom(),
     term: text('term').notNull(),
     languageCode: text('language_code').array().notNull(),
-    embedding: vector('embedding', { dimensions: 3072 }),
+    embedding: vector('embedding', { dimensions: 1536 }),
     metadata: jsonb('metadata').notNull().$type<DictionaryItemMetadata>(),
     createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
   },

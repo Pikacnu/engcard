@@ -15,6 +15,13 @@
       "when": 1769434644484,
       "tag": "0001_strange_the_watchers",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1769518069362,
+      "tag": "0002_shallow_taskmaster",
+      "breakpoints": true
     }
   ]
 }
