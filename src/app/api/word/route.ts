@@ -77,51 +77,48 @@ export async function GET(request: Request): Promise<Response> {
       targetLang: cacheResult.targetLang as LangEnum,
     };
 
-    if (resultData.available === false) {
-      return NextResponse.json({ error: 'Word not found' }, { status: 404 });
-    }
-
-    const isLangComplete = sourceLang.every((needed) =>
-      resultData.sourceLang.includes(needed),
-    );
-
-    if (isLangComplete) {
-      return NextResponse.json(resultData, { status: 200 });
-    }
-
-    const missingLangs = sourceLang.filter(
-      (needed) => !resultData.sourceLang.includes(needed),
-    );
-
-    const newResult = await getModifiedResult(
-      resultData,
-      missingLangs,
-      targetLang,
-    );
-    if (!newResult) {
-      return NextResponse.json({ error: 'Word not found' }, { status: 404 });
-    }
-
-    const updatedSourceLang = Array.from(
-      new Set([...resultData.sourceLang, ...missingLangs]),
-    );
-
-    await db
-      .update(wordCache)
-      .set({
-        available: true,
-        sourceLang: updatedSourceLang,
-        data: newResult,
-        updatedAt: new Date(),
-      })
-      .where(
-        and(
-          eq(wordCache.word, normalizedWord),
-          eq(wordCache.targetLang, targetLang),
-        ),
+    if (resultData.available !== false) {
+      const isLangComplete = sourceLang.every((needed) =>
+        resultData.sourceLang.includes(needed),
       );
 
-    return NextResponse.json(newResult, { status: 200 });
+      if (isLangComplete) {
+        return NextResponse.json(resultData, { status: 200 });
+      }
+
+      const missingLangs = sourceLang.filter(
+        (needed) => !resultData.sourceLang.includes(needed),
+      );
+
+      const newResult = await getModifiedResult(
+        resultData,
+        missingLangs,
+        targetLang,
+      );
+      if (newResult) {
+        const updatedSourceLang = Array.from(
+          new Set([...resultData.sourceLang, ...missingLangs]),
+        );
+
+        await db
+          .update(wordCache)
+          .set({
+            available: true,
+            sourceLang: updatedSourceLang,
+            data: newResult,
+            updatedAt: new Date(),
+          })
+          .where(
+            and(
+              eq(wordCache.word, normalizedWord),
+              eq(wordCache.targetLang, targetLang),
+            ),
+          );
+
+        return NextResponse.json(newResult, { status: 200 });
+      }
+    }
+    // 如果 available 是 false，不直接報錯，而是「掉出」快取層進入語義搜尋
   }
 
   // 優化：字面反向查詢 (Literal Reverse Lookup)

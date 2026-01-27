@@ -119,7 +119,8 @@ export async function saveToDictionaryItems(
       for (const defItem of block.definitions) {
         // Collect definition texts for embedding
         const defTexts = defItem.definition.map((d) => d.content).join(' ');
-        const embeddingText = `${term} ${defTexts}`;
+        const synonymTexts = (defItem.synonyms || []).join(' ');
+        const embeddingText = `${term} ${defTexts} ${synonymTexts}`;
 
         // Add definition languages to finalLangSet
         defItem.definition.forEach((d) => finalLangSet.add(d.lang as LangEnum));
