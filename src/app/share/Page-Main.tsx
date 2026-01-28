@@ -4,13 +4,20 @@ import { CardProps, DeckCardsResponse } from '@/type';
 import Questions from '@/components/questions';
 import { useCallback, useEffect, useState } from 'react';
 import Deck from '@/components/deck';
-import Image from 'next/image';
 import List from '../../components/list';
 import QuestionWord from '@/components/question_word';
 import { CardType } from '@/type';
 import { useSearchParams } from 'next/navigation';
 import { saveHistory } from '@/utils/functions/user-data';
 import { useTranslation } from '@/context/LanguageContext'; // Added
+import {
+  Star,
+  Library,
+  HelpCircle,
+  Bookmark,
+  Layers,
+  RefreshCcw,
+} from 'lucide-react';
 
 const alphabet = 'abcdefghijklmnopqrstuvwxyz'.split('');
 const optionCounts = 40;
@@ -143,12 +150,11 @@ export default function Home() {
             : t('dashboard.preview.markWord')
         }
       >
-        <Image
-          src={`/icons/star${isMarked ? '-fill' : ''}.svg`}
-          width={24}
-          height={24}
-          alt={t('sharePage.altMarked')} // Translated
-        ></Image>
+        <Star
+          size={24}
+          fill={isMarked ? 'currentColor' : 'none'}
+          className={isMarked ? 'text-yellow-400' : ''}
+        />
       </button>
       <div className='absolute flex flex-col left-0 h-full bg-gray-200 dark:bg-gray-800 p-2 space-y-2 max-md:flex-row max-md:h-auto max-md:w-full max-md:bottom-0 max-md:left-0 max-md:justify-around max-md:space-y-0 max-md:p-1 keyboard:hidden'>
         <button
@@ -160,12 +166,7 @@ export default function Home() {
           onClick={() => setType(CardType.Card)}
           title={t('sharePage.altCard')}
         >
-          <Image
-            src={`/icons/card.svg`}
-            width={24}
-            height={24}
-            alt={t('sharePage.altCard')} // Translated
-          />
+          <Library size={24} />
         </button>
         <button
           className={`p-2 text-black dark:text-white bg-emerald-300 dark:bg-emerald-700 rounded-md ${
@@ -176,12 +177,7 @@ export default function Home() {
           onClick={() => setType(CardType.Questions)}
           title={t('sharePage.altQuestions')}
         >
-          <Image
-            src={`/icons/question-square.svg`}
-            width={24}
-            height={24}
-            alt={t('sharePage.altQuestions')} // Translated
-          />
+          <HelpCircle size={24} />
         </button>
         <button
           className={`p-2 text-black dark:text-white bg-emerald-300 dark:bg-emerald-700 rounded-md ${
@@ -192,12 +188,7 @@ export default function Home() {
           onClick={() => setType(CardType.List)}
           title={t('sharePage.altList')}
         >
-          <Image
-            src={`/icons/bookmark.svg`}
-            width={24}
-            height={24}
-            alt={t('sharePage.altList')} // Translated
-          />
+          <Bookmark size={24} />
         </button>
         <button
           className={`p-2 text-black dark:text-white bg-emerald-300 dark:bg-emerald-700 rounded-md ${
@@ -211,12 +202,7 @@ export default function Home() {
           }}
           title={t('sharePage.altWordQuestions')}
         >
-          <Image
-            src={`/icons/collection.svg`}
-            width={24}
-            height={24}
-            alt={t('sharePage.altWordQuestions')} // Translated
-          />
+          <Layers size={24} />
         </button>
         <button
           onClick={() => {
@@ -226,24 +212,14 @@ export default function Home() {
           className='p-2 text-black dark:text-white bg-sky-300 dark:bg-sky-700 bg-opacity-30 dark:bg-opacity-30 rounded-md hover:bg-opacity-50 dark:hover:bg-opacity-50 transition-all delay-100'
           title={t('sharePage.altRefresh')}
         >
-          <Image
-            src={`/icons/refresh.svg`}
-            width={24}
-            height={24}
-            alt={t('sharePage.altRefresh')} // Translated
-          />
+          <RefreshCcw size={24} />
         </button>
         <button
           onClick={() => setCards(markedWord)} // This might need adjustment if markedWord is empty
           className='p-2 text-black dark:text-white bg-sky-300 dark:bg-sky-700 bg-opacity-30 dark:bg-opacity-30 rounded-md hover:bg-opacity-50 dark:hover:bg-opacity-50 transition-all delay-100'
           title={t('sharePage.altMarkedList')}
         >
-          <Image
-            src={`/icons/star.svg`}
-            width={24}
-            height={24}
-            alt={t('sharePage.altMarkedList')} // Translated
-          />
+          <Star size={24} />
         </button>
         <button
           className={`p-2 text-black dark:text-white bg-purple-300 dark:bg-purple-700 rounded-md hover:bg-opacity-50 dark:hover:bg-opacity-50 max-md:absolute right-1 max-md:bottom-[calc(4rem+0.5rem)]`} // Adjusted mobile position

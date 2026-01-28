@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react'; // Added
 import { useTranslation } from '@/context/LanguageContext'; // Added
 import { LangCodeToName } from '@/utils/lang';
+import { Loader2 } from 'lucide-react';
 
 interface MarketDeck extends Pick<DeckCollection, 'name' | 'isPublic'> {
   _id: string;
@@ -48,8 +49,11 @@ export default function Content() {
 
   if (loading) {
     return (
-      <div className='text-center text-gray-500 dark:text-gray-400 p-10'>
-        {t('common.loadingText')}
+      <div className='flex flex-col items-center justify-center p-10 space-y-4'>
+        <Loader2 className='w-10 h-10 animate-spin text-blue-500' />
+        <p className='text-gray-500 dark:text-gray-400'>
+          {t('common.loadingText')}
+        </p>
       </div>
     );
   }

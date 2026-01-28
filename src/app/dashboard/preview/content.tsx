@@ -9,7 +9,6 @@ import {
   type DeckResponse,
 } from '@/type';
 import Deck from '@/components/deck';
-import Image from 'next/image';
 import QuestionWord from '@/components/question_word';
 import Questions from '@/components/questions';
 import { useSearchParams } from 'next/navigation';
@@ -29,6 +28,15 @@ import Joyride, {
 } from 'react-joyride';
 import { useLocalStorage } from '@/hooks/localstorage';
 import { useTranslation } from '@/context/LanguageContext'; // Added
+import {
+  Star,
+  Library,
+  HelpCircle,
+  Bookmark,
+  Layers,
+  RefreshCcw,
+  Search,
+} from 'lucide-react';
 
 const alphabet = 'abcdefghijklmnopqrstuvwxyz'.split('');
 const optionCounts = 40;
@@ -300,12 +308,11 @@ export default function Content() {
             : t('dashboard.preview.markWord')
         }
       >
-        <Image
-          src={`/icons/star${isMarked ? '-fill' : ''}.svg`}
-          width={24}
-          height={24}
-          alt={t('dashboard.preview.altMarked')}
-        ></Image>
+        <Star
+          size={24}
+          fill={isMarked ? 'currentColor' : 'none'}
+          className={isMarked ? 'text-yellow-400' : ''}
+        />
       </button>
       <div className='flex flex-col h-full bg-gray-200 dark:bg-gray-800 max-md:flex-row max-md:h-auto max-md:w-full max-md:justify-center keyboard:hidden function-list p-2 md:space-y-2 max-md:space-x-1'>
         <button
@@ -317,12 +324,7 @@ export default function Content() {
           onClick={() => setType(CardType.Card)}
           title={t('dashboard.preview.altCard')}
         >
-          <Image
-            src={`/icons/card.svg`}
-            width={24}
-            height={24}
-            alt={t('dashboard.preview.altCard')}
-          />
+          <Library size={24} />
         </button>
         <button
           className={`p-2 text-black dark:text-white bg-emerald-300 dark:bg-emerald-700 rounded-md ${
@@ -333,12 +335,7 @@ export default function Content() {
           onClick={() => setType(CardType.Questions)}
           title={t('dashboard.preview.altQuestions')}
         >
-          <Image
-            src={`/icons/question-square.svg`}
-            width={24}
-            height={24}
-            alt={t('dashboard.preview.altQuestions')}
-          />
+          <HelpCircle size={24} />
         </button>
         <button
           className={`p-2 text-black dark:text-white bg-emerald-300 dark:bg-emerald-700 rounded-md ${
@@ -349,12 +346,7 @@ export default function Content() {
           onClick={() => setType(CardType.List)}
           title={t('dashboard.preview.altList')}
         >
-          <Image
-            src={`/icons/bookmark.svg`}
-            width={24}
-            height={24}
-            alt={t('dashboard.preview.altList')}
-          />
+          <Bookmark size={24} />
         </button>
         <button
           className={`p-2 text-black dark:text-white bg-emerald-300 dark:bg-emerald-700 rounded-md ${
@@ -368,45 +360,27 @@ export default function Content() {
           }}
           title={t('dashboard.preview.altWordQuestions')}
         >
-          <Image
-            src={`/icons/collection.svg`}
-            width={24}
-            height={24}
-            alt={t('dashboard.preview.altWordQuestions')}
-          />
+          <Layers size={24} />
         </button>
         <button
           onClick={() => fetchCards(wordStartWith, count)}
           className='p-2 text-black dark:text-white bg-sky-300 dark:bg-sky-700 bg-opacity-30 dark:bg-opacity-30 rounded-md hover:bg-opacity-50 dark:hover:bg-opacity-50 transition-all delay-100'
           title={t('dashboard.preview.altRefresh')}
         >
-          <Image
-            src={`/icons/refresh.svg`}
-            width={24}
-            height={24}
-            alt={t('dashboard.preview.altRefresh')}
-          />
+          <RefreshCcw size={24} />
         </button>
         <button
           onClick={() => setCards(markedWord)}
           className='p-2 text-black dark:text-white bg-sky-300 dark:bg-sky-700 bg-opacity-30 dark:bg-opacity-30 rounded-md hover:bg-opacity-50 dark:hover:bg-opacity-50 transition-all delay-100 marked-list'
           title={t('dashboard.preview.altShowMarkedList')}
         >
-          <Image
-            src={`/icons/star.svg`}
-            width={24}
-            height={24}
-            alt={t('dashboard.preview.altShowMarkedList')}
-          />
+          <Star size={24} />
         </button>
         <div className='flex flex-col items-center text-black dark:text-white max-md:flex-row'>
           {' '}
           {/* Wrapper for search icon and selects */}
-          <Image
-            src={`/icons/search.svg`}
-            width={24}
-            height={24}
-            alt={t('dashboard.preview.altSearchIcon')}
+          <Search
+            size={24}
             className='mx-1'
           />
           <select

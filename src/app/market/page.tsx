@@ -4,11 +4,21 @@ import { Suspense, useEffect, useRef, useState } from 'react';
 import Content from './content'; // Assuming Content component handles its own translations or doesn't have text
 import { useTranslation } from '@/context/LanguageContext'; // Added
 import { redirect, useSearchParams } from 'next/navigation';
-import Image from 'next/image';
 import { ThemeToggler } from '@/components/ThemeToggler';
 import { authClient } from '@/lib/auth-client';
 import Link from 'next/link';
 import { NavBar } from '@/components/navbar';
+import {
+  Home,
+  Search,
+  Library,
+  PlayCircle,
+  MessageCircle,
+  Store,
+  LogOut,
+  Settings,
+  MoreHorizontal,
+} from 'lucide-react';
 
 export default function Market() {
   const { t } = useTranslation(); // Added
@@ -43,38 +53,29 @@ export default function Market() {
                   onClick={() => redirect('/auth/logout')}
                   className='logout'
                 >
-                  <Image
-                    src='/icons/box-arrow-in-left.svg'
-                    alt={t('dashboard.navigation.altLogout')}
-                    width={24}
-                    height={24}
+                  <LogOut
+                    size={24}
                     className='cursor-pointer'
-                  ></Image>
+                  />
                 </button>
                 <Link
                   href={'/dashboard/settings'}
                   className='settings'
                 >
-                  <Image
-                    src='/icons/gear.svg'
-                    alt={t('dashboard.navigation.altSettings')}
-                    width={24}
-                    height={24}
+                  <Settings
+                    size={24}
                     className='cursor-pointer'
-                  ></Image>
+                  />
                 </Link>
                 <ThemeToggler></ThemeToggler>
                 <button
                   className='more-options'
                   onClick={() => setIsBiMenuOpen(false)}
                 >
-                  <Image
-                    src='/icons/more.svg'
-                    alt={t('dashboard.navigation.altMenu')}
-                    width={24}
-                    height={24}
+                  <MoreHorizontal
+                    size={24}
                     className='cursor-pointer'
-                  ></Image>
+                  />
                 </button>
               </div>
             ) : (
@@ -83,85 +84,64 @@ export default function Market() {
                   href='/dashboard'
                   className='home-link'
                 >
-                  <Image
-                    src='/icons/home.svg'
-                    alt={t('dashboard.navigation.altLogo')}
-                    width={24}
-                    height={24}
+                  <Home
+                    size={24}
                     className='cursor-pointer'
-                  ></Image>
+                  />
                 </Link>
                 <Link
                   href='/dashboard/search'
                   className='search-link'
                 >
-                  <Image
-                    src='/icons/search.svg'
-                    alt={t('dashboard.navigation.altSearch')}
-                    width={24}
-                    height={24}
+                  <Search
+                    size={24}
                     className='cursor-pointer'
-                  ></Image>
+                  />
                 </Link>
                 <Link
                   href='/dashboard/deck'
                   className='deck-link'
                 >
-                  <Image
-                    src='/icons/card.svg'
-                    alt={t('dashboard.navigation.altDeck')}
-                    width={24}
-                    height={24}
+                  <Library
+                    size={24}
                     className='cursor-pointer'
-                  ></Image>
+                  />
                 </Link>
                 <Link
                   href='/dashboard/preview'
                   className='preview-link'
                 >
-                  <Image
-                    src='/icons/file-play.svg'
-                    alt={t('dashboard.navigation.altPreview')}
-                    width={24}
-                    height={24}
+                  <PlayCircle
+                    size={24}
                     className='cursor-pointer'
-                  ></Image>
+                  />
                 </Link>
                 <Link
                   href='/dashboard/chat'
                   className='chat-link'
                 >
-                  <Image
-                    src='/icons/chat.svg'
-                    alt={t('dashboard.navigation.altChat')}
-                    width={24}
-                    height={24}
+                  <MessageCircle
+                    size={24}
                     className='cursor-pointer'
-                  ></Image>
+                  />
                 </Link>
                 <Link
                   href='/market'
                   className='market-link'
                 >
-                  <Image
-                    src='/icons/shop.svg'
-                    alt={t('dashboard.navigation.altMarket')}
-                    width={24}
-                    height={24}
+                  <Store
+                    size={24}
                     className='cursor-pointer'
-                  ></Image>
+                  />
                 </Link>
                 <button
                   className='more-options'
                   onClick={() => setIsBiMenuOpen(true)}
                 >
-                  <Image
-                    src='/icons/more.svg'
-                    alt={t('dashboard.navigation.altMenu')}
-                    width={24}
-                    height={24}
+                  <MoreHorizontal
+                    size={24}
                     className='cursor-pointer'
-                  ></Image>
+                  />
                 </button>
               </div>
             )}

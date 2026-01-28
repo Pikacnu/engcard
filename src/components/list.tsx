@@ -1,9 +1,9 @@
 'use client';
 import { CardProps, ListAdditionButtonIcon, PartOfSpeech } from '@/type'; // Added PartOfSpeech
-import Image from 'next/image';
 import { useTranslation } from '@/context/LanguageContext'; // Added
 import Card from './card';
 import { useState, useMemo, useEffect } from 'react';
+import { ArrowLeftCircle } from 'lucide-react';
 
 export default function List({
   cards,
@@ -76,12 +76,7 @@ export default function List({
               setIsFocus(false);
             }}
           >
-            <Image
-              src='/icons/left-circle-arrow.svg'
-              width={30}
-              height={30}
-              alt='Back'
-            />
+            <ArrowLeftCircle size={30} />
           </button>
           <Card card={cardData} />
         </div>

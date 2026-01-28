@@ -2,13 +2,13 @@
 
 import { DeckType, Lang, UserSettings } from '@/type';
 import { useState, useCallback, useRef, useEffect } from 'react';
-import Image from 'next/image';
 import { useTranslation } from '@/context/LanguageContext'; // Added
 import { LanguageSwitcher } from './../../../components/client/LanguageSwitcher';
 import { ThemeToggler } from './../../../components/ThemeToggler';
 import { useLocalStorage } from '@/hooks/localstorage';
 import { LangCodeToName, LangEnum, LangNames, Langs } from '@/utils/lang';
 import { useSettings } from '@/context/SettingsContext';
+import { Loader2 } from 'lucide-react';
 
 export default function Settings() {
   const { t } = useTranslation(); // Added
@@ -20,14 +20,8 @@ export default function Settings() {
   return (
     <div className='flex flex-col w-full h-full flex-grow dark:bg-gray-700 dark:text-white'>
       {!settings ? (
-        <div className='flex items-center justify-center h-[80vh]'>
-          <Image
-            src='/icons/loading.svg'
-            alt={t('common.loading')} // Translated
-            width={64}
-            height={64}
-            className='w-12 h-12 animate-spin text-gray-600 dark:text-gray-300 fill-blue-600'
-          />
+        <div className='flex items-center justify-center h-[80vh] flex-col space-y-4'>
+          <Loader2 className='w-12 h-12 animate-spin text-blue-500' />
           <p className='text-2xl text-gray-500 dark:text-gray-400'>
             {t('common.loadingText')}
           </p>{' '}
