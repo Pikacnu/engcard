@@ -65,7 +65,7 @@ export default function Chat() {
         setChatId(newChat.id);
         setChatList([
           ...chatListData,
-          { _id: newChat.id, chatName: 'New Chat' },
+          { _id: newChat.id, chatName: t('dashboard.chat.defaultChatName') },
         ]);
       }
       setLoading(false);
@@ -167,7 +167,7 @@ export default function Chat() {
               }
               setChatList((prev) => [
                 ...prev,
-                { _id: data.id, chatName: 'New Chat' },
+                { _id: data.id, chatName: t('dashboard.chat.defaultChatName') },
               ]);
               setChatId(data.id);
             }}

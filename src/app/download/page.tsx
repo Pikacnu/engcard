@@ -38,22 +38,30 @@ export default function DownloadPage() {
     {
       id: 'windows',
       name: t('download.buttonWindows'),
-      description: 'Windows 桌面應用程式 (網頁封裝版本)。',
+      description: t('download.windows.description'),
       href: '/release/cardlisher-desktop.exe',
       iconUrl: '/platform/windows.svg',
       lucideIcon: <Monitor className='w-6 h-6' />,
       color: 'blue',
-      features: ['鍵盤快捷鍵', '無法離線瀏覽', '目前不支援自動更新'],
+      features: [
+        t('download.windows.feature1'),
+        t('download.windows.feature2'),
+        t('download.windows.feature3'),
+      ],
     },
     {
       id: 'android',
       name: t('download.buttonAndroid'),
-      description: 'Android 行動裝置 APK (網頁封裝版本)。',
+      description: t('download.android.description'),
       href: '/release/cardlisher-android.apk',
       iconUrl: '/platform/android.svg',
       lucideIcon: <Smartphone className='w-6 h-6' />,
       color: 'emerald',
-      features: ['觸控介面優化', '無法離線瀏覽', '與網頁同步'],
+      features: [
+        t('download.android.feature1'),
+        t('download.android.feature2'),
+        t('download.android.feature3'),
+      ],
     },
   ];
 
@@ -76,7 +84,7 @@ export default function DownloadPage() {
         >
           <div className='inline-flex items-center gap-2 px-4 py-2 mb-6 text-sm font-semibold tracking-wide text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 rounded-full border border-blue-100 dark:border-blue-800/50'>
             <Download className='w-4 h-4' />
-            Multi-platform Support
+            {t('download.multiPlatformSupport')}
           </div>
           <h1 className='text-4xl md:text-6xl font-black mb-6 text-slate-900 dark:text-white leading-tight'>
             {t('download.title')}

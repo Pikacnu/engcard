@@ -83,9 +83,7 @@ export default function About() {
 
         <div className='mt-12 pt-10 border-t border-slate-100 dark:border-slate-800'>
           <p className='text-slate-600 dark:text-slate-400 leading-relaxed font-medium'>
-            EngCard is an open-source project dedicated to making language
-            learning more efficient and enjoyable through modern technology and
-            AI integration.
+            {t('info.about.projectDescription')}
           </p>
         </div>
       </motion.div>

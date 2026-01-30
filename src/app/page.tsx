@@ -91,7 +91,7 @@ export default function Home() {
                 <span className='animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75'></span>
                 <span className='relative inline-flex rounded-full h-2 w-2 bg-blue-500'></span>
               </span>
-              AI-Powered Vocabulary Master
+              {t('page.home.badge')}
             </motion.div>
 
             <h1 className='text-5xl md:text-7xl font-black mb-8 leading-[1.1] tracking-tight text-slate-900 dark:text-white'>
@@ -172,7 +172,7 @@ export default function Home() {
             className='text-center mb-16'
           >
             <h2 className='text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-4'>
-              強大且直覺的功能
+              {t('page.home.sectionHeader')}
             </h2>
             <div className='w-20 h-1.5 bg-blue-600 mx-auto rounded-full' />
           </motion.div>
@@ -225,7 +225,7 @@ export default function Home() {
       {/* Footer minimal */}
       <footer className='w-full py-12 px-6 border-t border-slate-100 dark:border-slate-900 z-10'>
         <div className='max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6 text-slate-500 dark:text-slate-500 text-sm'>
-          <p>© 2026 Cardlisher. All rights reserved.</p>
+          <p>{t('page.home.footer.copyright')}</p>
           <div className='flex gap-8'>
             <Link
               href='/info/privacy'

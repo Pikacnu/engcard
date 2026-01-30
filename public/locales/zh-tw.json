@@ -49,8 +49,13 @@
         "title": "進度追踪",
         "description": "透過詳細的分析和表現洞察來監控您的學習旅程，以優化您的學習策略。"
       },
+      "badge": "AI 驅動的單字大師",
+      "sectionHeader": "強大且直覺的功能",
       "getStartedButton": "開始使用",
-      "githubButton": "GitHub"
+      "githubButton": "GitHub",
+      "footer": {
+        "copyright": "© 2026 Cardlisher. 保留所有權利。"
+      }
     }
   },
   "dashboard": {
@@ -107,7 +112,8 @@
       "resetGuideCard": "重設卡片指南",
       "resetGuideDashboard": "重設儀表板指南",
       "resetGuidePreview": "重設預覽指南",
-      "resetButton": "重設"
+      "resetButton": "重設",
+      "alertUpdateLanguageFailed": "更新語言失敗"
     },
     "deck": {
       "altLoading": "載入中...",
@@ -128,6 +134,7 @@
       "sendButton": "傳送",
       "deleteChatButton": "刪除聊天",
       "newChatButton": "新增聊天",
+      "defaultChatName": "新對話",
       "grammerFixLabel": "文法修正",
       "wordListFunctionCallLabel": "單字列表",
       "altSendButton": "傳送訊息",
@@ -231,17 +238,22 @@
   },
   "info": {
     "title": "資訊",
+    "intro": "關於 EngCard、我們的平台及政策，您需要知道的一切。",
+    "learnMore": "了解更多",
     "aboutLink": "關於",
     "tosLink": "服務條款",
     "privacyLink": "隱私權政策",
     "about": {
       "title": "關於",
+      "description": "了解更多關於 EngCard 專案及創作者的資訊。",
+      "projectDescription": "EngCard 是一個開源專案，致力於透過現代技術與 AI 整合，讓語言學習變得更高效且有趣。",
       "creatorLabel": "創作者：",
       "emailLabel": "電子郵件：",
       "versionLabel": "版本："
     },
     "privacy": {
       "title": "隱私權政策",
+      "description": "我們如何處理並保護您的個人資料。",
       "introTitle": "前言",
       "introP1": "你的隱私對我們很重要。本隱私政策解釋了我們如何收集、使用和保護您的資訊。",
       "infoCollectTitle": "我們收集的資訊",
@@ -262,6 +274,7 @@
     },
     "tos": {
       "title": "服務條款",
+      "description": "使用我們服務的條款與條件。",
       "introTitle": "1. 前言",
       "introP1": "歡迎使用我們的單字卡應用程式！使用我們的服務即表示您同意這些條款。請花點時間仔細閱讀。",
       "introP2": "我們的應用程式旨在增強您的學習體驗，無論您是學生、專業人士還是終身學習者。我們的目標是提供有效幫助您學習和記憶資訊的工具。",
@@ -299,10 +312,23 @@
   "download": {
     "title": "下載",
     "description": "下載您平台的最新版本 Cardlisher。",
+    "multiPlatformSupport": "多平台支援",
     "altWindows": "Windows",
     "buttonWindows": "Windows",
     "altAndroid": "Android",
-    "buttonAndroid": "Android"
+    "buttonAndroid": "Android",
+    "windows": {
+      "description": "Windows 桌面應用程式 (網頁封裝版本)。",
+      "feature1": "鍵盤快捷鍵",
+      "feature2": "無法離線瀏覽",
+      "feature3": "目前不支援自動更新"
+    },
+    "android": {
+      "description": "Android 行動裝置 APK (網頁封裝版本)。",
+      "feature1": "觸控介面優化",
+      "feature2": "無法離線瀏覽",
+      "feature3": "與網頁同步"
+    }
   },
   "components": {
     "card": {

@@ -49,8 +49,13 @@
 				"title": "Progress Tracking",
 				"description": "Monitor your learning journey with detailed analytics and performance insights to optimize your study strategy."
 			},
+			"badge": "AI-Powered Vocabulary Master",
+			"sectionHeader": "Powerful and Intuitive Features",
 			"getStartedButton": "Get Started",
-			"githubButton": "GitHub"
+			"githubButton": "GitHub",
+			"footer": {
+				"copyright": "© 2026 Cardlisher. All rights reserved."
+			}
 		}
 	},
 	"dashboard": {
@@ -107,7 +112,8 @@
 			"resetGuideCard": "Reset Card Guide",
 			"resetGuideDashboard": "Reset Dashboard Guide",
 			"resetGuidePreview": "Reset Preview Guide",
-			"resetButton": "Reset"
+			"resetButton": "Reset",
+			"alertUpdateLanguageFailed": "Failed to update language"
 		},
 		"deck": {
 			"altLoading": "Loading...",
@@ -128,6 +134,7 @@
 			"sendButton": "Send",
 			"deleteChatButton": "Delete Chat",
 			"newChatButton": "New Chat",
+			"defaultChatName": "New Chat",
 			"grammerFixLabel": "Grammar Fix",
 			"wordListFunctionCallLabel": "Word List",
 			"altSendButton": "Send Message",
@@ -231,17 +238,22 @@
 	},
 	"info": {
 		"title": "Info",
+		"intro": "Everything you need to know about EngCard, our platform, and our policies.",
+		"learnMore": "Learn More",
 		"aboutLink": "About",
 		"tosLink": "Terms of Service",
 		"privacyLink": "Privacy Policy",
 		"about": {
 			"title": "About",
+			"description": "Learn more about the EngCard project and the creator.",
+			"projectDescription": "EngCard is an open-source project dedicated to making language learning more efficient and enjoyable through modern technology and AI integration.",
 			"creatorLabel": "Creator:",
 			"emailLabel": "Email:",
 			"versionLabel": "Version:"
 		},
 		"privacy": {
 			"title": "Privacy Policy",
+			"description": "How we handle and protect your personal data.",
 			"introTitle": "Introduction",
 			"introP1": "Your privacy is important to us. This Privacy Policy explains how we collect, use, and protect your information.",
 			"infoCollectTitle": "Information We Collect",
@@ -262,6 +274,7 @@
 		},
 		"tos": {
 			"title": "Terms of Service",
+			"description": "The terms and conditions for using our services.",
 			"introTitle": "1. Introduction",
 			"introP1": "Welcome to our flashcard app! By using our services, you agree to these terms. Please take a moment to read them carefully.",
 			"introP2": "Our app is designed to enhance your learning experience, whether you're a student, professional, or lifelong learner. We aim to provide tools that help you learn and retain information effectively.",
@@ -299,10 +312,23 @@
 	"download": {
 		"title": "Download",
 		"description": "Download the latest version of Cardlisher for your platform.",
+		"multiPlatformSupport": "Multi-platform Support",
 		"altWindows": "Windows",
 		"buttonWindows": "Windows",
 		"altAndroid": "Android",
-		"buttonAndroid": "Android"
+		"buttonAndroid": "Android",
+		"windows": {
+			"description": "Windows Desktop Application (Web Packaged Version).",
+			"feature1": "Keyboard Shortcuts",
+			"feature2": "Unable to browse offline",
+			"feature3": "Auto-update not supported yet"
+		},
+		"android": {
+			"description": "Android Mobile APK (Web Packaged Version).",
+			"feature1": "Touch UI Optimization",
+			"feature2": "Unable to browse offline",
+			"feature3": "Sync with Web"
+		}
 	},
 	"components": {
 		"card": {

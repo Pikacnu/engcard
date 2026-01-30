@@ -13,21 +13,21 @@ export default function InfoPage() {
       href: '/info/about',
       icon: <Info className='w-6 h-6 text-blue-500' />,
       title: t('info.aboutLink'),
-      description: 'Learn more about the EngCard project and the creator.',
+      description: t('info.about.description'),
       color: 'blue',
     },
     {
       href: '/info/tos',
       icon: <FileText className='w-6 h-6 text-purple-500' />,
       title: t('info.tosLink'),
-      description: 'The terms and conditions for using our services.',
+      description: t('info.tos.description'),
       color: 'purple',
     },
     {
       href: '/info/privacy',
       icon: <ShieldCheck className='w-6 h-6 text-emerald-500' />,
       title: t('info.privacyLink'),
-      description: 'How we handle and protect your personal data.',
+      description: t('info.privacy.description'),
       color: 'emerald',
     },
   ];
@@ -44,8 +44,7 @@ export default function InfoPage() {
           {t('info.title')}
         </h1>
         <p className='text-slate-600 dark:text-slate-400 text-lg max-w-2xl mx-auto'>
-          Everything you need to know about EngCard, our platform, and our
-          policies.
+          {t('info.intro')}
         </p>
       </motion.div>
 
@@ -74,7 +73,7 @@ export default function InfoPage() {
                   {link.description}
                 </p>
                 <div className='flex items-center text-sm font-bold text-blue-600 dark:text-blue-400'>
-                  Learn More
+                  {t('info.learnMore')}
                   <ArrowRight className='ml-1 w-4 h-4 group-hover:translate-x-1 transition-transform' />
                 </div>
               </div>

@@ -195,6 +195,7 @@ function SingleLanguageSwitcher({
   originalLang: Lang;
   disableLangs?: Lang[];
 }) {
+  const { t } = useTranslation();
   const [selectedLang, setSelectedLang] = useState<Lang>(originalLang as Lang);
   const [previousLang, setPreviousLang] = useState<Lang>(originalLang as Lang);
   const { setSettings } = useSettings();
@@ -207,11 +208,11 @@ function SingleLanguageSwitcher({
       });
       if (!success) {
         setSelectedLang(previousLang);
-        alert('Failed to update language');
+        alert(t('dashboard.settings.alertUpdateLanguageFailed'));
         return;
       }
     },
-    [previousLang, setSettings, targetName],
+    [previousLang, setSettings, targetName, t],
   );
 
   return (
@@ -251,6 +252,7 @@ function MultipleLanguageSwitcher({
   originalLang: Lang[];
   disableLangs?: Lang[];
 }) {
+  const { t } = useTranslation();
   const [selectedLang, setSelectedLang] = useState<Lang[]>(
     originalLang as Lang[],
   );
@@ -267,12 +269,12 @@ function MultipleLanguageSwitcher({
       });
       if (!success) {
         setSelectedLang(prevLang.current);
-        alert('Failed to update language');
+        alert(t('dashboard.settings.alertUpdateLanguageFailed'));
         return;
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [prevLang, targetName],
+    [prevLang, targetName, t],
   );
 
   useEffect(() => {
