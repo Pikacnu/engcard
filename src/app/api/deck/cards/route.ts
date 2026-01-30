@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/utils';
 import { db } from '@/db';
-import { decks } from '@/db/schema';
+import { decks, cards } from '@/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { CardProps } from '@/type';
 import { shuffle } from '@/utils';
@@ -51,7 +51,10 @@ export async function GET(request: NextRequest) {
 
   // Prepare result with _id for compatibility
   const resultDeck = { ...deck, _id: deck.id };
-  const deckCards = (deck.cards as unknown as CardProps[]) || [];
+  const deckCards = (await db
+    .select()
+    .from(cards)
+    .where(eq(cards.deckId, deck.id))) as CardProps[];
 
   const optionalData = {
     count: Number(params.get('count')) || null,
@@ -120,10 +123,7 @@ export async function DELETE(request: NextRequest) {
     );
   }
 
-  const currentCards = (deck.cards as unknown as CardProps[]) || [];
-  const newCards = currentCards.filter((c) => c.word !== word);
-
-  await db.update(decks).set({ cards: newCards }).where(eq(decks.id, id));
+  await db.delete(cards).where(and(eq(cards.deckId, id), eq(cards.word, word)));
 
   return NextResponse.json(
     {

@@ -1,5 +1,5 @@
 import { db } from '@/db';
-import { decks, savedDecks } from '@/db/schema';
+import { cards, decks, savedDecks } from '@/db/schema';
 import { auth } from '@/utils';
 import { and, eq, inArray, not } from 'drizzle-orm';
 import { CardProps } from '@/type';
@@ -77,24 +77,39 @@ export async function GET() {
       ),
     );
 
-  const processedDecks = resultDecks.map((deck) => {
-    const cards = deck.cards as unknown as CardProps[];
-    const langs =
-      cards?.[0]?.blocks?.[0]?.definitions?.[0]?.definition?.map(
-        // @ts-expect-error Drizzle inference might not catch deep nested types perfectly
-        (d) => d.lang,
-      ) || [];
+  const processedDecks = (
+    await Promise.allSettled(
+      resultDecks.map(async (deck) => {
+        const firstCardData = (
+          await db
+            .select()
+            .from(cards)
+            .where(eq(cards.deckId, deck.id))
+            .limit(1)
+        )[0] as CardProps | undefined;
+        if (!firstCardData) {
+          throw new Error('No cards found');
+        }
+        const langs =
+          firstCardData.blocks[0].definitions[0].definition.map(
+            (d) => d.lang,
+          ) || [];
+        const cardCount = await db.$count(cards, eq(cards.deckId, deck.id));
 
-    return {
-      _id: deck.id,
-      name: deck.name,
-      isPublic: deck.isPublic,
-      cardInfo: {
-        length: cards?.length || 0,
-        langs: langs,
-      },
-    };
-  });
+        return {
+          _id: deck.id,
+          name: deck.name,
+          isPublic: deck.isPublic,
+          cardInfo: {
+            length: cardCount || 0,
+            langs: langs,
+          },
+        };
+      }),
+    )
+  )
+    .filter((res) => res.status === 'fulfilled')
+    .map((res) => res.value);
 
   return Response.json({ decks: processedDecks }, { status: 200 });
 }
