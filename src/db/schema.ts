@@ -10,7 +10,7 @@ import {
   index,
   uuid,
   vector,
-  date,
+  doublePrecision,
 } from 'drizzle-orm/pg-core';
 import { relations, type InferSelectModel } from 'drizzle-orm';
 import type {
@@ -328,16 +328,20 @@ export const FSRSCard = pgTable('fsrs_card', {
   cardId: text('card_id')
     .notNull()
     .references(() => cards.id, { onDelete: 'cascade' }),
-  due: date('date').defaultNow().notNull(), // 卡片下次复习的日期
-  stability: integer('stability').notNull(), // 记忆稳定性
-  difficulty: integer('difficulty').notNull(), // 卡片难度
-  elapsed_days: integer('elapsed_days').notNull(), // 自上次复习以来的天数
-  scheduled_days: integer('scheduled_days').notNull(), // 下次复习的间隔天数
-  learning_steps: integer('learning_steps').notNull(), // 当前的(重新)学习步骤
-  reps: integer('reps').notNull(), // 卡片被复习的总次数
-  lapses: integer('lapses').notNull(), // 卡片被遗忘或错误记忆的次数
-  state: integer('state').notNull(), // 卡片的当前状态（新卡片、学习中、复习中、重新学习中）
-  last_review: date('last_review').notNull(), // 最近的复习日期（如果适用）
+
+  // 核心數值：務必使用 doublePrecision
+  due: timestamp('due', { mode: 'date' }).defaultNow().notNull(),
+  stability: doublePrecision('stability').notNull(),
+  difficulty: doublePrecision('difficulty').notNull(),
+
+  elapsedDays: integer('elapsed_days').notNull(),
+  scheduledDays: integer('scheduled_days').notNull(),
+  reps: integer('reps').notNull(),
+  lapses: integer('lapses').notNull(),
+  state: integer('state').$type<State>().notNull(),
+
+  // 第一次加入時沒有複習過，應為可空
+  lastReview: timestamp('last_review', { mode: 'date' }),
 });
 
 export const FSRSReviewLog = pgTable('fsrs_review_log', {
@@ -345,20 +349,21 @@ export const FSRSReviewLog = pgTable('fsrs_review_log', {
   userId: text('user_id')
     .notNull()
     .references(() => users.id, { onDelete: 'cascade' }),
-  fsrsCardId: text('fsrs_card_id')
+
+  // 類型必須匹配 FSRSCard.id (uuid)
+  fsrsCardId: uuid('fsrs_card_id')
     .notNull()
     .references(() => FSRSCard.id, { onDelete: 'cascade' }),
+
   rating: integer('rating').$type<Rating>().notNull(),
   state: integer('state').$type<State>().notNull(),
-  due: date('due').notNull(),
-  stability: integer('stability').notNull(),
-  difficulty: integer('difficulty').notNull(),
-  elapsed_days: integer('elapsed_days').notNull(),
-  last_elapsed_days: integer('last_elapsed_days').notNull(),
-  scheduled_days: integer('scheduled_days').notNull(),
-  learning_steps: integer('learning_steps').notNull(),
-  review: date('review').notNull(),
+  due: timestamp('due', { mode: 'date' }).notNull(),
+  stability: doublePrecision('stability').notNull(),
+  difficulty: doublePrecision('difficulty').notNull(),
+  elapsedDays: integer('elapsed_days').notNull(),
+  lastElapsedDays: integer('last_elapsed_days').notNull(),
+  scheduledDays: integer('scheduled_days').notNull(),
+  review: timestamp('review', { mode: 'date' }).defaultNow().notNull(),
 });
-
 export type FSRSCardSelect = InferSelectModel<typeof FSRSCard>;
 export type FSRSReviewLogSelect = InferSelectModel<typeof FSRSReviewLog>;
