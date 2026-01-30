@@ -102,24 +102,30 @@ export default function QuestionWord({
   }, [cardData, index, CardWhenEmpty]); // Added CardWhenEmpty dependency
 
   useEffect(() => {
-    if (!cards || cards.length === 0) {
-      setCard([CardWhenEmpty]);
-      updateCurrentWord?.(undefined);
+    const timeout = setTimeout(() => {
+      if (!cards || cards.length === 0) {
+        setCard([CardWhenEmpty]);
+        updateCurrentWord?.(undefined);
+        setIndex(0);
+        return;
+      }
+      setCard(cards);
       setIndex(0);
-      return;
-    }
-    setCard(cards);
-    setIndex(0);
+    }, 0);
+    return () => clearTimeout(timeout);
   }, [cards, updateCurrentWord, CardWhenEmpty]);
 
   useEffect(() => {
-    if (cardData && cardData.length > 0 && index < cardData.length) {
-      updateCurrentWord?.(cardData[index]);
-    } else if (cardData && cardData.length > 0) {
-      updateCurrentWord?.(cardData[0]);
-    } else {
-      updateCurrentWord?.(undefined);
-    }
+    const timeout = setTimeout(() => {
+      if (cardData && cardData.length > 0 && index < cardData.length) {
+        updateCurrentWord?.(cardData[index]);
+      } else if (cardData && cardData.length > 0) {
+        updateCurrentWord?.(cardData[0]);
+      } else {
+        updateCurrentWord?.(undefined);
+      }
+    }, 0);
+    return () => clearTimeout(timeout);
   }, [index, cardData, updateCurrentWord]);
 
   return (

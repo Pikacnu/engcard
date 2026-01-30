@@ -23,21 +23,16 @@ import {
 export default function Market() {
   const { t } = useTranslation(); // Added
   const searchParams = useSearchParams();
-  const fromPage = useRef(searchParams.get('fromPage') || 'basePage');
   const { data: session } = authClient.useSession();
   const [isBiMenuOpen, setIsBiMenuOpen] = useState(false);
 
-  useEffect(() => {
-    fromPage.current = searchParams.get('fromPage') || 'basePage';
-    if (!session?.user && fromPage.current === 'dashboard') {
-      //window.location.search = '?fromPage=basePage';
-      fromPage.current = 'basePage';
-    }
-  }, [searchParams, session]);
+  const rawFromPage = searchParams.get('fromPage') || 'basePage';
+  const fromPage =
+    !session?.user && rawFromPage === 'dashboard' ? 'basePage' : rawFromPage;
 
   return (
     <div className='flex flex-col items-center justify-start min-h-screen py-2 bg-gray-100 dark:bg-gray-700 w-full mt-16'>
-      {fromPage.current === 'dashboard' ? (
+      {fromPage === 'dashboard' ? (
         <nav className=' absolute top-0 left-0 max-md:w-screen md:h-screen'>
           <div className='flex flex-col max-md:flex-row h-full bg-white dark:bg-gray-800 text-black dark:text-white md:left-0 md:top-0 max-md:h-16 max-md:bottom-0 max-md:w-full justify-between items-center keyboard:hidden main-nav delay-0 '>
             {isBiMenuOpen ? (

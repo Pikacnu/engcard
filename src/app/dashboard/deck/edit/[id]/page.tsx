@@ -9,6 +9,7 @@ import {
   useMemo,
   useRef,
   useState,
+  useSyncExternalStore,
   useTransition,
 } from 'react';
 import { CardProps, DeckCollection, ListAdditionButtonIcon } from '@/type';
@@ -104,16 +105,19 @@ export default function EditPage({
     const now = new Date().getTime();
     if (processingWordTimestamp > 0 && now - processingWordTimestamp <= 0) {
       console.log('Processing word completed or cancelled');
-      setProcessingWordTimestamp(0);
-      refresh();
-      return;
+      const timeout = setTimeout(() => {
+        setProcessingWordTimestamp(0);
+        refresh();
+      }, 0);
+      return () => clearTimeout(timeout);
     }
   }, [processingWordTimestamp, refresh]);
 
-  const [isClient, setIsClient] = useState(false);
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
+  const isClient = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
 
   return (
     <div

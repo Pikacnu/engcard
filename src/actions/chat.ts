@@ -305,7 +305,7 @@ export async function sendMessage(chatId: string, message: string) {
           'grammerFix' in result &&
           Array.isArray(result.grammerFix)
         ) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+           
           grammerFix = result.grammerFix as any;
         }
         if (
@@ -496,7 +496,7 @@ async function addWords(words: string[], deckId: string) {
           where: eq(wordCache.word, word),
         });
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         let wordData = cache ? (cache.data as any) : null;
 
         if (!wordData) {

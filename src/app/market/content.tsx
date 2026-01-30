@@ -44,7 +44,10 @@ export default function Content() {
   }, []);
 
   useEffect(() => {
-    fetchPublicDecks();
+    const timeout = setTimeout(() => {
+      fetchPublicDecks();
+    }, 0);
+    return () => clearTimeout(timeout);
   }, [fetchPublicDecks]);
 
   if (loading) {

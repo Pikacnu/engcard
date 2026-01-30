@@ -1,12 +1,12 @@
 'use server';
 import { db } from '@/db';
-import { decks, cards, wordCache } from '@/db/schema';
+import { decks, cards, wordCache, shares } from '@/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { auth } from '@/utils/auth';
 import { CardProps, Definition, PartOfSpeech } from '@/type';
 import { Blocks } from '@/type-shared';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 export async function getDeck(id: string): Promise<any> {
   // 1. Fetch Deck
   const deck = await db.query.decks.findFirst({

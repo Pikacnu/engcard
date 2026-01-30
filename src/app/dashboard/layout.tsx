@@ -1,6 +1,6 @@
 'use client';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
 import { redirect } from 'next/navigation';
 import Joyride, {
   ACTIONS,
@@ -111,10 +111,16 @@ export default function DashBoardLayout({
     }
   };
 
-  const [isClient, setIsClient] = useState(false);
+  const isClient = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
   useEffect(() => {
-    setIsClient(true);
-    setJoyrideRun(!isGuideDashboard);
+    const timeout = setTimeout(() => {
+      setJoyrideRun(!isGuideDashboard);
+    }, 0);
+    return () => clearTimeout(timeout);
   }, [isGuideDashboard]);
 
   return (

@@ -55,13 +55,16 @@ export default function List({
 
   const cardData = useMemo(() => card[foucsIndex], [card, foucsIndex]);
   useEffect(() => {
-    setCard(
-      cards && cards.length && cards.length > 0
-        ? cards.map((card) => ({ ...card, flipped: true }))
-        : [CardWhenEmpty],
-    );
-    setFocusIndex(0);
-    setIsFocus(false);
+    const timeout = setTimeout(() => {
+      setCard(
+        cards && cards.length && cards.length > 0
+          ? cards.map((card) => ({ ...card, flipped: true }))
+          : [CardWhenEmpty],
+      );
+      setFocusIndex(0);
+      setIsFocus(false);
+    }, 0);
+    return () => clearTimeout(timeout);
   }, [cards, CardWhenEmpty]);
 
   return (

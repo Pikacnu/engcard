@@ -1,4 +1,4 @@
-// eslint-disable-next-line @typescript-eslint/no-require-imports
+ 
 const withPWA = require('next-pwa')({
   dest: 'public',
 });
@@ -8,6 +8,7 @@ const withPWA = require('next-pwa')({
  */
 const nextConfig = withPWA({
   output: 'standalone',
+  turbopack: {},
   async headers() {
     return [
       {

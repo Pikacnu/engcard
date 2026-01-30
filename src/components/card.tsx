@@ -8,16 +8,16 @@ import { Volume2 } from 'lucide-react';
 
 export default function Card({ card }: { card: CardProps }) {
   const { t } = useTranslation(); // Added
-  const [cardData, setcardData] = useState<CardProps>(card);
   const [flipped, setFlipped] = useState(card.flipped || false);
-  const [isPlaying, toggle] = useAudio(cardData.audio || '');
+  const [isPlaying, toggle] = useAudio(card.audio || '');
 
-  useEffect(() => {
+  const [prevCard, setPrevCard] = useState(card);
+  if (prevCard !== card) {
+    setPrevCard(card);
     setFlipped(card.flipped || false);
-    setcardData(card);
-  }, [card]);
+  }
 
-  const { word, phonetic, blocks, audio } = cardData;
+  const { word, phonetic, blocks, audio } = card;
   return (
     <div
       className='flex flex-col h-full min-w-[20vw] shadow-lg p-4 m-4 rounded-lg select-none bg-white dark:bg-gray-800 overflow-hidden flex-grow text-black dark:text-white' // Updated background for light/dark

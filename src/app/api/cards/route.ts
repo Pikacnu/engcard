@@ -31,7 +31,7 @@ export async function GET(req: Request) {
 	try {
 		const fileContent = await readFile('data_process/sch_3.json', 'utf-8');
 		words = JSON.parse(fileContent).wordData;
-		// eslint-disable-next-line @typescript-eslint/no-unused-vars
+		 
 	} catch (e) {
 		return new Response('Error reading or parsing file', { status: 500 });
 	}

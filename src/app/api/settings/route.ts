@@ -81,7 +81,7 @@ export async function POST(req: Request) {
   }
 
   // Prepare update object. Cast to any to handle dynamic key with Drizzle types
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const updateData: any = {};
   updateData[name] = value;
 

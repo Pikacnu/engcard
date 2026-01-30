@@ -2,7 +2,7 @@
 
 import { CardProps, DeckCardsResponse } from '@/type';
 import Questions from '@/components/questions';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import Deck from '@/components/deck';
 import List from '../../components/list';
 import QuestionWord from '@/components/question_word';
@@ -31,9 +31,14 @@ export default function Home() {
   const [count, setCount] = useState<number>(15);
   const searchParams = useSearchParams();
   const deckid = searchParams.get('deck');
-  const [isMarked, setIsMarked] = useState<boolean>(false);
   const [markedWord, setMarkedWord] = useState<CardProps[]>([]);
   const [currentWord, setWord] = useState<CardProps | undefined>(undefined);
+
+  const isMarked = useMemo(() => {
+    return !!markedWord.find(
+      (word) => currentWord && word.word === currentWord?.word,
+    );
+  }, [markedWord, currentWord]);
 
   const fetchCards = useCallback(
     async (wordStartWithParam?: string, countParam = 15) => {
@@ -56,10 +61,13 @@ export default function Home() {
   );
 
   useEffect(() => {
-    if (deckid) {
-      // Fetch only if deckid is present
-      fetchCards(wordStartWith, count);
-    }
+    const timeout = setTimeout(() => {
+      if (deckid) {
+        // Fetch only if deckid is present
+        fetchCards(wordStartWith, count);
+      }
+    }, 0);
+    return () => clearTimeout(timeout);
   }, [fetchCards, wordStartWith, count, deckid]); // Added deckid to dependencies
 
   useEffect(() => {
@@ -72,17 +80,6 @@ export default function Home() {
       );
     }
   }, [cards, deckid]);
-
-  useEffect(() => {
-    const saved = markedWord.find(
-      (word) => currentWord && word.word === currentWord?.word,
-    );
-    if (saved) {
-      setIsMarked(true);
-      return;
-    }
-    setIsMarked(false);
-  }, [currentWord, markedWord]);
 
   return (
     <div className='flex flex-row items-center justify-center min-h-screen py-2 bg-gray-100 dark:bg-gray-700 w-full text-black dark:text-white'>
@@ -142,7 +139,6 @@ export default function Home() {
           } else {
             if (currentWord) setMarkedWord((prev) => [...prev, currentWord!]);
           }
-          setIsMarked((prev) => !prev);
         }}
         title={
           isMarked
