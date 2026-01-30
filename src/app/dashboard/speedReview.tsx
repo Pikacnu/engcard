@@ -25,7 +25,15 @@ export default function SpeedReview() {
         return;
       }
       const cardData = await response.json();
-      setWords(cardData.words);
+      setWords(
+        cardData.words || [
+          {
+            word: 'Error fetching words',
+            definition: 'Please try again later.',
+            exampleSentences: [],
+          },
+        ],
+      );
 
       response = await fetch('/api/settings');
       if (!response.ok) {

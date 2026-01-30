@@ -11,7 +11,7 @@ export const ThemeToggler = () => {
   return (
     <button
       onClick={toggleTheme}
-      className='p-2 m-2 rounded-full hover:bg-white hover:bg-opacity-20 transition-all duration-200 dark:bg-white'
+      className='p-2 m-2 rounded-full  transition-all duration-200 dark:bg-white bg-inherit'
       aria-label={
         theme === 'dark'
           ? t('common.theme.switchToLight')
@@ -26,12 +26,12 @@ export const ThemeToggler = () => {
       {theme === 'dark' ? (
         <Sun
           size={24}
-          className='text-gray-700 dark:text-black'
+          className='text-gray-700 dark:text-white'
         />
       ) : (
         <Moon
           size={24}
-          className='text-gray-700 dark:text-black'
+          className='text-gray-700 dark:text-white'
         />
       )}
     </button>
