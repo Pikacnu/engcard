@@ -1,8 +1,6 @@
-# Cardlisher (English Card)
+# Cardlisher
 
-> **WARNING**: The current version is unstable/broken. For a fully functional version, please use commit `1654834d066dbb9ea9930c6b64152b07ecaefeba`.
-
-Cardlisher is a modern English vocabulary learning application built with Next.js 15, designed to help users learn English effectively through interactive flashcards, AI-powered word processing, and OCR image recognition.
+Cardlisher is a modern English vocabulary learning application built with Next.js 15+, designed to help users learn English effectively through interactive flashcards, AI-powered word processing, and OCR image recognition.
 
 > **Note**: This project is primarily designed for learning English with Traditional Chinese as the base language, providing comprehensive bilingual support.
 
@@ -12,21 +10,24 @@ Cardlisher is a modern English vocabulary learning application built with Next.j
 - **OCR Image Recognition**: Upload images to automatically extract and generate vocabulary cards from text
 - **AI-Powered Learning**: Advanced AI analyzes words and provides definitions, synonyms, antonyms, and contextual examples
 - **Interactive Practice**: Engage with vocabulary through spelling challenges, quizzes, and speed reviews
-- **Multilingual Support**: Full internationalization with English and Traditional Chinese interfaces
+- **FSRS Algorithm**: Implements the Free Spaced Repetition Scheduler for optimized learning
+- **Multilingual Support**: Full internationalization with English, Traditional Chinese, and Japanese interfaces
 - **Progress Tracking**: Monitor learning progress with detailed analytics and performance insights
 - **Dark Mode Support**: Modern UI with light/dark theme switching
 - **Responsive Design**: Optimized for desktop and mobile devices
+- **PWA Support**: Fully functional Progressive Web App with offline capabilities
 
 ## Tech Stack
 
-- **Framework**: Next.js 15 with App Router
-- **Runtime**: Bun (preferred) / Node.js 18+
+- **Framework**: Next.js 15+ (App Router)
+- **Runtime**: Bun (Preferred)
 - **Language**: TypeScript
-- **Styling**: Tailwind CSS with dark mode support
-- **Authentication**: NextAuth.js v5
-- **Database**: MongoDB with MongoDB Adapter
-- **AI Integration**: Google Generative AI, OpenAI
-- **Deployment**: Vercel with OpenTelemetry monitoring
+- **Styling**: Tailwind CSS
+- **Authentication**: Better Auth
+- **Database**: PostgreSQL with Drizzle ORM
+- **AI Integration**: Google Generative AI (Gemini), OpenAI
+- **PWA**: Serwist / Next-PWA
+- **Algorithm**: ts-fsrs
 
 ## Project Structure
 
@@ -39,16 +40,17 @@ engcard/
 │   │   ├── auth/           # Authentication pages
 │   │   └── ...             # Other app pages
 │   ├── components/         # Reusable React components
-│   ├── context/           # React contexts (Language, Theme)
+│   ├── context/           # React contexts (Language, Theme, Settings)
+│   ├── db/                # Database schema and client (Drizzle)
 │   ├── hooks/             # Custom React hooks
 │   ├── lib/               # Core libraries and utilities
 │   ├── types/             # TypeScript type definitions
-│   └── utils/             # Utility functions and configurations
-├── public/                # Static assets
+│   └── utils/             # Utility functions and AI configurations
+├── drizzle/                # Database migrations
+├── public/                # Static assets and PWA files
 │   ├── locales/           # Internationalization files
-│   ├── icons/             # UI icons
+│   ├── app-icon/          # UI icons
 │   └── platform/          # Platform-specific assets
-├── data_process/          # Data processing utilities
 ├── package.json           # Project dependencies and scripts
 ├── next.config.ts         # Next.js configuration
 ├── tailwind.config.ts     # Tailwind CSS configuration
@@ -60,9 +62,9 @@ engcard/
 
 ### Prerequisites
 
-- [Bun](https://bun.sh) (recommended) or Node.js 18+
-- MongoDB database (local or cloud)
-- API keys for AI services (Google Generative AI, OpenAI)
+- [Bun](https://bun.sh) (recommended)
+- PostgreSQL database
+- API keys for AI services (Google Generative AI, OpenAI, or xAI)
 
 ### Environment Setup
 
@@ -74,16 +76,21 @@ engcard/
 2. Configure your environment variables in `.env.local`:
    ```env
    # Database
-   MONGODB_URI=your_mongodb_connection_string
+   DATABASE_URL=postgresql://user:password@host:port/db
    
    # Authentication
    AUTH_SECRET=your_auth_secret
+   AUTH_DISCORD_ID=your_discord_id
+   AUTH_DISCORD_SECRET=your_discord_secret
+   AUTH_GOOGLE_ID=your_google_id
+   AUTH_GOOGLE_SECRET=your_google_secret
    
    # AI Services
-   GOOGLE_GENERATIVE_AI_API_KEY=your_google_ai_key
+   GEMINI_API_KEY=your_google_ai_key
    OPENAI_API_KEY=your_openai_key
    ```
-
+3. Make sure PostgreSQL have Extension `vector`:
+[pgvector](https://github.com/pgvector/pgvector) repo
 ### Installation
 
 Install dependencies using Bun (recommended):
@@ -92,14 +99,18 @@ Install dependencies using Bun (recommended):
 bun install
 ```
 
-Or with npm:
+### Database Migration
+
+Generate and run migrations:
+
 ```bash
-npm install
+bun run generate
+bun run migrate
 ```
 
 ### Development
 
-Start the development server with Turbopack:
+Start the development server:
 
 ```bash
 bun run dev
@@ -149,7 +160,3 @@ We welcome contributions! Please feel free to submit issues and pull requests.
 ## Live Demo
 
 Experience Cardlisher live at: [https://eng.pikacnu.com/](https://eng.pikacnu.com/)
-
----
-
-Built with ❤️ using Next.js, TypeScript, and modern web technologies.
