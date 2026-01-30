@@ -3,20 +3,13 @@ import { db } from '@/db';
 import { decks, cards, wordCache, shares } from '@/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { auth } from '@/utils/auth';
-import { CardProps, Definition, PartOfSpeech } from '@/type';
+import { CardProps, DeckCollection, Definition, PartOfSpeech } from '@/type';
 import { Blocks } from '@/type-shared';
 
- 
 export async function getDeck(id: string): Promise<any> {
   // 1. Fetch Deck
-  const deck = await db.query.decks.findFirst({
-    where: eq(decks.id, id),
-    with: {
-      cards: {
-        orderBy: (cards, { asc }) => [asc(cards.order), asc(cards.createdAt)],
-      },
-    },
-  });
+  const deck = (await db.select().from(decks).where(eq(decks.id, id)))[0];
+  const cardDatas = await db.select().from(cards).where(eq(cards.deckId, id));
 
   if (!deck) {
     return null;
@@ -37,7 +30,7 @@ export async function getDeck(id: string): Promise<any> {
   return {
     ...deck,
     _id: deck.id,
-    cards: deck.cards.map((card) => {
+    cards: cardDatas.map((card) => {
       // Reconstruct CardProps from DB
       // Note: blocks is jsonb, needing cast if Drizzle doesn't infer it perfectly as Blocks[]
       return {
@@ -48,7 +41,7 @@ export async function getDeck(id: string): Promise<any> {
         flipped: card.flipped || false,
       };
     }),
-  };
+  } as DeckCollection;
 }
 
 export async function getDecks() {

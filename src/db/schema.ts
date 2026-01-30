@@ -116,6 +116,8 @@ export const decks = pgTable('deck', {
   updatedAt: timestamp('updatedAt', { mode: 'date' }).defaultNow().notNull(),
 });
 
+export type DeckSelect = InferSelectModel<typeof decks>;
+
 // Cards
 export const cards = pgTable('card', {
   id: text('id')

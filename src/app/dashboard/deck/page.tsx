@@ -1,7 +1,6 @@
 'use client';
 
 import DeckPreview from '@/components/server/deck';
-import { ObjectId, WithId, Document } from 'mongodb';
 import { useEffect, useState, useCallback } from 'react';
 import AddDeck from '@/components/server/adddeck';
 import { deleteDeck, getShareDeck } from '@/actions/deck';
@@ -9,18 +8,13 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { useCopyToClipboard } from '@/hooks/copy';
 import { useTranslation } from '@/context/LanguageContext'; // Added
-
-type Deck = WithId<Document> & {
-  name: string;
-  public: boolean;
-  isPublic?: boolean;
-};
+import { DeckSelect } from '@/db/schema';
 
 export default function Deck() {
   const { t } = useTranslation(); // Added
-  const [decks, setDecks] = useState<Deck[] | null>(null);
-  const [sharedDecks, setSharedDecks] = useState<Deck[] | null>(null);
-  const [deckId, setDeckId] = useState<ObjectId | null>(null);
+  const [decks, setDecks] = useState<DeckSelect[] | null>(null);
+  const [sharedDecks, setSharedDecks] = useState<DeckSelect[] | null>(null);
+  const [deckId, setDeckId] = useState<string | null>(null);
   const [isOpenAddArea, setIsOpenAddArea] = useState(false);
 
   const updateDecks = useCallback(() => {
@@ -103,7 +97,7 @@ export default function Deck() {
             decks.map((deck) => (
               <div
                 className='grid grid-cols-2 items-center justify-center p-2 bg-white dark:bg-gray-800 gap-4 *:*:m-1 text-gray-800 dark:text-gray-100'
-                key={deck._id.toString()}
+                key={deck.id.toString()}
               >
                 <div className='flex flex-col shadow-lg p-2 rounded-lg bg-blue-100 dark:bg-blue-700 bg-opacity-70 dark:bg-opacity-70'>
                   <h1>
@@ -122,7 +116,7 @@ export default function Deck() {
                   </h1>
                   <button
                     className='flex flex-col bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500 p-2 rounded-lg mt-2'
-                    onClick={() => setDeckId(deck._id)}
+                    onClick={() => setDeckId(deck.id)}
                   >
                     {t('dashboard.deck.previewButton')}
                   </button>
@@ -130,14 +124,14 @@ export default function Deck() {
                 <div className='flex flex-col m-1 bg-green-100 dark:bg-green-700 bg-opacity-30 dark:bg-opacity-30 rounded-lg p-2 *:bg-opacity-80 *:rounded-md *:p-2 *:text-center *:my-1'>
                   <Link
                     className='bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500'
-                    href={`/dashboard/deck/edit/${deck._id.toString()}`}
+                    href={`/dashboard/deck/edit/${deck.id.toString()}`}
                   >
                     {t('dashboard.deck.editButton')}
                   </Link>
                   <button
                     className='bg-red-300 dark:bg-red-700 hover:bg-red-400 dark:hover:bg-red-600'
                     onClick={async () => {
-                      await deleteDeck.bind(null, deck._id.toString())();
+                      await deleteDeck.bind(null, deck.id.toString())();
                       updateDecks();
                     }}
                   >
@@ -147,7 +141,7 @@ export default function Deck() {
                     className='bg-blue-300 dark:bg-blue-700 hover:bg-blue-400 dark:hover:bg-blue-600'
                     onClick={async () => {
                       const searchparams = await getShareDeck(
-                        deck._id.toString(),
+                        deck.id.toString(),
                       );
                       redirect(`/share?${searchparams}`);
                     }}
@@ -166,7 +160,7 @@ export default function Deck() {
             sharedDecks.map((deck) => (
               <div
                 className='grid grid-cols-2 items-center justify-center p-2 bg-white dark:bg-gray-800 gap-4 *:*:m-1 text-gray-800 dark:text-gray-100'
-                key={deck._id.toString()}
+                key={deck.id.toString()}
               >
                 <div className='flex flex-col shadow-lg p-2 rounded-lg bg-blue-100 dark:bg-blue-700 bg-opacity-70 dark:bg-opacity-70'>
                   <h1>
@@ -183,7 +177,7 @@ export default function Deck() {
                   </h1>
                   <Link
                     className='flex flex-col bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500 p-2 rounded-lg mt-2'
-                    href={`/share?deck=${deck._id.toString()}`}
+                    href={`/share?deck=${deck.id.toString()}`}
                   >
                     {t('dashboard.deck.previewButton')}
                   </Link>
@@ -193,7 +187,7 @@ export default function Deck() {
                     className='bg-red-300 dark:bg-red-700 hover:bg-red-400 dark:hover:bg-red-600'
                     onClick={async () => {
                       const res = await fetch(
-                        `/api/deck/${deck._id.toString()}`,
+                        `/api/deck/${deck.id.toString()}`,
                         {
                           method: 'DELETE',
                         },
@@ -211,7 +205,7 @@ export default function Deck() {
                     className='bg-blue-300 dark:bg-blue-700 hover:bg-blue-400 dark:hover:bg-blue-600'
                     onClick={async () => {
                       const searchparams = await getShareDeck(
-                        deck._id.toString(),
+                        deck.id.toString(),
                       );
                       copyToClipboard(
                         `${window.location.origin}/share?${searchparams}`,
