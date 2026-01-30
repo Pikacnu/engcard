@@ -7,7 +7,7 @@ import { Home, Info, Store, Download, LogIn } from 'lucide-react';
 export function NavBar() {
   //const { t } = useTranslation();
   return (
-    <div className='sticky top-0 z-10 flex items-center justify-between w-full bg-white  bg-opacity-30 dark:bg-gray-800 dark:bg-opacity-70 backdrop-blur-sm shadow-lg'>
+    <div className='sticky top-0 z-20 flex items-center justify-between w-full bg-white  bg-opacity-30 dark:bg-gray-800 dark:bg-opacity-70 backdrop-blur-sm shadow-lg'>
       <div className='flex items-center justify-center text-gray-700 dark:text-white [&>a]:dark:bg-white [&>a>svg]:dark:text-black'>
         <Link
           href={'/'}
