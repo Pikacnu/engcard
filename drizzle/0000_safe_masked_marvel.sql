@@ -1,3 +1,5 @@
+CREATE EXTENSION IF NOT EXISTS vector;
+--> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "account" (
 	"id" text PRIMARY KEY NOT NULL,
 	"accountId" text NOT NULL,
