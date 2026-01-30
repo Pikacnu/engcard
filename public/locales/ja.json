@@ -13,7 +13,8 @@
 		},
 		"loading": "読み込み中",
 		"loadingText": "読み込み中...",
-		"loadingSrOnly": "読み込み中..."
+		"loadingSrOnly": "読み込み中...",
+		"refresh": "更新"
 	},
 	"navbar": {
 		"home": "ホーム",
@@ -213,7 +214,11 @@
 		"speedReview": {
 			"noWords": "利用可能な単語がありません",
 			"nextWordButton": "次の単語",
-			"remove": "マーク解除"
+			"remove": "マーク解除",
+			"again": "もう一度",
+			"hard": "難しい",
+			"good": "普通",
+			"easy": "簡単"
 		}
 	},
 	"auth": {

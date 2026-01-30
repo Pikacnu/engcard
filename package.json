@@ -7,7 +7,6 @@
     "pwa-dev": "bun --bun next dev --experimental-https",
     "build": "bun --bun next build",
     "start": "bun --bun next start",
-    "lint": "bun --bun next lint",
     "generate": "bun run drizzle-kit generate",
     "migrate": "bun run drizzle-kit migrate",
     "studio": "bun run drizzle-kit studio"

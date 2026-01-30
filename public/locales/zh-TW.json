@@ -13,7 +13,8 @@
 		},
 		"loading": "載入中",
 		"loadingText": "載入中...",
-		"loadingSrOnly": "載入中..."
+		"loadingSrOnly": "載入中...",
+		"refresh": "重新整理"
 	},
 	"navbar": {
 		"home": "首頁",
@@ -213,7 +214,11 @@
 		"speedReview": {
 			"noWords": "沒有可用的單字",
 			"nextWordButton": "下一個單字",
-			"remove": "取消標記"
+			"remove": "取消標記",
+			"again": "重來",
+			"hard": "困難",
+			"good": "良好",
+			"easy": "簡單"
 		}
 	},
 	"auth": {

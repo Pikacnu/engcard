@@ -1,41 +1,69 @@
+import { FSRSCardSelect } from '@/db/schema';
 import {
   createEmptyCard,
-  formatDate,
+  Card,
   fsrs,
   generatorParameters,
   Rating,
-  Grades,
+  RecordLogItem,
+  FSRSParameters,
 } from 'ts-fsrs';
 
-const params = generatorParameters({
-  enable_fuzz: true,
-  enable_short_term: true,
+export const getFSRS = (userParams?: Partial<FSRSParameters>) => {
+  const params = generatorParameters({
+    enable_fuzz: true,
+    ...userParams,
+  });
+  return fsrs(params);
+};
+
+export const defaultFSRS = getFSRS();
+
+export const toFSRSCard = (data: FSRSCardSelect): Card => ({
+  due: data.due,
+  stability: data.stability,
+  difficulty: data.difficulty,
+  elapsed_days: data.elapsedDays,
+  scheduled_days: data.scheduledDays,
+  reps: data.reps,
+  lapses: data.lapses,
+  state: data.state,
+  last_review: data.lastReview || undefined,
+  learning_steps: data.learningSteps,
 });
 
-const f = fsrs(params);
-const card = createEmptyCard(new Date());
-const scheduling_cards = f.repeat(card, 10);
+export const createInitialFSRSCard = (userId: string, cardId: string) => {
+  const emptyCard = createEmptyCard(new Date());
+  return {
+    userId,
+    cardId,
+    due: emptyCard.due,
+    stability: emptyCard.stability,
+    difficulty: emptyCard.difficulty,
+    elapsedDays: emptyCard.elapsed_days,
+    scheduledDays: emptyCard.scheduled_days,
+    reps: emptyCard.reps,
+    lapses: emptyCard.lapses,
+    state: emptyCard.state,
+    lastReview: emptyCard.last_review,
+    learningSteps: emptyCard.learning_steps,
+  };
+};
 
-for (const item of scheduling_cards) {
-  // grades = [Rating.Again, Rating.Hard, Rating.Good, Rating.Easy]
-  const grade = item.log.rating;
-  const { log, card } = item;
-  console.group(`${Rating[grade]}`);
-  console.table({
-    [`card_${Rating[grade]}`]: {
-      ...card,
-      due: formatDate(card.due),
-      last_review: formatDate(card.last_review as Date),
-    },
-  });
-  console.table({
-    [`log_${Rating[grade]}`]: {
-      ...log,
-      review: formatDate(log.review),
-    },
-  });
-  console.groupEnd();
-  console.log(
-    '----------------------------------------------------------------',
-  );
-}
+export const repeatCard = (
+  card: Card,
+  rating: Rating,
+  now: Date = new Date(),
+): RecordLogItem => {
+  const sc = defaultFSRS.repeat(card, now) as unknown as Record<
+    string,
+    RecordLogItem
+  >;
+  const ratingKey = Rating[rating];
+
+  const result = sc[ratingKey];
+  if (!result) {
+    return sc['Good'];
+  }
+  return result;
+};

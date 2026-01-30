@@ -1,103 +1,149 @@
 'use client';
 
-import { SetStateAction, useEffect, useState } from 'react';
-import { useTranslation } from '@/context/LanguageContext'; // Added
-import Deck from '@/components/deck';
-import { CardProps, DeckType, UserSettings } from '@/type';
-import { removeMarkWord } from '@/utils/functions/user-data';
+import { useEffect, useState } from 'react';
+import { useTranslation } from '@/context/LanguageContext';
+import Card from '@/components/card';
+import { CardProps } from '@/type';
+import { Rating } from 'ts-fsrs';
 
-type WithId<T> = {
-  deckId: string;
-} & T;
+type FSRSSessionItem = {
+  fsrs: {
+    cardId: string;
+    due: Date;
+  };
+  card: CardProps;
+};
 
 export default function SpeedReview() {
-  const { t } = useTranslation(); // Added
-  const [words, setWords] = useState<CardProps[]>([]);
-  const [deckActionType, setDeckActionType] = useState<DeckType>(
-    DeckType.AutoChangeToNext,
-  );
+  const { t } = useTranslation();
+  const [items, setItems] = useState<FSRSSessionItem[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [showAnswer, setShowAnswer] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const getData = async () => {
-      let response = await fetch('/api/history/mark');
-      if (!response.ok) {
-        console.log('Failed to fetch words:', response.statusText);
-        return;
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch('/api/history/fsrs');
+      if (response.ok) {
+        const data = await response.json();
+        setItems(data);
       }
-      const cardData = await response.json();
-      setWords(
-        cardData.words || [
-          {
-            word: 'Error fetching words',
-            definition: 'Please try again later.',
-            exampleSentences: [],
-          },
-        ],
-      );
-
-      response = await fetch('/api/settings');
-      if (!response.ok) {
-        console.log('Failed to fetch settings:', response.statusText);
-        return;
-      }
-      const settings = (await response.json()) as UserSettings;
-      if (!settings) {
-        console.log('No settings found');
-        return;
-      }
-      setDeckActionType(settings.deckActionType || DeckType.AutoChangeToNext);
-    };
-    getData();
-  }, []); // Added empty dependency array to run once on mount
-
-  const [removableWord, setRemovableWord] = useState<WithId<CardProps> | null>(
-    null,
-  );
-
-  const removeWord = async (word: WithId<CardProps>) => {
-    const updatedWords = words.filter((w) => w.word !== word.word);
-    setWords(updatedWords);
-    await removeMarkWord(word.word, word.deckId);
+    } catch (error) {
+      console.error('Failed to fetch FSRS cards:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const handleRate = async (rating: Rating) => {
+    const currentItem = items[currentIndex];
+    if (!currentItem) return;
+
+    if (currentIndex < items.length - 1) {
+      setCurrentIndex((prev) => prev + 1);
+      setShowAnswer(false);
+    } else {
+      setItems([]);
+      setCurrentIndex(0);
+      fetchData();
+    }
+
+    try {
+      await fetch('/api/history/fsrs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          cardId: currentItem.fsrs.cardId,
+          rating: rating,
+        }),
+      });
+    } catch (error) {
+      console.error('Failed to submit review:', error);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className='flex items-center justify-center h-full'>
+        {t('common.loading')}
+      </div>
+    );
+  }
+
+  if (items.length === 0) {
+    return (
+      <div className='flex flex-col items-center justify-center w-full h-full p-4'>
+        <p className='text-3xl mb-4 dark:text-gray-200 text-gray-500'>
+          {t('dashboard.speedReview.noWords')}
+        </p>
+        <button
+          onClick={fetchData}
+          className='px-4 py-2 bg-blue-500 text-white rounded-lg shadow hover:bg-blue-600'
+        >
+          {t('common.refresh')}
+        </button>
+      </div>
+    );
+  }
+
+  const currentItem = items[currentIndex];
+
   return (
-    <div className='flex flex-col items-center justify-center w-full h-full dark:bg-gray-700 dark:text-white'>
-      <div className='flex flex-col items-center justify-center w-full h-full p-4 text-center'>
-        {words.length <= 0 ? (
-          <p className='text-3xl mb-4 dark:text-gray-200 text-gray-500'>
-            <span>{t('dashboard.speedReview.noWords')}</span>
-          </p>
-        ) : (
-          <div className='w-full max-w-4xl [&>*]:max-w-full [&>*]:min-w-1/2 relative flex items-center flex-col'>
-            <Deck
-              cards={words}
-              onFinishClick={() => {
-                setWords((prev) => [...prev]);
-              }}
-              deckType={deckActionType}
-              updateCurrentWord={(card) => {
-                const fn = (
-                  card: SetStateAction<CardProps | undefined>,
-                ): card is WithId<CardProps> => !!card && 'deckId' in card;
-                if (fn(card)) {
-                  setRemovableWord(card);
-                }
-              }}
-            ></Deck>
-            <div>
-              {removableWord && (
-                <div className=' absolute top-0 right-1/4 translate-x-1/2 translate-y-1/2 z-20 p-2 bg-red-500 text-white rounded-full flex'>
-                  <button
-                    onClick={() => removeWord(removableWord)}
-                    className='text-sm w-full flex flex-grow text-center items-center justify-center'
-                  >
-                    {t('dashboard.speedReview.remove')}
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
+    <div className='flex flex-col items-center justify-center w-full h-full dark:bg-gray-700 bg-gray-50'>
+      <div className='w-full max-w-2xl px-4 flex flex-col items-center h-[85vh]'>
+        <div className='mb-4 text-sm font-medium text-gray-500'>
+          {currentIndex + 1} / {items.length}
+        </div>
+
+        <div
+          className='w-full flex-grow relative cursor-pointer'
+          onClick={() => setShowAnswer(true)}
+        >
+          <Card card={{ ...currentItem.card, flipped: showAnswer }} />
+        </div>
+
+        <div className='w-full mt-6 grid grid-cols-4 gap-2 pb-12'>
+          {showAnswer ? (
+            <>
+              <button
+                onClick={() => handleRate(Rating.Again)}
+                className='py-3 rounded-xl bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 font-bold hover:bg-red-200 transition-colors'
+              >
+                {t('dashboard.speedReview.again')}
+              </button>
+              <button
+                onClick={() => handleRate(Rating.Hard)}
+                className='py-3 rounded-xl bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 font-bold hover:bg-orange-200 transition-colors'
+              >
+                {t('dashboard.speedReview.hard')}
+              </button>
+              <button
+                onClick={() => handleRate(Rating.Good)}
+                className='py-3 rounded-xl bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 font-bold hover:bg-green-200 transition-colors'
+              >
+                {t('dashboard.speedReview.good')}
+              </button>
+              <button
+                onClick={() => handleRate(Rating.Easy)}
+                className='py-3 rounded-xl bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 font-bold hover:bg-blue-200 transition-colors'
+              >
+                {t('dashboard.speedReview.easy')}
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={() => setShowAnswer(true)}
+              className='col-span-4 py-4 rounded-xl bg-blue-500 text-white font-bold text-lg shadow-lg hover:bg-blue-600 transition-transform active:scale-95'
+            >
+              {t('components.card.clickToFlip')}
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

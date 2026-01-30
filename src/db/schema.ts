@@ -320,29 +320,38 @@ export const dictionaryItems = pgTable(
   ],
 );
 
-export const FSRSCard = pgTable('fsrs_card', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  userId: text('user_id')
-    .notNull()
-    .references(() => users.id, { onDelete: 'cascade' }),
-  cardId: text('card_id')
-    .notNull()
-    .references(() => cards.id, { onDelete: 'cascade' }),
+export const FSRSCard = pgTable(
+  'fsrs_card',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    cardId: text('card_id')
+      .notNull()
+      .references(() => cards.id, { onDelete: 'cascade' }),
 
-  // 核心數值：務必使用 doublePrecision
-  due: timestamp('due', { mode: 'date' }).defaultNow().notNull(),
-  stability: doublePrecision('stability').notNull(),
-  difficulty: doublePrecision('difficulty').notNull(),
+    // 核心數值：務必使用 doublePrecision
+    due: timestamp('due', { mode: 'date' }).defaultNow().notNull(),
+    stability: doublePrecision('stability').notNull(),
+    difficulty: doublePrecision('difficulty').notNull(),
 
-  elapsedDays: integer('elapsed_days').notNull(),
-  scheduledDays: integer('scheduled_days').notNull(),
-  reps: integer('reps').notNull(),
-  lapses: integer('lapses').notNull(),
-  state: integer('state').$type<State>().notNull(),
+    elapsedDays: integer('elapsed_days').notNull(),
+    scheduledDays: integer('scheduled_days').notNull(),
+    reps: integer('reps').notNull(),
+    lapses: integer('lapses').notNull(),
+    state: integer('state').$type<State>().notNull(),
+    learningSteps: integer('learning_steps').notNull(),
 
-  // 第一次加入時沒有複習過，應為可空
-  lastReview: timestamp('last_review', { mode: 'date' }),
-});
+    // 第一次加入時沒有複習過，應為可空
+    lastReview: timestamp('last_review', { mode: 'date' }),
+  },
+  (table) => [
+    index('fsrs_card_user_id_idx').on(table.userId),
+    index('fsrs_card_due_idx').on(table.due),
+    uniqueIndex('fsrs_user_card_unique').on(table.userId, table.cardId),
+  ],
+);
 
 export const FSRSReviewLog = pgTable('fsrs_review_log', {
   id: uuid('id').primaryKey().defaultRandom(),

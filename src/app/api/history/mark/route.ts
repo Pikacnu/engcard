@@ -1,8 +1,9 @@
 import { db } from '@/db';
-import { markedWords, decks } from '@/db/schema';
+import { markedWords, decks, cards, FSRSCard } from '@/db/schema';
 import { auth } from '@/utils';
 import { and, eq, inArray } from 'drizzle-orm';
 import { NextResponse } from 'next/server';
+import { createInitialFSRSCard } from '@/lib/fsrs';
 
 export async function POST(req: Request) {
   const {
@@ -33,6 +34,17 @@ export async function POST(req: Request) {
         deckId,
       })
       .onConflictDoNothing();
+
+    const card = await db.query.cards.findFirst({
+      where: and(eq(cards.word, word), eq(cards.deckId, deckId)),
+    });
+
+    if (card) {
+      await db
+        .insert(FSRSCard)
+        .values(createInitialFSRSCard(userId, card.id))
+        .onConflictDoNothing();
+    }
   } catch (e) {
     console.error('Error marking word:', e);
     return NextResponse.json(
@@ -42,7 +54,7 @@ export async function POST(req: Request) {
   }
 
   return NextResponse.json(
-    { message: 'Word marked successfully' },
+    { message: 'Word marked and added to FSRS' },
     { status: 200 },
   );
 }
@@ -67,18 +79,32 @@ export async function DELETE(req: Request) {
   }
   const userId = session.user.id;
 
-  await db
-    .delete(markedWords)
-    .where(
-      and(
-        eq(markedWords.userId, userId),
-        eq(markedWords.word, word),
-        eq(markedWords.deckId, deckId),
-      ),
-    );
+  try {
+    const card = await db.query.cards.findFirst({
+      where: and(eq(cards.word, word), eq(cards.deckId, deckId)),
+    });
+
+    if (card) {
+      await db
+        .delete(FSRSCard)
+        .where(and(eq(FSRSCard.userId, userId), eq(FSRSCard.cardId, card.id)));
+    }
+
+    await db
+      .delete(markedWords)
+      .where(
+        and(
+          eq(markedWords.userId, userId),
+          eq(markedWords.word, word),
+          eq(markedWords.deckId, deckId),
+        ),
+      );
+  } catch (e) {
+    console.error('Error unmarking word:', e);
+  }
 
   return NextResponse.json(
-    { message: 'Word unmarked successfully' },
+    { message: 'Word unmarked and removed from FSRS' },
     { status: 200 },
   );
 }

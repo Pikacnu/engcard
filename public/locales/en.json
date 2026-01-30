@@ -13,7 +13,8 @@
 		},
 		"loading": "Loading",
 		"loadingText": "Loading...",
-		"loadingSrOnly": "Loading..."
+		"loadingSrOnly": "Loading...",
+		"refresh": "Refresh"
 	},
 	"navbar": {
 		"home": "Home",
@@ -213,7 +214,11 @@
 		"speedReview": {
 			"noWords": "No words available",
 			"nextWordButton": "Next Word",
-			"remove": "Unmark"
+			"remove": "Unmark",
+			"again": "Again",
+			"hard": "Hard",
+			"good": "Good",
+			"easy": "Easy"
 		}
 	},
 	"auth": {
