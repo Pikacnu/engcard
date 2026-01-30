@@ -10,6 +10,7 @@ import {
   index,
   uuid,
   vector,
+  date,
 } from 'drizzle-orm/pg-core';
 import { relations, type InferSelectModel } from 'drizzle-orm';
 import type {
@@ -20,6 +21,7 @@ import type {
   LangEnum,
 } from '@/type-shared';
 import type { DictionaryItemMetadata } from '@/utils/ai/schema';
+import { Rating, State } from 'ts-fsrs';
 
 // info about pg vector https://orm.drizzle.team/docs/guides/vector-similarity-search
 
@@ -317,3 +319,46 @@ export const dictionaryItems = pgTable(
     index('dictionary_items_metadata_idx').using('gin', t.metadata),
   ],
 );
+
+export const FSRSCard = pgTable('fsrs_card', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  cardId: text('card_id')
+    .notNull()
+    .references(() => cards.id, { onDelete: 'cascade' }),
+  due: date('date').defaultNow().notNull(), // 卡片下次复习的日期
+  stability: integer('stability').notNull(), // 记忆稳定性
+  difficulty: integer('difficulty').notNull(), // 卡片难度
+  elapsed_days: integer('elapsed_days').notNull(), // 自上次复习以来的天数
+  scheduled_days: integer('scheduled_days').notNull(), // 下次复习的间隔天数
+  learning_steps: integer('learning_steps').notNull(), // 当前的(重新)学习步骤
+  reps: integer('reps').notNull(), // 卡片被复习的总次数
+  lapses: integer('lapses').notNull(), // 卡片被遗忘或错误记忆的次数
+  state: integer('state').notNull(), // 卡片的当前状态（新卡片、学习中、复习中、重新学习中）
+  last_review: date('last_review').notNull(), // 最近的复习日期（如果适用）
+});
+
+export const FSRSReviewLog = pgTable('fsrs_review_log', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  fsrsCardId: text('fsrs_card_id')
+    .notNull()
+    .references(() => FSRSCard.id, { onDelete: 'cascade' }),
+  rating: integer('rating').$type<Rating>().notNull(),
+  state: integer('state').$type<State>().notNull(),
+  due: date('due').notNull(),
+  stability: integer('stability').notNull(),
+  difficulty: integer('difficulty').notNull(),
+  elapsed_days: integer('elapsed_days').notNull(),
+  last_elapsed_days: integer('last_elapsed_days').notNull(),
+  scheduled_days: integer('scheduled_days').notNull(),
+  learning_steps: integer('learning_steps').notNull(),
+  review: date('review').notNull(),
+});
+
+export type FSRSCardSelect = InferSelectModel<typeof FSRSCard>;
+export type FSRSReviewLogSelect = InferSelectModel<typeof FSRSReviewLog>;
