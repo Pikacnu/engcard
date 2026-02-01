@@ -1,4 +1,3 @@
-'use server';
 import { auth } from '@/utils';
 import { redirect } from 'next/navigation';
 

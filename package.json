@@ -17,7 +17,7 @@
     "@google/generative-ai": "^0.24.1",
     "@open-spaced-repetition/binding": "^0.1.2",
     "@opentelemetry/api": "^1.9.0",
-    "@serwist/next": "^9.5.1",
+    "@serwist/next": "^9.5.3",
     "@types/minimatch": "^6.0.0",
     "@vercel/otel": "^1.14.0",
     "better-auth": "^1.4.18",

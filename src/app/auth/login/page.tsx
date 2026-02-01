@@ -3,20 +3,21 @@
 import SignInButton from '@/components/account/signin';
 import { LoginMethod } from '@/type';
 import { authClient } from '@/lib/auth-client';
-import { redirect } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useTranslation } from '@/context/LanguageContext'; // Added
 import { useEffect } from 'react'; // Added for session redirect
 
 export default function Login() {
   const { t } = useTranslation(); // Added
+  const router = useRouter();
   const { data: session, isPending } = authClient.useSession(); // Changed to useSession
 
   useEffect(() => {
     // Added useEffect for redirect
     if (session) {
-      redirect('/dashboard');
+      router.push('/dashboard');
     }
-  }, [session]);
+  }, [session, router]);
 
   if (isPending) {
     return (
@@ -27,11 +28,13 @@ export default function Login() {
     );
   }
 
-  // If already authenticated (e.g. due to fast redirect), this might not be strictly necessary
-  // but good for initial check before useEffect runs.
+  // If already authenticated, show loading during redirect
   if (session) {
-    redirect('/dashboard');
-    return null; // Ensure nothing else renders during redirect
+    return (
+      <div className='w-full h-screen flex justify-center items-center dark:bg-gray-900'>
+        <p className='dark:text-white'>{t('common.loadingText')}</p>
+      </div>
+    );
   }
 
   return (

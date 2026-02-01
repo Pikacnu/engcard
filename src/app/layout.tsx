@@ -3,6 +3,10 @@ import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import { LanguageProvider } from '@/context/LanguageContext';
 import { ThemeProvider } from '@/context/ThemeContext'; // Adjust path if necessary
+import { SerwistProvider } from '@/lib/serwist';
+import { Suspense } from 'react';
+
+export const dynamic = 'force-dynamic';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -72,9 +76,17 @@ export default function RootLayout({
       >
         <ThemeProvider>
           <LanguageProvider>
-            <div className='flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-700 w-full h-full min-h-max '>
-              {children}
-            </div>
+            <SerwistProvider
+              swUrl='/serwist/sw.js'
+              cacheOnNavigation={true}
+              reloadOnOnline={true}
+            >
+              <div className='flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-700 w-full h-full min-h-max '>
+                <Suspense fallback={null}>
+                  {children}
+                </Suspense>
+              </div>
+            </SerwistProvider>
           </LanguageProvider>
         </ThemeProvider>
       </body>

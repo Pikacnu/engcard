@@ -1,7 +1,6 @@
 // app/serwist/[path]/route.ts
 import { spawnSync } from 'node:child_process';
 import { createSerwistRoute } from '@serwist/turbopack';
-import { serwistOptions } from '@/sw';
 import nextConfig from '../../../../next.config';
 
 const revision =
@@ -10,7 +9,6 @@ const revision =
 
 export const { dynamic, dynamicParams, revalidate, generateStaticParams, GET } =
   createSerwistRoute({
-    ...serwistOptions,
     additionalPrecacheEntries: [
       { url: '/appenter', revision },
       { url: '/dashboard', revision },

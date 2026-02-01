@@ -1,16 +1,18 @@
-import withSerwistInit from '@serwist/next';
+import { withSerwist } from '@serwist/turbopack';
 import { NextConfig } from 'next';
 
-const withSerwist = withSerwistInit({
-  swSrc: 'src/sw.ts',
-  swDest: 'public/sw.js',
-  disable: false,
-});
-
 const nextConfig = withSerwist({
+  cacheComponents: false,
   output: 'standalone',
   turbopack: {},
-  serverExternalPackages: ["esbuild-wasm"],
+  serverExternalPackages: ['esbuild-wasm', 'esbuild', 'better-auth'],
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      config.externals = config.externals || [];
+      config.externals.push('esbuild');
+    }
+    return config;
+  },
   async headers() {
     return [
       {
