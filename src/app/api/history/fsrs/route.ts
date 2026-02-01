@@ -52,6 +52,7 @@ export async function POST(req: Request) {
           state: nextCard.state,
           lastReview: nextCard.last_review,
           learningSteps: nextCard.learning_steps,
+          updatedAt: new Date(),
         })
         .where(eq(FSRSCard.id, fsrsCardRecord.id));
 

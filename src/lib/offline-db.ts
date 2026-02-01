@@ -17,13 +17,26 @@ export interface OfflineCard {
   blocks: Blocks[] | null;
 }
 
-export type OfflineFSRSCard = FSRSCardSelect;
+export type OfflineFSRSCard = Omit<FSRSCardSelect, 'userId'> & {
+  updatedAt?: Date;
+};
 
-export type OfflineFSRSReviewLog = FSRSReviewLogSelect;
+export type OfflineFSRSReviewLog = Omit<FSRSReviewLogSelect, 'userId'>;
 
 export interface SyncMeta {
   key: string; // e.g., 'decks_all', 'deck_123', 'fsrs_all'
   lastSyncedAt: Date;
+}
+
+export interface OfflineHistory {
+  id: string;
+  words: string[];
+  date: Date;
+}
+
+export interface OfflineHotWord {
+  word: string;
+  count: number;
 }
 
 export class CardlisherOfflineDB extends Dexie {
@@ -32,6 +45,8 @@ export class CardlisherOfflineDB extends Dexie {
   syncMeta!: Table<SyncMeta>;
   fsrsCards!: Table<OfflineFSRSCard>;
   fsrsReviewLogs!: Table<OfflineFSRSReviewLog>;
+  histories!: Table<OfflineHistory>;
+  hotWords!: Table<OfflineHotWord>;
   pendingFSRS!: Table<{
     id: string; // cardId
     rating: number;
@@ -40,11 +55,13 @@ export class CardlisherOfflineDB extends Dexie {
 
   constructor() {
     super('CardlisherDB');
-    this.version(2).stores({
+    this.version(4).stores({
       decks: 'id, userId, updatedAt, isPublic',
       cards: 'id, deckId, word',
-      fsrsCards: 'id, cardId, due, state',
+      fsrsCards: 'id, cardId, due, state, updatedAt',
       fsrsReviewLogs: 'id, fsrsCardId, review',
+      histories: 'id, date',
+      hotWords: 'word, count',
       pendingFSRS: 'id',
       syncMeta: 'key',
     });

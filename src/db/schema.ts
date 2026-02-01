@@ -347,6 +347,7 @@ export const FSRSCard = pgTable(
 
     // 第一次加入時沒有複習過，應為可空
     lastReview: timestamp('last_review', { mode: 'date' }),
+    updatedAt: timestamp('updatedAt', { mode: 'date' }).defaultNow().notNull(),
   },
   (table) => [
     index('fsrs_card_user_id_idx').on(table.userId),

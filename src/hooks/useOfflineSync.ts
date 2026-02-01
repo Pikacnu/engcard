@@ -1,13 +1,17 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { offlineDB } from '@/lib/offline-db';
 import { DeckSelect, FSRSCardSelect } from '@/db/schema';
 import { CardProps } from '@/type';
+import { repeatCard } from '@/lib/fsrs';
+import { Card } from 'ts-fsrs';
+import { useDevice } from './useDevice';
 
 export function useOfflineSync() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  const { isOnline } = useDevice();
 
   const syncFSRSCards = useCallback(async (deckId?: string) => {
     setIsSyncing(true);
@@ -23,12 +27,40 @@ export function useOfflineSync() {
       }[];
 
       await offlineDB.transaction('rw', [offlineDB.fsrsCards], async () => {
+        // Simple merge: keep local if local is newer (for now just overwrite)
         for (const item of data) {
+          const local = await offlineDB.fsrsCards.get(item.fsrs.id);
+          if (local && local.updatedAt && item.fsrs.updatedAt && local.updatedAt > item.fsrs.updatedAt) {
+            continue;
+          }
           await offlineDB.fsrsCards.put(item.fsrs);
         }
       });
     } catch (err) {
       setError(err as Error);
+    } finally {
+      setIsSyncing(false);
+    }
+  }, []);
+
+  const syncHistory = useCallback(async () => {
+    setIsSyncing(true);
+    try {
+      const res = await fetch('/api/history/recent');
+      if (res.ok) {
+        const data = await res.json();
+        await offlineDB.histories.clear();
+        await offlineDB.histories.bulkPut(data);
+      }
+
+      const hotRes = await fetch('/api/history/hot');
+      if (hotRes.ok) {
+        const hotData = await hotRes.json();
+        await offlineDB.hotWords.clear();
+        await offlineDB.hotWords.bulkPut(hotData);
+      }
+    } catch (err) {
+      console.error('Failed to sync history:', err);
     } finally {
       setIsSyncing(false);
     }
@@ -55,10 +87,17 @@ export function useOfflineSync() {
       }
     } catch (err) {
       setError(err as Error);
+      console.error('Failed to push pending reviews:', err);
     } finally {
       setIsSyncing(false);
     }
   }, []);
+
+  useEffect(() => {
+    if (isOnline) {
+      pushPendingReviews();
+    }
+  }, [isOnline, pushPendingReviews]);
 
   const syncDecks = useCallback(
     async (
@@ -146,8 +185,60 @@ export function useOfflineSync() {
   }, []);
 
   const submitReview = useCallback(
-    async (cardId: string, rating: number, fsrsCard?: FSRSCardSelect) => {
-      // 1. Try online
+    async (cardId: string, rating: number) => {
+      const cardFromLocal = await offlineDB.fsrsCards.get(cardId);
+      if (!cardFromLocal) return false;
+
+      // 1. Calculate next state locally
+      const localCard: Card = {
+        ...cardFromLocal,
+        elapsed_days: cardFromLocal.elapsedDays,
+        scheduled_days: cardFromLocal.scheduledDays,
+        learning_steps: cardFromLocal.learningSteps,
+        last_review: cardFromLocal.lastReview || undefined,
+      };
+
+      const { card: newCard, log: newLog } = repeatCard(localCard, rating);
+
+      // 2. Update local DB immediately (CamelCase mapping)
+      await offlineDB.transaction('rw', [offlineDB.fsrsCards, offlineDB.fsrsReviewLogs, offlineDB.pendingFSRS], async () => {
+        await offlineDB.fsrsCards.put({
+          ...cardFromLocal,
+          due: newCard.due,
+          stability: newCard.stability,
+          difficulty: newCard.difficulty,
+          elapsedDays: newCard.elapsed_days,
+          scheduledDays: newCard.scheduled_days,
+          reps: newCard.reps,
+          lapses: newCard.lapses,
+          state: newCard.state,
+          lastReview: newCard.last_review || null,
+          learningSteps: newCard.learning_steps,
+          updatedAt: new Date(),
+        });
+
+        await offlineDB.fsrsReviewLogs.add({
+          id: crypto.randomUUID(),
+          fsrsCardId: cardId,
+          rating: newLog.rating,
+          state: newLog.state,
+          due: newLog.due,
+          stability: newLog.stability,
+          difficulty: newLog.difficulty,
+          elapsedDays: newLog.elapsed_days,
+          lastElapsedDays: newLog.last_elapsed_days,
+          scheduledDays: newLog.scheduled_days,
+          review: newLog.review,
+        });
+
+        await offlineDB.pendingFSRS.put({
+          id: cardId,
+          rating,
+          reviewedAt: new Date(),
+        });
+      });
+
+      // 3. Try to sync if online
       if (navigator.onLine) {
         try {
           const res = await fetch('/api/history/fsrs', {
@@ -155,25 +246,15 @@ export function useOfflineSync() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ cardId, rating }),
           });
-          if (res.ok) return true;
+          if (res.ok) {
+            await offlineDB.pendingFSRS.delete(cardId);
+            return true;
+          }
         } catch (err) {
-          console.warn('Online sync failed, falling back to offline', err);
+          console.warn('Online sync failed, will retry later', err);
         }
       }
 
-      // 2. Offline fallback
-      await offlineDB.pendingFSRS.put({
-        id: cardId,
-        rating,
-        reviewedAt: new Date(),
-      });
-
-      // Update local FSRS card if provided (optional but good for UI)
-      if (fsrsCard) {
-        // Here we could use ts-fsrs to calculate next state locally
-        // For now, at least mark it as "reviewed" locally so it doesn't show up in "Due" if we were clever
-        // But the simplest is just to wait for the next sync
-      }
       return false;
     },
     [],
@@ -182,9 +263,11 @@ export function useOfflineSync() {
   return {
     isSyncing,
     error,
+    isOnline,
     syncDecks,
     syncDeckCards,
     syncFSRSCards,
+    syncHistory,
     pushPendingReviews,
     submitReview,
     prefetchAudio,
