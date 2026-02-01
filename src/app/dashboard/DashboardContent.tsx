@@ -63,14 +63,16 @@ export default function DashboardContent() {
                   className='text-gray-700 dark:text-gray-300 flex-wrap flex items-center'
                 >
                   <span className='font-medium flex flex-wrap gap-2'>
-                    {item.words.slice(0, maxWords).map((word: string, i2: number) => (
-                      <span
-                        key={word + index.toString() + i2.toString()}
-                        className='p-2 rounded-lg bg-blue-700 dark:bg-blue-800 bg-opacity-40 dark:bg-opacity-60 mx-2 text-black dark:text-white'
-                      >
-                        {word}
-                      </span>
-                    ))}
+                    {item.words
+                      .slice(0, maxWords)
+                      .map((word: string, i2: number) => (
+                        <span
+                          key={word + index.toString() + i2.toString()}
+                          className='p-2 rounded-lg bg-blue-700 dark:bg-blue-800 bg-opacity-40 dark:bg-opacity-60 mx-2 text-black dark:text-white'
+                        >
+                          {word}
+                        </span>
+                      ))}
                     {item.words.length > maxWords && '...'}
                   </span>
                   <span className='text-gray-500 dark:text-gray-400'>
@@ -108,7 +110,10 @@ export default function DashboardContent() {
               </thead>
               <tbody>
                 {hotWords.map((word, index) => (
-                  <tr key={index} className='hover:bg-gray-50 dark:hover:bg-gray-600'>
+                  <tr
+                    key={index}
+                    className='hover:bg-gray-50 dark:hover:bg-gray-600'
+                  >
                     <td className='border border-gray-200 dark:border-gray-600 px-4 py-2'>
                       {index + 1}
                     </td>

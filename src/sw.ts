@@ -17,12 +17,19 @@ declare const self: ServiceWorkerGlobalScopeEventMap & {
 // 針對通用資源的快取產生器
 const ResourceCacheCreator = (
   resourceName: string,
-  strategy: typeof StaleWhileRevalidate | typeof CacheFirst = StaleWhileRevalidate,
+  strategy:
+    | typeof StaleWhileRevalidate
+    | typeof CacheFirst = StaleWhileRevalidate,
 ): RuntimeCaching => {
   return {
     matcher: ({ request }) => {
-      if (resourceName === 'audio') return request.destination === 'audio' || request.url.endsWith('.mp3') || request.url.endsWith('.wav');
-      return request.destination === resourceName as any;
+      if (resourceName === 'audio')
+        return (
+          request.destination === 'audio' ||
+          request.url.endsWith('.mp3') ||
+          request.url.endsWith('.wav')
+        );
+      return request.destination === (resourceName as any);
     },
     method: 'GET',
     handler: new strategy({

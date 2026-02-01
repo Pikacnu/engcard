@@ -30,7 +30,12 @@ export function useOfflineSync() {
         // Simple merge: keep local if local is newer (for now just overwrite)
         for (const item of data) {
           const local = await offlineDB.fsrsCards.get(item.fsrs.id);
-          if (local && local.updatedAt && item.fsrs.updatedAt && local.updatedAt > item.fsrs.updatedAt) {
+          if (
+            local &&
+            local.updatedAt &&
+            item.fsrs.updatedAt &&
+            local.updatedAt > item.fsrs.updatedAt
+          ) {
             continue;
           }
           await offlineDB.fsrsCards.put(item.fsrs);
@@ -184,24 +189,26 @@ export function useOfflineSync() {
     );
   }, []);
 
-  const submitReview = useCallback(
-    async (cardId: string, rating: number) => {
-      const cardFromLocal = await offlineDB.fsrsCards.get(cardId);
-      if (!cardFromLocal) return false;
+  const submitReview = useCallback(async (cardId: string, rating: number) => {
+    const cardFromLocal = await offlineDB.fsrsCards.get(cardId);
+    if (!cardFromLocal) return false;
 
-      // 1. Calculate next state locally
-      const localCard: Card = {
-        ...cardFromLocal,
-        elapsed_days: cardFromLocal.elapsedDays,
-        scheduled_days: cardFromLocal.scheduledDays,
-        learning_steps: cardFromLocal.learningSteps,
-        last_review: cardFromLocal.lastReview || undefined,
-      };
+    // 1. Calculate next state locally
+    const localCard: Card = {
+      ...cardFromLocal,
+      elapsed_days: cardFromLocal.elapsedDays,
+      scheduled_days: cardFromLocal.scheduledDays,
+      learning_steps: cardFromLocal.learningSteps,
+      last_review: cardFromLocal.lastReview || undefined,
+    };
 
-      const { card: newCard, log: newLog } = repeatCard(localCard, rating);
+    const { card: newCard, log: newLog } = repeatCard(localCard, rating);
 
-      // 2. Update local DB immediately (CamelCase mapping)
-      await offlineDB.transaction('rw', [offlineDB.fsrsCards, offlineDB.fsrsReviewLogs, offlineDB.pendingFSRS], async () => {
+    // 2. Update local DB immediately (CamelCase mapping)
+    await offlineDB.transaction(
+      'rw',
+      [offlineDB.fsrsCards, offlineDB.fsrsReviewLogs, offlineDB.pendingFSRS],
+      async () => {
         await offlineDB.fsrsCards.put({
           ...cardFromLocal,
           due: newCard.due,
@@ -236,29 +243,28 @@ export function useOfflineSync() {
           rating,
           reviewedAt: new Date(),
         });
-      });
+      },
+    );
 
-      // 3. Try to sync if online
-      if (navigator.onLine) {
-        try {
-          const res = await fetch('/api/history/fsrs', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ cardId, rating }),
-          });
-          if (res.ok) {
-            await offlineDB.pendingFSRS.delete(cardId);
-            return true;
-          }
-        } catch (err) {
-          console.warn('Online sync failed, will retry later', err);
+    // 3. Try to sync if online
+    if (navigator.onLine) {
+      try {
+        const res = await fetch('/api/history/fsrs', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ cardId, rating }),
+        });
+        if (res.ok) {
+          await offlineDB.pendingFSRS.delete(cardId);
+          return true;
         }
+      } catch (err) {
+        console.warn('Online sync failed, will retry later', err);
       }
+    }
 
-      return false;
-    },
-    [],
-  );
+    return false;
+  }, []);
 
   return {
     isSyncing,

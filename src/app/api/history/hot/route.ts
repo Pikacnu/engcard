@@ -26,12 +26,12 @@ export async function GET() {
       (entry): entry is { entries: string[]; count: number } =>
         entry.entries !== null && entry.entries.length >= 1,
     );
-    
+
     // Flatten and format for simple OfflineHotWord schema
     const results: { word: string; count: number }[] = [];
-    filteredData.forEach(item => {
-      item.entries.forEach(word => {
-        const existing = results.find(r => r.word === word);
+    filteredData.forEach((item) => {
+      item.entries.forEach((word) => {
+        const existing = results.find((r) => r.word === word);
         if (existing) {
           existing.count += item.count;
         } else {
@@ -40,8 +40,13 @@ export async function GET() {
       });
     });
 
-    return NextResponse.json(results.sort((a,b) => b.count - a.count).slice(0, 20));
+    return NextResponse.json(
+      results.sort((a, b) => b.count - a.count).slice(0, 20),
+    );
   } catch (error) {
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Internal Server Error' },
+      { status: 500 },
+    );
   }
 }
