@@ -70,7 +70,7 @@ export default function Chat() {
       }
       setLoading(false);
     })();
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     (async () => {
@@ -129,7 +129,7 @@ export default function Chat() {
                 <button
                   className={`flex flex-row rounded-sm ${color} text-md overflow-ellipsis`}
                   onClick={() => setChatId(chat._id)}
-                  title={chat.chatName} // Added title for better UX on truncated names
+                  title={chat.chatName}
                 >
                   {chat.chatName}
                 </button>

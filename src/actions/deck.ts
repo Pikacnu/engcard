@@ -6,7 +6,7 @@ import { auth } from '@/utils/auth';
 import { CardProps, DeckCollection, Definition, PartOfSpeech } from '@/type';
 import { Blocks } from '@/type-shared';
 
-export async function getDeck(id: string): Promise<any> {
+export async function getDeck(id: string): Promise<DeckCollection | null> {
   // 1. Fetch Deck
   const deck = (await db.select().from(decks).where(eq(decks.id, id)))[0];
   const cardDatas = await db.select().from(cards).where(eq(cards.deckId, id));
