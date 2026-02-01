@@ -11,11 +11,22 @@ Cardlisher is a modern English vocabulary learning application built with Next.j
 - **AI-Powered Learning**: Advanced AI analyzes words and provides definitions, synonyms, antonyms, and contextual examples
 - **Interactive Practice**: Engage with vocabulary through spelling challenges, quizzes, and speed reviews
 - **FSRS Algorithm**: Implements the Free Spaced Repetition Scheduler for optimized learning
+  - Full local computation with no server dependency
+  - Personalized review scheduling with `ts-fsrs` library
+  - Offline-first review logs stored in IndexedDB (Dexie)
+  - Background sync for seamless online/offline transitions
 - **Multilingual Support**: Full internationalization with English, Traditional Chinese, and Japanese interfaces
 - **Progress Tracking**: Monitor learning progress with detailed analytics and performance insights
 - **Dark Mode Support**: Modern UI with light/dark theme switching
 - **Responsive Design**: Optimized for desktop and mobile devices
-- **PWA Support**: Fully functional Progressive Web App with offline capabilities
+- **Complete PWA Support**: Enterprise-grade Progressive Web App
+  - Installable on all platforms (Windows, macOS, iOS, Android)
+  - Full offline functionality with Service Worker (Serwist)
+  - Pre-cached critical routes (dashboard, chat, deck, search, settings, preview)
+  - Background sync for failed requests
+  - Runtime caching for visited pages with StaleWhileRevalidate strategy
+  - Automatic updates with Git-based versioning
+  - Optimized media caching (audio, images, fonts)
 
 ## Tech Stack
 
@@ -26,8 +37,9 @@ Cardlisher is a modern English vocabulary learning application built with Next.j
 - **Authentication**: Better Auth
 - **Database**: PostgreSQL with Drizzle ORM
 - **AI Integration**: Google Generative AI (Gemini), OpenAI
-- **PWA**: Serwist / Next-PWA
-- **Algorithm**: ts-fsrs
+- **PWA**: Serwist (with Turbopack support)
+- **Local Storage**: Dexie.js (IndexedDB wrapper)
+- **Spaced Repetition**: ts-fsrs (FSRS 5.2+ algorithm)
 
 ## Project Structure
 
@@ -130,6 +142,40 @@ Start production server:
 ```bash
 bun run start
 ```
+
+## PWA & Offline Architecture
+
+### Service Worker Strategy
+
+Cardlisher implements a sophisticated offline-first strategy:
+
+- **Precaching**: Critical routes are pre-downloaded during installation:
+  - Entry points: `/appenter`, `/dashboard`
+  - Dashboard routes: `/chat`, `/deck`, `/search`, `/settings`, `/preview`
+  - Static assets: Icons, fonts, and core resources
+
+- **Runtime Caching**:
+  - **Navigation**: StaleWhileRevalidate for instant page loads
+  - **Audio**: CacheFirst with Range Request support for offline playback
+  - **Images & Fonts**: StaleWhileRevalidate for optimal performance
+  - **API Calls**: Background Sync with 24-hour retry window
+
+### Local Data Management (Dexie.js)
+
+All critical data is stored locally for full offline functionality:
+
+- **Decks & Cards**: Complete vocabulary database synced to IndexedDB
+- **FSRS State**: Review schedules, card states, and learning progress
+- **Review Logs**: Historical review data with pending sync queue
+- **User Preferences**: Settings, theme, and language preferences
+- **Analytics**: Hot words, recent history, and usage statistics
+
+### Sync Strategy
+
+1. **Online**: Real-time sync with PostgreSQL backend
+2. **Offline**: Operations queued in `pendingFSRS` table
+3. **Reconnect**: Automatic background sync via Service Worker
+4. **Conflict Resolution**: Last-write-wins with timestamp-based merging
 
 ## How to Use
 

@@ -8,7 +8,12 @@ import {
   CacheFirst,
   RangeRequestsPlugin,
   type RuntimeCaching,
+  SerwistOptions,
 } from 'serwist';
+
+/// <reference no-default-lib="true" />
+/// <reference lib="esnext" />
+/// <reference lib="webworker" />
 
 declare const self: ServiceWorkerGlobalScopeEventMap & {
   __SW_MANIFEST: (PrecacheEntry | string)[] | undefined;
@@ -46,7 +51,7 @@ const ResourceCacheCreator = (
   } as RuntimeCaching;
 };
 
-const serwist = new Serwist({
+export const serwistOptions: SerwistOptions = {
   precacheEntries: self.__SW_MANIFEST,
   precacheOptions: {
     cleanupOutdatedCaches: true,
@@ -61,6 +66,8 @@ const serwist = new Serwist({
     ResourceCacheCreator('image'),
     ResourceCacheCreator('font'),
   ],
-});
+};
+
+const serwist = new Serwist(serwistOptions);
 
 serwist.addEventListeners();

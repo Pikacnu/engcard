@@ -10,6 +10,7 @@ const withSerwist = withSerwistInit({
 const nextConfig = withSerwist({
   output: 'standalone',
   turbopack: {},
+  serverExternalPackages: ["esbuild-wasm"],
   async headers() {
     return [
       {
