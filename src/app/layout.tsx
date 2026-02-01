@@ -14,9 +14,44 @@ const geistMono = Geist_Mono({
   subsets: ['latin'],
 });
 
+const APP_NAME = 'Cardlisher';
+const APP_DEFAULT_TITLE = 'Cardlisher';
+const APP_TITLE_TEMPLATE = '%s - Cardlisher';
+const APP_DESCRIPTION = 'A Powerful Flashcard Application';
+
 export const metadata: Metadata = {
-  title: 'cardlisher',
-  description: 'A flashcard app',
+  applicationName: APP_NAME,
+  title: {
+    default: APP_DEFAULT_TITLE,
+    template: APP_TITLE_TEMPLATE,
+  },
+  description: APP_DESCRIPTION,
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: APP_DEFAULT_TITLE,
+    // startUpImage: [],
+  },
+  formatDetection: {
+    telephone: false,
+  },
+  openGraph: {
+    type: 'website',
+    siteName: APP_NAME,
+    title: {
+      default: APP_DEFAULT_TITLE,
+      template: APP_TITLE_TEMPLATE,
+    },
+    description: APP_DESCRIPTION,
+  },
+  twitter: {
+    card: 'summary',
+    title: {
+      default: APP_DEFAULT_TITLE,
+      template: APP_TITLE_TEMPLATE,
+    },
+    description: APP_DESCRIPTION,
+  },
 };
 
 export default function RootLayout({
@@ -29,7 +64,7 @@ export default function RootLayout({
       <head>
         <meta
           name='viewport'
-          content='width=device-width, initial-scale=1, maximum-scale=1'
+          content='width=device-width, initial-scale=1, maximum-scale=1, theme-color="#000000"'
         />
       </head>
       <body

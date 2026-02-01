@@ -1,12 +1,13 @@
- 
-const withPWA = require('next-pwa')({
-  dest: 'public',
+import withSerwistInit from '@serwist/next';
+import { NextConfig } from 'next';
+
+const withSerwist = withSerwistInit({
+  swSrc: 'src/sw.ts',
+  swDest: 'public/sw.js',
+  disable: false,
 });
 
-/**
- * @type {import('next').NextConfig}
- */
-const nextConfig = withPWA({
+const nextConfig = withSerwist({
   output: 'standalone',
   turbopack: {},
   async headers() {
@@ -30,6 +31,6 @@ const nextConfig = withPWA({
       },
     ];
   },
-});
+}) as NextConfig;
 
-module.exports = nextConfig;
+export default nextConfig;
