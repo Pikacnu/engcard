@@ -2,7 +2,6 @@
 
 import { useState, useCallback } from 'react';
 import { offlineDB } from '@/lib/offline-db';
-import { DeckCollection } from '@/type';
 import { DeckSelect } from '@/db/schema';
 
 export function useOfflineSync() {
