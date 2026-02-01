@@ -3,6 +3,7 @@ import { cards, decks, savedDecks } from '@/db/schema';
 import { auth } from '@/utils';
 import { and, eq, inArray, not } from 'drizzle-orm';
 import { CardProps } from '@/type';
+import { DefinitionData } from '@/type-shared';
 
 export async function POST(req: Request) {
   const { id: deckId } = await req.json();
@@ -49,7 +50,6 @@ export async function POST(req: Request) {
 }
 
 export async function GET() {
-  // The original implementation had logic to filter only saved decks regardless of type param
   const session = await auth();
   if (!session || !session.user?.id) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 });
@@ -92,12 +92,13 @@ export async function GET() {
         }
         const langs =
           firstCardData.blocks[0].definitions[0].definition.map(
-            (d) => d.lang,
+            (d: DefinitionData) => d.lang,
           ) || [];
         const cardCount = await db.$count(cards, eq(cards.deckId, deck.id));
 
         return {
           _id: deck.id,
+          id: deck.id,
           name: deck.name,
           isPublic: deck.isPublic,
           cardInfo: {

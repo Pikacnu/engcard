@@ -98,6 +98,7 @@ export type Deck = {
 
 export type DeckResponse = {
   _id: string;
+  id: string;
   cardInfo: {
     length: number;
     langs: Lang[];

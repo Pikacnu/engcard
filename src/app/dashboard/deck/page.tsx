@@ -9,34 +9,77 @@ import { redirect } from 'next/navigation';
 import { useCopyToClipboard } from '@/hooks/copy';
 import { useTranslation } from '@/context/LanguageContext'; // Added
 import { DeckSelect } from '@/db/schema';
+import offlineDB from '@/lib/offline-db';
+import { useOfflineSync } from '@/hooks/useOfflineSync';
+import { DeckResponse } from '@/type';
+
+type DeckInfo = Omit<
+  DeckSelect,
+  'createdAt' | 'updatedAt' | 'allows' | 'userId'
+>;
 
 export default function Deck() {
   const { t } = useTranslation(); // Added
-  const [decks, setDecks] = useState<DeckSelect[] | null>(null);
-  const [sharedDecks, setSharedDecks] = useState<DeckSelect[] | null>(null);
+  const [decks, setDecks] = useState<DeckInfo[] | null>(null);
+  const [sharedDecks, setSharedDecks] = useState<DeckInfo[] | null>(null);
   const [deckId, setDeckId] = useState<string | null>(null);
   const [isOpenAddArea, setIsOpenAddArea] = useState(false);
+  const { syncDeckCards, syncDecks } = useOfflineSync();
 
-  const updateDecks = useCallback(() => {
-    fetch('/api/deck')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.error) {
-          return;
-        }
-        setDecks(data);
-      });
-    fetch('/api/deck/public?type=full')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.error) {
-          return;
-        }
-        setSharedDecks(data.decks);
-      });
-  }, []);
+  const updateDecks = useCallback(async () => {
+    const localDecks = (await offlineDB.decks.toArray()).map((deck) => ({
+      id: deck.id,
+      name: deck.name,
+      isPublic: deck.isPublic || false,
+    })) as DeckInfo[];
+
+    let localPrivateDecks = [];
+    let localPublicDecks = [];
+
+    for (const deck of localDecks) {
+      if (deck.isPublic) {
+        localPublicDecks.push(deck);
+      } else {
+        localPrivateDecks.push(deck);
+      }
+    }
+
+    setDecks(localPrivateDecks);
+    setSharedDecks(localPublicDecks);
+
+    let userPrivateDecks: DeckInfo[] = [];
+    let userPublicDecks: DeckInfo[] = [];
+
+    const deckResponse = await fetch('/api/deck');
+    if (deckResponse.ok) {
+      const deckData = (await deckResponse.json()) as DeckResponse[];
+      setDecks(deckData);
+      userPrivateDecks = deckData;
+    }
+
+    const sharedDeckResponse = await fetch('/api/deck/public?type=full');
+    if (sharedDeckResponse.ok) {
+      const { decks: actualSharedDecks } =
+        (await sharedDeckResponse.json()) as {
+          decks: DeckResponse[];
+        };
+
+      setSharedDecks(
+        actualSharedDecks.map((deck) => ({
+          id: deck.id,
+          name: deck.name,
+          isPublic: deck.isPublic,
+        })),
+      );
+      userPublicDecks = actualSharedDecks;
+    }
+    syncDecks([...userPrivateDecks, ...userPublicDecks]);
+  }, [syncDecks]);
+
   useEffect(() => {
-    updateDecks();
+    (async () => {
+      updateDecks();
+    })();
   }, [updateDecks]);
 
   const { copyToClipboard } = useCopyToClipboard();

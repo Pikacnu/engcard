@@ -14,6 +14,8 @@ import { useTranslation } from '@/context/LanguageContext';
 import { ThemeToggler } from './../../components/ThemeToggler';
 import { useTheme } from '@/context/ThemeContext';
 import SettingsProvider from './../../context/SettingsContext';
+import { useOfflineSync } from '@/hooks/useOfflineSync';
+import { useDevice } from '@/hooks/useDevice';
 import {
   Home,
   Search,
@@ -32,7 +34,15 @@ export default function DashBoardLayout({
   children: React.ReactNode;
 }) {
   const { t } = useTranslation();
+  const { pushPendingReviews } = useOfflineSync();
+  const { isOnline } = useDevice();
   const [isBiMenuOpen, setIsBiMenuOpen] = useState(false);
+
+  useEffect(() => {
+    if (isOnline) {
+      pushPendingReviews();
+    }
+  }, [isOnline, pushPendingReviews]);
   const [isGuideDashboard, setIsGuideDashboard] = useLocalStorage<boolean>(
     'guideDashboard',
     false,

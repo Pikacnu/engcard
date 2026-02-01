@@ -3,6 +3,7 @@ import { decks } from '@/db/schema';
 import { auth } from '@/utils/auth';
 import { eq } from 'drizzle-orm';
 import { NextRequest, NextResponse } from 'next/server';
+import { DefinitionData } from '@/type-shared';
 
 export async function GET(request: NextRequest) {
   const url = new URL(request.url);
@@ -22,13 +23,24 @@ export async function GET(request: NextRequest) {
         },
       });
 
-      const deckData = publicDecks.map((deck) => ({
-        id: deck.id,
-        _id: deck.id, // Compat
-        name: deck.name,
-        isPublic: deck.isPublic,
-        cards_length: deck.cards.length,
-      }));
+      const deckData = publicDecks.map((deck) => {
+        const firstCard = deck.cards[0];
+        const langs =
+          firstCard?.blocks?.[0]?.definitions?.[0]?.definition?.map(
+            (d: DefinitionData) => d.lang,
+          ) || [];
+
+        return {
+          id: deck.id,
+          _id: deck.id, // Compat
+          name: deck.name,
+          isPublic: deck.isPublic,
+          cardInfo: {
+            length: deck.cards.length,
+            langs: langs,
+          },
+        };
+      });
       return NextResponse.json(deckData);
     }
 
@@ -40,13 +52,24 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    const deckData = userDecks.map((deck) => ({
-      _id: deck.id,
-      id: deck.id,
-      name: deck.name,
-      isPublic: deck.isPublic,
-      cards_length: deck.cards.length,
-    }));
+    const deckData = userDecks.map((deck) => {
+      const firstCard = deck.cards[0];
+      const langs =
+        firstCard?.blocks?.[0]?.definitions?.[0]?.definition?.map(
+          (d: DefinitionData) => d.lang,
+        ) || [];
+
+      return {
+        _id: deck.id,
+        id: deck.id,
+        name: deck.name,
+        isPublic: deck.isPublic,
+        cardInfo: {
+          length: deck.cards.length,
+          langs: langs,
+        },
+      };
+    });
     return NextResponse.json(deckData);
   }
 

@@ -2,9 +2,11 @@
 import Link from 'next/link';
 //import { useTranslation } from '@/context/LanguageContext';
 import { ThemeToggler } from './ThemeToggler';
-import { Home, Info, Store, Download, LogIn } from 'lucide-react';
+import { Home, Info, Store, Download, LogIn, CloudOff } from 'lucide-react';
+import { useDevice } from '@/hooks/useDevice';
 
 export function NavBar() {
+  const { isOnline } = useDevice();
   //const { t } = useTranslation();
   return (
     <div className='sticky top-0 z-20 flex items-center justify-between w-full bg-white  bg-opacity-30 dark:bg-gray-800 dark:bg-opacity-70 backdrop-blur-sm shadow-lg'>
@@ -23,26 +25,38 @@ export function NavBar() {
         </Link>
         <Link
           href={'/market'}
-          className='flex items-center justify-center p-2 m-2 bg-white bg-opacity-0 hover:bg-black hover:bg-opacity-10 dark:hover:bg-white dark:hover:bg-opacity-10 transition-all duration-200 rounded-full'
+          className={`flex items-center justify-center p-2 m-2 transition-all duration-200 rounded-full ${
+            !isOnline
+              ? 'opacity-50 grayscale cursor-not-allowed pointer-events-none'
+              : 'bg-white bg-opacity-0 hover:bg-black hover:bg-opacity-10 dark:hover:bg-white dark:hover:bg-opacity-10'
+          }`}
         >
           <Store size={24} />
         </Link>
         <Link
           href={'/download'}
-          className='flex items-center justify-center p-2 m-2 bg-white bg-opacity-0 hover:bg-black hover:bg-opacity-10 dark:hover:bg-white dark:hover:bg-opacity-10 transition-all duration-200 rounded-full'
+          className='flex items-center justify-center p-2 m-2 bg-white bg-opacity-0 hover:bg-black hover:bg-opacity-10 dark:hover:bg-white dark:hover:hover:bg-opacity-10 transition-all duration-200 rounded-full'
         >
           <Download size={24} />
         </Link>
       </div>
       {/* Login button icon color: text-gray-700 dark:text-white */}
       <div className='flex items-center text-gray-700 dark:text-white'>
+        {!isOnline && (
+          <div className='flex items-center gap-1 text-xs text-orange-500 font-semibold mx-2'>
+            <CloudOff size={16} />
+            <span className='max-sm:hidden'>Offline</span>
+          </div>
+        )}
         <ThemeToggler />{' '}
         {/* ThemeToggler itself handles its icon color internally now */}
         <Link
           href={'/auth/login'}
-          className='self-center min-w-max
-								bg-white bg-opacity-0 hover:bg-black hover:bg-opacity-10 dark:hover:bg-white dark:hover:bg-opacity-10 transition-all duration-200 p-2 m-2 hover:shadow-xl shadow-white rounded-full
-								dark:bg-white'
+          className={`self-center min-w-max transition-all duration-200 p-2 m-2 hover:shadow-xl shadow-white rounded-full dark:bg-white ${
+            !isOnline
+              ? 'opacity-50 grayscale cursor-not-allowed pointer-events-none'
+              : 'bg-white bg-opacity-0 hover:bg-black hover:bg-opacity-10 dark:hover:bg-white dark:hover:bg-opacity-10'
+          }`}
         >
           <LogIn
             size={24}

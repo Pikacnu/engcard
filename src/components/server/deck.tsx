@@ -16,13 +16,12 @@ export default function DeckPreview({
   onClose: () => void;
 }) {
   const { t } = useTranslation(); // Added
-  const [deck, setDeck] = useState<DeckCollection | null>(null);
+  const [deck, setDeck] = useState<Omit<DeckCollection, 'userId'> | null>(null);
   const [loaded, setLoaded] = useState(false);
   const { syncDeckCards, prefetchAudio } = useOfflineSync();
 
   useEffect(() => {
     async function loadDeck() {
-      // 1. 優先嘗試從本地 IndexedDB 讀取
       const localCards = await offlineDB.cards
         .where('deckId')
         .equals(deckId)
@@ -32,7 +31,6 @@ export default function DeckPreview({
       if (localDeck && localCards.length > 0) {
         setDeck({
           ...localDeck,
-          _id: localDeck.id,
           cards: localCards.map((c) => ({
             word: c.word,
             blocks: c.blocks || [],
@@ -40,27 +38,25 @@ export default function DeckPreview({
             audio: c.audio || undefined,
             flipped: false,
           })),
-        } as unknown as DeckCollection);
+          isPublic: localDeck.isPublic || false,
+        });
         setLoaded(true);
       }
 
-      // 2. 獲取遠端資料並更新
       try {
         const deckData = await getDeck(deckId);
         if (deckData) {
           setDeck(deckData);
           setLoaded(true);
-          // 3. 同步到本地
           syncDeckCards(
             deckId,
-            deckData.cards.map((c: any, i: number) => ({
+            deckData.cards.map((c, i) => ({
               ...c,
-              id: `${deckId}_${c.word}_${i}`, // 產生唯一 ID 如果後端沒給
+              id: `${deckId}_${c.word}_${i}`,
               deckId,
             })),
           );
 
-          // 4. 預抓取音檔
           prefetchAudio(deckData.cards.map((c) => c.audio));
         }
       } catch (err) {

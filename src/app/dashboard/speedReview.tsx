@@ -5,6 +5,8 @@ import { useTranslation } from '@/context/LanguageContext';
 import Card from '@/components/card';
 import { CardProps } from '@/type';
 import { Rating } from 'ts-fsrs';
+import { useOfflineSync } from '@/hooks/useOfflineSync';
+import { offlineDB } from '@/lib/offline-db';
 
 type FSRSSessionItem = {
   fsrs: {
@@ -20,14 +22,44 @@ export default function SpeedReview() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
   const [loading, setLoading] = useState(true);
+  const { submitReview, syncFSRSCards } = useOfflineSync();
 
   const fetchData = async () => {
     setLoading(true);
     try {
+      // 1. Try to sync latest from server if online
+      if (navigator.onLine) {
+        await syncFSRSCards();
+      }
+
+      // 2. Fetch from remote API
       const response = await fetch('/api/history/fsrs');
       if (response.ok) {
         const data = await response.json();
         setItems(data);
+      } else {
+        // 3. Fallback to local IndexedDB if offline or API fails
+        const localDueCards = await offlineDB.fsrsCards
+          .where('due')
+          .belowOrEqual(new Date())
+          .toArray();
+
+        const sessionItems: FSRSSessionItem[] = [];
+        for (const fsrs of localDueCards) {
+          const cardData = await offlineDB.cards.get(fsrs.cardId);
+          if (cardData) {
+            sessionItems.push({
+              fsrs: { cardId: fsrs.cardId, due: fsrs.due },
+              card: {
+                word: cardData.word,
+                phonetic: cardData.phonetic || '',
+                blocks: cardData.blocks || [],
+                audio: cardData.audio || undefined,
+              },
+            });
+          }
+        }
+        setItems(sessionItems);
       }
     } catch (error) {
       console.error('Failed to fetch FSRS cards:', error);
@@ -44,6 +76,7 @@ export default function SpeedReview() {
     const currentItem = items[currentIndex];
     if (!currentItem) return;
 
+    // Proceed to next card immediately for better UX
     if (currentIndex < items.length - 1) {
       setCurrentIndex((prev) => prev + 1);
       setShowAnswer(false);
@@ -53,18 +86,8 @@ export default function SpeedReview() {
       fetchData();
     }
 
-    try {
-      await fetch('/api/history/fsrs', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          cardId: currentItem.fsrs.cardId,
-          rating: rating,
-        }),
-      });
-    } catch (error) {
-      console.error('Failed to submit review:', error);
-    }
+    // Handle background submission
+    await submitReview(currentItem.fsrs.cardId, rating);
   };
 
   if (loading) {
