@@ -1,0 +1,1 @@
+ALTER TABLE "fsrs_card" ADD COLUMN "updatedAt" timestamp DEFAULT now() NOT NULL;

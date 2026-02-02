@@ -29,6 +29,13 @@
       "when": 1769773370173,
       "tag": "0003_messy_epoch",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1770009385368,
+      "tag": "0004_special_phalanx",
+      "breakpoints": true
     }
   ]
 }

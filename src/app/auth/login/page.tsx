@@ -1,4 +1,4 @@
-'use client'; // Added
+'use client';
 
 import SignInButton from '@/components/account/signin';
 import { LoginMethod } from '@/type';
@@ -10,7 +10,7 @@ import { useEffect } from 'react'; // Added for session redirect
 export default function Login() {
   const { t } = useTranslation(); // Added
   const router = useRouter();
-  const { data: session, isPending } = authClient.useSession(); // Changed to useSession
+  const { data: session, isPending } = authClient.useSession();
 
   useEffect(() => {
     // Added useEffect for redirect

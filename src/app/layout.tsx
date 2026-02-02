@@ -82,9 +82,7 @@ export default function RootLayout({
               reloadOnOnline={true}
             >
               <div className='flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-700 w-full h-full min-h-max '>
-                <Suspense fallback={null}>
-                  {children}
-                </Suspense>
+                <Suspense fallback={null}>{children}</Suspense>
               </div>
             </SerwistProvider>
           </LanguageProvider>

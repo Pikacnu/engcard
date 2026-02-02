@@ -34,6 +34,6 @@ const nextConfig = withSerwist({
       },
     ];
   },
-}) as NextConfig;
+});
 
 export default nextConfig;

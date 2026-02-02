@@ -5,9 +5,10 @@ export default async function proxy(request: NextRequest) {
   const session = await auth();
   if (!session) {
     const url = request.nextUrl.clone();
-    url.pathname = '/login';
+    url.pathname = '/auth/login';
     return NextResponse.redirect(url);
   }
+  return NextResponse.next();
 }
 
 // See "Matching Paths" below to learn more
