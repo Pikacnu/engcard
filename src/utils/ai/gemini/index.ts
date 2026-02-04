@@ -60,9 +60,10 @@ export async function GenerateTextResponse(
     model: 'gemma-3-27b-it',
     contents: [...history, { role: 'user', parts: [{ text: message }] }],
     config: {
-      systemInstruction: `
-			prompt : ${chatModelInstruction} 
-			data : ${await PrepareTheDataForGenerate(userId)}`,
+      // systemInstruction: `
+      // 	prompt : ${chatModelInstruction}
+      // 	data : ${await PrepareTheDataForGenerate(userId)}`,
+      // Disabled: gemma-3-27b-it doesn't support Developer Instructions
       tools: [
         {
           functionDeclarations: chatActionFunctionDeclarations,

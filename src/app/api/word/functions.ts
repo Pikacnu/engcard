@@ -516,10 +516,11 @@ export async function getAIResponse(
             ...sourceLang,
             targetLang,
           ]).toSchema(),
-          systemInstruction: wordSystemInstructionCreator(
-            sourceLang,
-            targetLang,
-          ),
+          // systemInstruction: wordSystemInstructionCreator(
+          //   sourceLang,
+          //   targetLang,
+          // ),
+          // Disabled: gemma-3-27b-it doesn't support Developer Instructions
         },
         contents: [
           ...wordGeminiHistory,

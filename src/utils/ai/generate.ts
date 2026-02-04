@@ -37,7 +37,7 @@ export async function getParseResponse<T>(
       ],
       model: geminiModel,
       config: {
-        systemInstruction: systemInstruction,
+        // systemInstruction: systemInstruction, // Disabled: gemma-3-27b-it doesn't support Developer Instructions
         responseMimeType: 'application/json',
         responseSchema: GeminiAISchema,
       },
